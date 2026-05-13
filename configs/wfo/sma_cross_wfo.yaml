@@ -1,0 +1,32 @@
+run_name: sma_cross_spy_wfo
+strategy: sma_cross
+strategy_params:
+  fast: 20
+  slow: 50
+  size: 1.0
+data:
+  symbols: ["SPY"]
+  timeframe: "1d"
+  start: "2015-01-02"
+  end: "2024-12-31"
+  source: "csv"
+  root: "data/raw"
+execution:
+  initial_cash: 100000
+  commission_bps: 2
+  slippage_bps: 5
+  allow_fractional: false
+portfolio:
+  sizing_mode: "percent_equity"
+  size: 0.95
+optimization:
+  objective: sharpe
+  param_space:
+    fast: [10, 20, 30]
+    slow: [50, 100, 200]
+wfo:
+  enabled: true
+  train_bars: 756
+  test_bars: 252
+  step_bars: 252
+output_root: "output/runs"
