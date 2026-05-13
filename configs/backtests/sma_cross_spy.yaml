@@ -1,0 +1,22 @@
+run_name: sma_cross_spy
+strategy: sma_cross
+strategy_params:
+  fast: 20
+  slow: 50
+  size: 1.0
+data:
+  symbols: ["SPY"]
+  timeframe: "1d"
+  start: "2015-01-02"
+  end: "2024-12-31"
+  source: "csv"
+  root: "data/raw"
+execution:
+  initial_cash: 100000
+  commission_bps: 2
+  slippage_bps: 5
+  allow_fractional: false
+portfolio:
+  sizing_mode: "percent_equity"
+  size: 0.95
+output_root: "output/runs"
