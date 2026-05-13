@@ -1,0 +1,57 @@
+from __future__ import annotations
+
+import pandas as pd
+
+from backtester.core.types import BacktestResult
+from backtester.wfo.stitcher import WalkForwardStitcher
+
+
+def _result(start: str, n: int, equity_start: float, equity_end: float) -> BacktestResult:
+    idx = pd.bdate_range(start, periods=n)
+    eq = pd.DataFrame({"equity": pd.Series([equity_start, *([0] * (n - 2)), equity_end]).interpolate().values},
+                      index=idx)
+    trades = pd.DataFrame([
+        {"timestamp": idx[0], "side": "buy", "qty": 1, "price": 100.0, "commission": 0, "notional": 100},
+        {"timestamp": idx[-1], "side": "sell", "qty": 1, "price": 110.0, "commission": 0, "notional": 110},
+    ])
+    positions = pd.DataFrame({"qty": [1] * n}, index=idx)
+    return BacktestResult(
+        summary={"total_return": equity_end / equity_start - 1.0, "sharpe": 1.0,
+                 "max_drawdown": -0.05, "n_trades": 2},
+        equity_curve=eq, trades=trades, positions=positions,
+    )
+
+
+def test_stitcher_combines_oos_equity():
+    windows = [
+        {"train_start": pd.Timestamp("2024-01-01"), "train_end": pd.Timestamp("2024-03-01"),
+         "test_start": pd.Timestamp("2024-03-04"), "test_end": pd.Timestamp("2024-04-01"),
+         "best_params": {"fast": 10}, "train_summary": {"sharpe": 1.5},
+         "test_summary": {"total_return": 0.05, "sharpe": 1.0, "max_drawdown": -0.02, "n_trades": 2, "n_round_trips": 1, "win_rate": 1.0, "avg_round_trip_pnl": 100, "annualized_return": 0.6, "annualized_vol": 0.2, "sortino": 1.1, "time_in_market": 1.0, "turnover": 1.0, "final_equity": 10500},
+         "test_result": _result("2024-03-04", 20, 10_000, 10_500)},
+        {"train_start": pd.Timestamp("2024-02-01"), "train_end": pd.Timestamp("2024-04-01"),
+         "test_start": pd.Timestamp("2024-04-02"), "test_end": pd.Timestamp("2024-05-01"),
+         "best_params": {"fast": 20}, "train_summary": {"sharpe": 1.6},
+         "test_summary": {"total_return": -0.02, "sharpe": -0.2, "max_drawdown": -0.05, "n_trades": 2, "n_round_trips": 1, "win_rate": 0.0, "avg_round_trip_pnl": -200, "annualized_return": -0.3, "annualized_vol": 0.2, "sortino": -0.3, "time_in_market": 1.0, "turnover": 1.0, "final_equity": 9800},
+         "test_result": _result("2024-04-02", 20, 10_500, 10_290)},
+    ]
+    out = WalkForwardStitcher().combine(windows)
+    assert "oos_equity_curve" in out
+    assert "oos_summary" in out
+    assert "is_summary_avg" in out
+    assert "parameter_stability" in out
+    assert len(out["oos_equity_curve"]) == 40  # 20 + 20
+    assert out["oos_equity_curve"]["equity"].iloc[-1] > 0
+    assert out["parameter_stability"]["fast"]["unique"] == 2
+
+
+def test_stitcher_handles_single_window():
+    windows = [{
+        "train_start": pd.Timestamp("2024-01-01"), "train_end": pd.Timestamp("2024-03-01"),
+        "test_start": pd.Timestamp("2024-03-04"), "test_end": pd.Timestamp("2024-04-01"),
+        "best_params": {"fast": 10}, "train_summary": {"sharpe": 1.5},
+        "test_summary": {"total_return": 0.05, "sharpe": 1.0, "max_drawdown": -0.02, "n_trades": 2, "n_round_trips": 1, "win_rate": 1.0, "avg_round_trip_pnl": 100, "annualized_return": 0.6, "annualized_vol": 0.2, "sortino": 1.1, "time_in_market": 1.0, "turnover": 1.0, "final_equity": 10500},
+        "test_result": _result("2024-03-04", 20, 10_000, 10_500),
+    }]
+    out = WalkForwardStitcher().combine(windows)
+    assert len(out["oos_equity_curve"]) == 20
