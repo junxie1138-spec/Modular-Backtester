@@ -1,0 +1,15 @@
+# v0.3.0 baseline golden — captured 2026-05-14 against bundled synthetic data/raw/SPY.csv.
+# Consumed by Phase 19's update to tests/integration/test_backwards_compat.py
+# after data/raw/SPY.csv is replaced with real data in Phase 17.
+
+GOLDEN = {
+    "total_return": 0.3509706358824263,
+    "sharpe":       0.30048402218924875,
+    "max_drawdown": -0.36916662882487716,
+    "n_trades":     65,
+    "final_equity": 135097.06358824263,
+}
+
+# Baseline test count: 206 (not 202 as the plan preamble states — the
+# 0e65fc2 trailing-stop hardening commit added 4 tests after the plan
+# was written). All cumulative test-count targets in the plan shift +4.

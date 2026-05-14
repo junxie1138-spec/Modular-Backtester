@@ -27,6 +27,11 @@ class ExecutionConfig:
     trailing_stop_pct: Optional[float] = None
     trailing_stop_atr_mult: Optional[float] = None
     trailing_stop_atr_period: int = 14
+    # v0.4.0 additions to ExecutionConfig:
+    hard_stop_atr_mult: Optional[float] = None
+    runner_atr_mult: Optional[float] = None
+    breakeven_floor: bool = True
+    tranche_stop_atr_period: int = 20
 
 
 @dataclass(slots=True)

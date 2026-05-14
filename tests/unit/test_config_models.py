@@ -98,3 +98,27 @@ def test_data_config_accepts_yfinance_source():
     from backtester.config.models import DataConfig
     cfg = DataConfig(symbols=["SPY"], timeframe="1d", start="2024-01-01", end="2024-12-31", source="yfinance")
     assert cfg.source == "yfinance"
+
+
+def test_execution_config_hard_stop_atr_mult_defaults_none():
+    from backtester.config.models import ExecutionConfig
+    cfg = ExecutionConfig()
+    assert cfg.hard_stop_atr_mult is None
+
+
+def test_execution_config_runner_atr_mult_defaults_none():
+    from backtester.config.models import ExecutionConfig
+    cfg = ExecutionConfig()
+    assert cfg.runner_atr_mult is None
+
+
+def test_execution_config_breakeven_floor_defaults_true():
+    from backtester.config.models import ExecutionConfig
+    cfg = ExecutionConfig()
+    assert cfg.breakeven_floor is True
+
+
+def test_execution_config_tranche_stop_atr_period_defaults_20():
+    from backtester.config.models import ExecutionConfig
+    cfg = ExecutionConfig()
+    assert cfg.tranche_stop_atr_period == 20
