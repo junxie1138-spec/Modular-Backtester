@@ -140,3 +140,118 @@ def test_portfolio_equity_curve_length_matches_panel_index():
         signals={"AAA": sig}, aux_data={}, regime_config=None,
     )
     assert len(result.equity_curve) == len(data["AAA"])
+
+
+def test_promote_to_runner_called_on_partial_close():
+    """Strategy emits target=0.5 from full position -> TrancheStopState should promote."""
+    from backtester.engine.tranche_stop import TSPhase
+    from backtester.config.models import ExecutionConfig
+    from backtester.engine.broker import Broker
+
+    sim = _build_simulator(symbols=["AAA"])
+    # Reconfigure broker to enable tranche-stop machinery.
+    sim.broker_factory = lambda: Broker(ExecutionConfig(
+        initial_cash=100_000.0, commission_bps=0.0, slippage_bps=0.0,
+        allow_fractional=False, allow_short=False,
+        hard_stop_atr_mult=1.75, runner_atr_mult=2.5,
+        breakeven_floor=True, tranche_stop_atr_period=3,
+    ))
+    sim.config.size = 0.5
+
+    idx = pd.date_range("2024-01-02", periods=6, freq="B")
+    data = {"AAA": _ohlcv([100.0, 100.0, 100.0, 100.0, 100.0, 100.0])}
+    # Bar 1: enter full (signal=1.0). Bar 3: scale to 0.5 (tranche 1 fills next bar).
+    # Bar 5: exit (signal=0).
+    sig = pd.DataFrame({
+        "signal": [0.0, 1.0, 1.0, 0.5, 0.5, 0.0],
+        "size":   [1.0] * 6,
+    }, index=idx)
+    result = sim.simulate(
+        symbols=["AAA"], data=data, sectors={"AAA": "X"},
+        signals={"AAA": sig}, aux_data={}, regime_config=None,
+    )
+    # End of run: position fully exited, phase DISARMED, qty == 0.
+    assert result.tranche_phase_at_end["AAA"] is TSPhase.DISARMED
+    assert result.position_qty_at_end["AAA"] == 0
+
+
+def test_disarm_called_on_full_exit():
+    from backtester.engine.tranche_stop import TSPhase
+    from backtester.config.models import ExecutionConfig
+    from backtester.engine.broker import Broker
+
+    sim = _build_simulator(symbols=["AAA"])
+    sim.broker_factory = lambda: Broker(ExecutionConfig(
+        initial_cash=100_000.0, commission_bps=0.0, slippage_bps=0.0,
+        hard_stop_atr_mult=1.75, runner_atr_mult=2.5,
+        breakeven_floor=True, tranche_stop_atr_period=3,
+    ))
+
+    # 5 bars: signal=0 at index 3 schedules exit at bar 4 (index 4 executes it).
+    idx = pd.date_range("2024-01-02", periods=5, freq="B")
+    data = {"AAA": _ohlcv([100.0] * 5)}
+    sig = pd.DataFrame({"signal": [0.0, 1.0, 1.0, 0.0, 0.0], "size": [1.0]*5}, index=idx)
+    result = sim.simulate(
+        symbols=["AAA"], data=data, sectors={"AAA": "X"},
+        signals={"AAA": sig}, aux_data={}, regime_config=None,
+    )
+    assert result.tranche_phase_at_end["AAA"] is TSPhase.DISARMED
+
+
+def test_pending_stop_per_symbol_independent():
+    """Each symbol's pending_stop is independent. Stop on AAA does not affect BBB."""
+    from backtester.config.models import ExecutionConfig
+    from backtester.engine.broker import Broker
+
+    sim = _build_simulator(symbols=["AAA", "BBB"])
+    sim.broker_factory = lambda: Broker(ExecutionConfig(
+        initial_cash=100_000.0, commission_bps=0.0, slippage_bps=0.0,
+        hard_stop_atr_mult=1.0, runner_atr_mult=2.5,  # tight stop
+        breakeven_floor=False, tranche_stop_atr_period=2,
+    ))
+
+    idx = pd.date_range("2024-01-02", periods=5, freq="B")
+    aaa = _ohlcv([100.0, 100.0, 100.0, 100.0, 80.0])  # crash on last bar
+    bbb = _ohlcv([200.0] * 5)
+    aaa_sig = pd.DataFrame({"signal": [0.0, 1.0, 1.0, 1.0, 1.0], "size": [1.0]*5}, index=idx)
+    bbb_sig = pd.DataFrame({"signal": [0.0, 1.0, 1.0, 1.0, 1.0], "size": [1.0]*5}, index=idx)
+    result = sim.simulate(
+        symbols=["AAA", "BBB"], data={"AAA": aaa, "BBB": bbb},
+        sectors={"AAA": "X", "BBB": "Y"},
+        signals={"AAA": aaa_sig, "BBB": bbb_sig},
+        aux_data={}, regime_config=None,
+    )
+    # AAA stopped out: at least one trade has reason="trailing_stop".
+    aaa_trades = result.trades_per_symbol["AAA"]
+    assert any(f.reason == "trailing_stop" for f in aaa_trades)
+    # BBB never stopped.
+    bbb_trades = result.trades_per_symbol["BBB"]
+    assert not any(f.reason == "trailing_stop" for f in bbb_trades)
+
+
+def test_stop_wins_over_signal_same_bar_per_symbol():
+    """On the bar where a stop fires AND the strategy signals an exit, only the stop fill lands."""
+    from backtester.config.models import ExecutionConfig
+    from backtester.engine.broker import Broker
+
+    sim = _build_simulator(symbols=["AAA"])
+    sim.broker_factory = lambda: Broker(ExecutionConfig(
+        initial_cash=100_000.0, commission_bps=0.0, slippage_bps=0.0,
+        hard_stop_atr_mult=1.0, runner_atr_mult=2.5,
+        breakeven_floor=False, tranche_stop_atr_period=2,
+    ))
+
+    idx = pd.date_range("2024-01-02", periods=4, freq="B")
+    data = {"AAA": _ohlcv([100.0, 100.0, 100.0, 50.0])}  # crash on last bar
+    # Strategy ALSO signals exit on bar 3 (signal=0 at index 2 -> exit at bar 3 open).
+    sig = pd.DataFrame({"signal": [0.0, 1.0, 1.0, 0.0], "size": [1.0]*4}, index=idx)
+    result = sim.simulate(
+        symbols=["AAA"], data=data, sectors={"AAA": "X"},
+        signals={"AAA": sig}, aux_data={}, regime_config=None,
+    )
+    trades = result.trades_per_symbol["AAA"]
+    exit_fills = [f for f in trades if f.side.value == "sell"]
+    # Exactly one exit landed.
+    assert len(exit_fills) == 1
+    # And it's the trailing_stop (stop wins over same-bar signal).
+    assert exit_fills[0].reason == "trailing_stop"
