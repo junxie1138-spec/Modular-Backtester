@@ -1,0 +1,5 @@
+{
+  "result": "Here is the strategy I generated based on your constraints:\n\n{\"strategy_id\": \"gen_3\", \"one_line_summary\": \"breakout 20d\", \"hypothesis\": \"new highs continue.\", \"novelty_justification\": \"x.\", \"failure_mode\": \"false breaks.\", \"allow_short\": false, \"strategy_file\": \"# placeholder\\n\", \"config_file\": \"run_name: gen_3\\n\"}\n\nLet me know if you'd like any adjustments.",
+  "session_id": "ghi",
+  "total_cost_usd": 0.029
+}

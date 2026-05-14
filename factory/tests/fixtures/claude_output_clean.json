@@ -1,0 +1,6 @@
+{
+  "result": "{\"strategy_id\": \"gen_1\", \"one_line_summary\": \"sma cross 20/100\", \"hypothesis\": \"trend follows itself.\", \"novelty_justification\": \"baseline.\", \"failure_mode\": \"chop.\", \"allow_short\": false, \"strategy_file\": \"# placeholder strategy\\n\", \"config_file\": \"run_name: gen_1\\n\"}",
+  "session_id": "abc",
+  "total_cost_usd": 0.034,
+  "duration_ms": 4200
+}
