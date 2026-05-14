@@ -41,7 +41,7 @@ regimes:
 optimization:
   objective: calmar
   sampling: lhs
-  random_n: 40       # per-window budget; with ~5-10 windows -> ~200-400 sub-runs
+  random_n: 20       # per-window budget; with ~16 windows -> ~320 sub-runs (~1 hour)
   random_seed: 42
   param_space:
     # Strategy params only — runner_atr_mult is an ExecutionConfig field and is
