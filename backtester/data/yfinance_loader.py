@@ -69,6 +69,10 @@ def load_yfinance_cached(
 
 def _normalize_yfinance_frame(df: pd.DataFrame, *, require_volume: bool) -> pd.DataFrame:
     df = df.copy()
+    # yfinance >=0.2.40 returns a MultiIndex (field, ticker) when downloading
+    # a single ticker. Flatten to the field level so column names are strings.
+    if isinstance(df.columns, pd.MultiIndex):
+        df.columns = df.columns.get_level_values(0)
     # Drop tz if present so CSV round-trip is deterministic.
     if df.index.tz is not None:
         df.index = df.index.tz_localize(None)
