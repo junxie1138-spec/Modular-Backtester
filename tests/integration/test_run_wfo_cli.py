@@ -186,31 +186,93 @@ output_root: "{out.as_posix()}"
     assert "sell" in sides, f"expected at least one SELL in oos_trades, got {sides}"
 
 
-def test_run_wfo_multi_symbol_explicit_deferral(tmp_path):
-    """v0.4.0 multi-symbol WFO is deferred; runner emits a clear message."""
-    import subprocess
-    import sys
-    cfg = tmp_path / "wfo_multi.yaml"
-    cfg.write_text(
-        "run_name: vtest\n"
-        "strategy: mean_reversion_atr\n"
-        "universe_path: " + str((tmp_path / "universe.yaml").resolve()) + "\n"
-        "strategy_params: {entry_atr_mult: 1.25, mean_lookback: 10}\n"
-        "data:\n"
-        "  source: csv\n  root: data/raw\n"
-        "  start: '2024-01-02'\n  end: '2024-06-30'\n"
-        "  timeframe: 1d\n  aux_symbols: [SPY, '^VIX']\n"
-        "execution: {initial_cash: 100000}\n"
-        "portfolio: {sizing_mode: vol_targeted, vol_target: 0.12}\n"
-        "wfo: {enabled: true, train_bars: 60, test_bars: 30, step_bars: 30}\n"
-        "optimization: {objective: sharpe, param_space: {entry_atr_mult: [1.0, 1.25]}}\n"
-        "output_root: " + str(tmp_path) + "\n"
+def test_run_wfo_multi_symbol_routes_to_new_pipeline(tmp_path: Path):
+    """v0.4.1: multi-symbol WFO routes through MultiSymbolWFO* pipeline end-to-end."""
+    from tests.fixtures.synthetic import make_ohlcv
+
+    raw = tmp_path / "data"
+    raw.mkdir()
+    # Write two synthetic symbols and two aux symbols.
+    make_ohlcv(n=300, seed=7).to_csv(raw / "AAA.csv", index_label="date")
+    make_ohlcv(n=300, seed=8).to_csv(raw / "BBB.csv", index_label="date")
+    make_ohlcv(n=300, seed=9).to_csv(raw / "SPY.csv", index_label="date")
+    make_ohlcv(n=300, seed=10).to_csv(raw / "VIX.csv", index_label="date")
+
+    universe_yaml = tmp_path / "universe.yaml"
+    universe_yaml.write_text(
+        "universe:\n"
+        "  AAA: {sector: Tech}\n"
+        "  BBB: {sector: Finance}\n"
     )
-    # Create a minimal universe.yaml referenced above.
-    (tmp_path / "universe.yaml").write_text("universe:\n  TSLA: {sector: Auto}\n")
+
+    out = tmp_path / "runs"
+    cfg = tmp_path / "wfo_multi.yaml"
+    cfg.write_text(f"""
+run_name: multi_wfo_smoke
+strategy: mean_reversion_atr
+universe_path: {universe_yaml.as_posix()}
+strategy_params:
+  entry_atr_mult: 1.25
+  mean_lookback: 10
+  atr_lookback: 20
+  time_stop_days: 7
+  runner_time_stop_days: 12
+  runner_ceiling_atr_mult: 1.25
+  runtime_trend_threshold: 0.0025
+data:
+  source: csv
+  root: {raw.as_posix()}
+  start: "2020-01-02"
+  end: "2030-12-31"
+  timeframe: 1d
+  auto_adjust: true
+  aux_symbols: [SPY, VIX]
+execution:
+  initial_cash: 100000
+  commission_bps: 2
+  slippage_bps: 5
+  allow_fractional: false
+  allow_short: false
+  hard_stop_atr_mult: 1.75
+  runner_atr_mult: 2.5
+  breakeven_floor: true
+  tranche_stop_atr_period: 20
+portfolio:
+  sizing_mode: vol_targeted
+  vol_target: 0.12
+  position_cap_pct: 0.10
+  cash_reserve_pct: 0.30
+  risk_budget_pct: 0.06
+  sector_cap_pct: 0.50
+optimization:
+  objective: sharpe
+  sampling: grid
+  random_n: 4
+  random_seed: 0
+  param_space:
+    entry_atr_mult: [1.0, 1.25]
+    mean_lookback: [10]
+wfo:
+  enabled: true
+  train_bars: 100
+  test_bars: 50
+  step_bars: 50
+output_root: {out.as_posix()}
+""")
+
     result = subprocess.run(
         [sys.executable, "-m", "backtester.runners.run_wfo", "--config", str(cfg)],
         capture_output=True, text=True,
     )
-    assert result.returncode != 0
-    assert "v0.4.1" in result.stdout + result.stderr
+    assert result.returncode == 0, result.stderr
+
+    run_dir = next(out.iterdir())
+    for name in ("config_resolved.yaml", "summary.json", "window_results.json",
+                 "oos_equity_curve.csv", "logs.txt"):
+        assert (run_dir / name).exists(), name
+
+    summary = json.loads((run_dir / "summary.json").read_text())
+    assert "oos_summary" in summary
+    assert "parameter_stability" in summary
+    assert "n_windows" in summary
+    assert summary["n_windows"] >= 1

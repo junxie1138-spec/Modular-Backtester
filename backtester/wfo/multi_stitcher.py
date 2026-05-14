@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass, is_dataclass
 
 import numpy as np
 import pandas as pd
@@ -74,7 +74,8 @@ class MultiSymbolWFOStitcher:
                 "test_start": str(wr.test_start.date()),
                 "test_end": str(wr.test_end.date()),
                 "best_params": (
-                    wr.best_params.__dict__ if hasattr(wr.best_params, "__dict__")
+                    asdict(wr.best_params) if is_dataclass(wr.best_params)
+                    else wr.best_params.__dict__ if hasattr(wr.best_params, "__dict__")
                     else dict(wr.best_params)
                 ),
                 "is_summary": wr.is_summary,
@@ -87,7 +88,8 @@ class MultiSymbolWFOStitcher:
         parameter_stability: dict[str, list] = {}
         for wr in window_results:
             params_dict = (
-                wr.best_params.__dict__ if hasattr(wr.best_params, "__dict__")
+                asdict(wr.best_params) if is_dataclass(wr.best_params)
+                else wr.best_params.__dict__ if hasattr(wr.best_params, "__dict__")
                 else dict(wr.best_params)
             )
             for k, v in params_dict.items():
