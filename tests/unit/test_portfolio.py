@@ -227,3 +227,45 @@ def test_buy_stop_covers_a_short_when_price_rises_into_stop():
     # cover above short entry means a loss; below means a gain — either way
     # realized_pnl is well-defined and non-NaN
     assert pos.realized_pnl == pos.realized_pnl  # not NaN
+
+
+def test_long_trailing_stop_fires_on_drawdown():
+    # Build a 20-bar series: 10 bars trending up then a sharp drop.
+    import numpy as np
+    idx = pd.bdate_range("2024-01-02", periods=20)
+    closes = np.concatenate([
+        np.linspace(100.0, 120.0, 10),  # uptrend
+        np.linspace(118.0, 100.0, 10),  # drawdown ~15%
+    ])
+    highs = closes * 1.01
+    lows = closes * 0.99
+    opens = closes.copy()
+    data = pd.DataFrame(
+        {"open": opens, "high": highs, "low": lows, "close": closes,
+         "volume": [1_000_000] * 20},
+        index=idx,
+    )
+
+    # Long-forever signal (enter bar 1, hold).
+    sig = pd.DataFrame(index=idx)
+    sig["signal"] = 1
+    sig["signal"].iloc[0] = 0
+    sig["size"] = 1.0
+    sf = SignalFrame(data=sig)
+
+    cfg = ExecutionConfig(commission_bps=0.0, slippage_bps=0.0,
+                         trailing_stop_pct=0.05)
+    sim = PortfolioSimulator(PortfolioConfig(size=1.0), initial_cash=10_000.0)
+    broker = Broker(cfg)
+
+    trades, positions, eq = sim.simulate(data=data, signal_frame=sf, broker=broker)
+    # Exactly one BUY (entry) and one SELL (stop-out).
+    assert len(trades) >= 2
+    assert trades.iloc[0]["side"] == "buy"
+    assert trades.iloc[0]["reason"] == "signal"
+    # At least one SELL must be a trailing_stop.
+    stop_rows = trades[trades["reason"] == "trailing_stop"]
+    assert len(stop_rows) >= 1
+    assert stop_rows.iloc[0]["side"] == "sell"
+    # Position must reach flat after the stop.
+    assert (positions["qty"] == 0).any()
