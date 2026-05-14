@@ -1,0 +1,35 @@
+run_name: rsi_long_short_spy_wfo
+strategy: rsi_long_short
+strategy_params:
+  period: 14
+  oversold: 30
+  overbought: 70
+  size: 1.0
+data:
+  symbols: ["SPY"]
+  timeframe: "1d"
+  start: "2015-01-02"
+  end: "2024-12-31"
+  source: "csv"
+  root: "data/raw"
+execution:
+  initial_cash: 100000
+  commission_bps: 2
+  slippage_bps: 5
+  allow_fractional: false
+  allow_short: true
+portfolio:
+  sizing_mode: "percent_equity"
+  size: 0.95
+optimization:
+  objective: sharpe
+  param_space:
+    period: [7, 14, 21]
+    oversold: [20, 30]
+    overbought: [70, 80]
+wfo:
+  enabled: true
+  train_bars: 756
+  test_bars: 252
+  step_bars: 252
+output_root: "output/runs"
