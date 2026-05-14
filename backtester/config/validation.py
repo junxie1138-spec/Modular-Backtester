@@ -53,6 +53,8 @@ def validate_run_config(rc: RunConfig) -> None:
 
     # v0.4.0 tranche-stop validation
     _validate_tranche_stop(rc)
+    # v0.4.0 portfolio sizing validation
+    _validate_portfolio_sizing(rc)
 
 
 def _validate_tranche_stop(rc: RunConfig) -> None:
@@ -77,3 +79,18 @@ def _validate_tranche_stop(rc: RunConfig) -> None:
             raise ConfigError("execution.runner_atr_mult must be > 0")
         if ex.tranche_stop_atr_period < 2:
             raise ConfigError("execution.tranche_stop_atr_period must be >= 2")
+
+
+def _validate_portfolio_sizing(rc: RunConfig) -> None:
+    """Validate portfolio sizing bounds (caps, reserve, budget, sector)."""
+    p = rc.portfolio
+    if not (0 < p.position_cap_pct <= 1):
+        raise ConfigError(f"portfolio.position_cap_pct must be in (0, 1]; got {p.position_cap_pct}")
+    if not (0 <= p.cash_reserve_pct < 1):
+        raise ConfigError(f"portfolio.cash_reserve_pct must be in [0, 1); got {p.cash_reserve_pct}")
+    if not (0 < p.risk_budget_pct <= 1):
+        raise ConfigError(f"portfolio.risk_budget_pct must be in (0, 1]; got {p.risk_budget_pct}")
+    if not (0 < p.sector_cap_pct <= 1):
+        raise ConfigError(f"portfolio.sector_cap_pct must be in (0, 1]; got {p.sector_cap_pct}")
+    if p.sizing_mode == "vol_targeted" and p.vol_target <= 0:
+        raise ConfigError(f"portfolio.vol_target must be > 0 when sizing_mode='vol_targeted'")

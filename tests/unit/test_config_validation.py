@@ -140,3 +140,48 @@ def test_validation_rule_04_tranche_stop_atr_period_min_2():
     rc.execution.tranche_stop_atr_period = 1
     with pytest.raises(ConfigError, match="tranche_stop_atr_period must be >= 2"):
         validate_run_config(rc)
+
+
+# Task 12: Portfolio sizing validation rules (rules 5-9)
+def test_validation_rule_05_position_cap_pct_bounds():
+    for bad in [0.0, -0.1, 1.5]:
+        rc = _base_run_config()
+        rc.portfolio.position_cap_pct = bad
+        with pytest.raises(ConfigError, match="position_cap_pct"):
+            validate_run_config(rc)
+
+
+def test_validation_rule_06_cash_reserve_pct_bounds():
+    for bad in [-0.01, 1.0, 1.5]:
+        rc = _base_run_config()
+        rc.portfolio.cash_reserve_pct = bad
+        with pytest.raises(ConfigError, match="cash_reserve_pct"):
+            validate_run_config(rc)
+
+
+def test_validation_rule_07_risk_budget_pct_bounds():
+    for bad in [0.0, -0.1, 1.5]:
+        rc = _base_run_config()
+        rc.portfolio.risk_budget_pct = bad
+        with pytest.raises(ConfigError, match="risk_budget_pct"):
+            validate_run_config(rc)
+
+
+def test_validation_rule_08_sector_cap_pct_bounds():
+    for bad in [0.0, -0.1, 1.5]:
+        rc = _base_run_config()
+        rc.portfolio.sector_cap_pct = bad
+        with pytest.raises(ConfigError, match="sector_cap_pct"):
+            validate_run_config(rc)
+
+
+def test_validation_rule_09_vol_target_positive_when_vol_targeted():
+    rc = _base_run_config()
+    rc.portfolio.sizing_mode = "vol_targeted"
+    rc.portfolio.vol_target = 0.0
+    with pytest.raises(ConfigError, match="vol_target must be > 0"):
+        validate_run_config(rc)
+    # Other modes: vol_target=0 is allowed (field is ignored).
+    rc.portfolio.sizing_mode = "percent_equity"
+    rc.portfolio.vol_target = 0.0
+    validate_run_config(rc)  # no raise
