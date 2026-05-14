@@ -38,6 +38,12 @@ class ExecutionConfig:
 class PortfolioConfig:
     sizing_mode: str = "percent_equity"
     size: float = 1.0
+    # v0.4.0 additions:
+    vol_target: float = 0.12
+    position_cap_pct: float = 1.0
+    cash_reserve_pct: float = 0.0
+    risk_budget_pct: float = 1.0
+    sector_cap_pct: float = 1.0
 
 
 @dataclass(slots=True)

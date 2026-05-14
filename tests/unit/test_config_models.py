@@ -122,3 +122,39 @@ def test_execution_config_tranche_stop_atr_period_defaults_20():
     from backtester.config.models import ExecutionConfig
     cfg = ExecutionConfig()
     assert cfg.tranche_stop_atr_period == 20
+
+
+def test_portfolio_config_sizing_mode_default_percent_equity():
+    from backtester.config.models import PortfolioConfig
+    cfg = PortfolioConfig()
+    assert cfg.sizing_mode == "percent_equity"
+
+
+def test_portfolio_config_vol_target_defaults_012():
+    from backtester.config.models import PortfolioConfig
+    cfg = PortfolioConfig()
+    assert cfg.vol_target == 0.12
+
+
+def test_portfolio_config_position_cap_pct_defaults_1():
+    from backtester.config.models import PortfolioConfig
+    cfg = PortfolioConfig()
+    assert cfg.position_cap_pct == 1.0
+
+
+def test_portfolio_config_cash_reserve_pct_defaults_0():
+    from backtester.config.models import PortfolioConfig
+    cfg = PortfolioConfig()
+    assert cfg.cash_reserve_pct == 0.0
+
+
+def test_portfolio_config_risk_budget_pct_defaults_1():
+    from backtester.config.models import PortfolioConfig
+    cfg = PortfolioConfig()
+    assert cfg.risk_budget_pct == 1.0
+
+
+def test_portfolio_config_sector_cap_pct_defaults_1():
+    from backtester.config.models import PortfolioConfig
+    cfg = PortfolioConfig()
+    assert cfg.sector_cap_pct == 1.0
