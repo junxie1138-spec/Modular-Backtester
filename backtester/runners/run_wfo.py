@@ -120,6 +120,12 @@ def _run_multi_symbol_wfo(*, rc, cls) -> int:
         validate_ohlcv(a, strict_volume=False)
         aux_data[aux_sym] = a
 
+    # Align all symbol panels to the union of indices BEFORE the splitter.
+    # IPO-late symbols (COIN, PLTR, XPEV, NIO) have shorter histories and would
+    # otherwise produce misaligned per-symbol slices in the splitter.
+    from backtester.engine.multi_backtest_engine import _align_panel
+    data, aux_data = _align_panel(data, aux_data)
+
     sim = MultiSymbolPortfolioSimulator(
         config=rc.portfolio, initial_cash=rc.execution.initial_cash,
         broker_factory=lambda: Broker(rc.execution),
