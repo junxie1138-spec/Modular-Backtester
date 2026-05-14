@@ -120,3 +120,56 @@ output_root: "{out.as_posix()}"
     assert (positions["qty"] < 0).any(), "expected at least one short position bar"
     # Both BUY and SELL fills should appear (long entries and short entries).
     assert "buy" in set(trades["side"]) and "sell" in set(trades["side"])
+
+
+def test_run_backtest_cli_momentum_streak_on_spy(tmp_path: Path):
+    """Run momentum_streak via the CLI on bundled SPY data. Verify both BUY
+    and SELL fills appear and at least one bar shows a negative position."""
+    out = tmp_path / "runs"
+    cfg = tmp_path / "momo.yaml"
+    repo_root = Path(__file__).resolve().parents[2]
+    spy_root = (repo_root / "data" / "raw").as_posix()
+
+    cfg.write_text(f"""
+run_name: momentum_streak_spy_smoke
+strategy: momentum_streak
+strategy_params:
+  entry_streak: 3
+  exit_streak: 2
+  vol_lookback: 20
+  vol_mult: 1.0
+  size: 1.0
+data:
+  symbols: ["SPY"]
+  timeframe: "1d"
+  start: "2015-01-02"
+  end: "2024-12-31"
+  source: "csv"
+  root: "{spy_root}"
+execution:
+  initial_cash: 100000
+  commission_bps: 1
+  slippage_bps: 2
+  allow_fractional: false
+  allow_short: true
+portfolio:
+  sizing_mode: "percent_equity"
+  size: 0.9
+output_root: "{out.as_posix()}"
+""")
+
+    res = subprocess.run(
+        [sys.executable, "-m", "backtester.runners.run_backtest", "--config", str(cfg)],
+        capture_output=True, text=True, cwd=str(repo_root),
+    )
+    assert res.returncode == 0, res.stderr
+
+    run_dir = next(out.iterdir())
+    trades = pd.read_csv(run_dir / "trades.csv")
+    positions = pd.read_csv(run_dir / "positions.csv")
+    summary = json.loads((run_dir / "summary.json").read_text())
+
+    assert summary["symbol"] == "SPY"
+    assert summary["n_trades"] > 0, "expected at least one trade on multi-year SPY history"
+    assert (positions["qty"] < 0).any(), "expected at least one short position bar"
+    assert "buy" in set(trades["side"]) and "sell" in set(trades["side"])
