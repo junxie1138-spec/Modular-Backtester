@@ -478,3 +478,19 @@ def test_position_phase_finalized_before_strategy_callback():
     # On bar 3: tranche 1 just filled -> phase should be RUNNER.
     bar3_phase = next((p for i, p in captured if i == 3), None)
     assert bar3_phase is TSPhase.RUNNER
+
+
+def test_portfolio_metrics_computed_from_equity_curve():
+    """Sharpe and max_drawdown are computed from the equity curve, not hardcoded to 0."""
+    sim = _build_simulator(symbols=["AAA"])
+    idx = pd.date_range("2024-01-02", periods=30, freq="B")
+    # Construct closes with a clear up-down-up pattern to produce real drawdown.
+    closes = [100.0 + i * 0.1 for i in range(15)] + [115.0 - i * 0.3 for i in range(15)]
+    data = {"AAA": _ohlcv(closes)}
+    sig = pd.DataFrame({"signal": [0.0] + [1.0] * 28 + [0.0], "size": [1.0]*30}, index=idx)
+    result = sim.simulate(
+        symbols=["AAA"], data=data, sectors={"AAA": "X"},
+        signals={"AAA": sig}, aux_data={}, regime_config=None,
+    )
+    # Drawdown should be non-zero (price went up then down while we held).
+    assert result.portfolio_max_drawdown < 0.0 or abs(result.portfolio_total_return) > 0

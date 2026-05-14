@@ -384,11 +384,31 @@ class MultiSymbolPortfolioSimulator:
             equity_history.append(cash + position_value)
 
         equity_curve = pd.Series(equity_history, index=index, name="equity")
+
+        # Compute portfolio metrics from the equity curve.
+        if len(equity_curve) > 0 and equity_curve.iloc[0] > 0:
+            returns = equity_curve.pct_change().dropna()
+            # Sharpe: annualized, 252-day convention, zero risk-free.
+            sharpe = 0.0
+            if len(returns) > 1 and returns.std() > 0:
+                sharpe = float(returns.mean() / returns.std() * np.sqrt(252))
+            # Max drawdown: minimum of (equity - cummax) / cummax across the curve.
+            peak = equity_curve.cummax()
+            drawdown = (equity_curve - peak) / peak
+            max_drawdown = float(drawdown.min()) if len(drawdown) > 0 else 0.0
+            total_return = float(equity_curve.iloc[-1] / equity_curve.iloc[0] - 1.0)
+        else:
+            sharpe = 0.0
+            max_drawdown = 0.0
+            total_return = 0.0
+
         return MultiSymbolResult(
             equity_curve=equity_curve,
             final_equity=float(equity_curve.iloc[-1]),
             trades_per_symbol=trades,
-            portfolio_total_return=float(equity_curve.iloc[-1]) / self.initial_cash - 1.0,
+            portfolio_total_return=total_return,
+            portfolio_max_drawdown=max_drawdown,
+            portfolio_sharpe=sharpe,
             tranche_phase_at_end={
                 s: ts_states[s].phase if s in ts_states else None for s in symbols
             },
