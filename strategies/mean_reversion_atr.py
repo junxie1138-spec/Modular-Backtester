@@ -105,7 +105,7 @@ class MeanReversionAtrStrategy(BaseStrategy[MeanReversionAtrParams]):
                 return 0.0
             if close >= mean10:
                 return 0.5
-            return 0.5  # Hold at runner target; execution layer manages hard stop.
+            return 1.0  # Maintain full position in HARD phase; execution layer manages hard stop.
 
         # RUNNER-phase exits:
         if phase is TSPhase.RUNNER:
