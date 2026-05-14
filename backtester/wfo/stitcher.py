@@ -46,11 +46,18 @@ class WalkForwardStitcher:
 
         oos_summary = compute_summary_metrics(oos_eq, oos_trades_df, oos_positions_df)
 
-        # IS averages
+        # IS averages — only average keys with at least one numeric value
+        # across windows. Skips metadata keys like 'params' (dict), 'symbol'
+        # (str), 'timeframe' (str) instead of computing np.mean([]) on them.
         is_summaries = [w["train_summary"] for w in window_results]
         is_keys = set().union(*[set(s.keys()) for s in is_summaries])
-        is_avg = {k: float(np.mean([float(s.get(k, 0.0)) for s in is_summaries if isinstance(s.get(k, 0), (int, float))]))
-                  for k in is_keys}
+        is_avg: Dict[str, float] = {}
+        for k in is_keys:
+            values = [float(s[k]) for s in is_summaries
+                      if k in s and isinstance(s[k], (int, float))
+                      and not isinstance(s[k], bool)]
+            if values:
+                is_avg[k] = float(np.mean(values))
 
         # parameter stability
         stability: Dict[str, Dict[str, Any]] = {}
