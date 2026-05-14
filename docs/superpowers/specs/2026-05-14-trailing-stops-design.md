@@ -108,10 +108,12 @@ class ExecutionConfig:
 
 ### 2.3 Validation (in `backtester/config/validation.py`)
 
-- `trailing_stop_pct` and `trailing_stop_atr_mult` are mutually exclusive — at most one may be non-None. Both set raises `ValueError("trailing_stop_pct and trailing_stop_atr_mult are mutually exclusive")`.
-- If `trailing_stop_pct is not None`: must be `0 < pct < 1`, else `ValueError("trailing_stop_pct must be in (0, 1)")`.
-- If `trailing_stop_atr_mult is not None`: must be `> 0`, else `ValueError("trailing_stop_atr_mult must be > 0")`.
-- `trailing_stop_atr_period` must be `>= 2`, else `ValueError("trailing_stop_atr_period must be >= 2")`.
+All validation rules raise `backtester.core.exceptions.ConfigError` (consistent with the file's existing style).
+
+- `trailing_stop_pct` and `trailing_stop_atr_mult` are mutually exclusive — at most one may be non-None. Both set raises `ConfigError("execution.trailing_stop_pct and trailing_stop_atr_mult are mutually exclusive")`.
+- If `trailing_stop_pct is not None`: must be `0 < pct < 1`, else `ConfigError("execution.trailing_stop_pct must be in (0, 1)")`.
+- If `trailing_stop_atr_mult is not None`: must be `> 0`, else `ConfigError("execution.trailing_stop_atr_mult must be > 0")`.
+- `trailing_stop_atr_period` must be `>= 2`, else `ConfigError("execution.trailing_stop_atr_period must be >= 2")`.
 
 ### 2.4 YAML sample
 
@@ -182,7 +184,7 @@ Downstream readers that select by column name are unaffected. The CSV-as-positio
 | `configs/backtests/sma_cross_spy_trailing.yaml` | create |
 | `tests/unit/test_atr.py` | create |
 | `tests/unit/test_trailing_stop.py` | create |
-| `tests/unit/test_fills.py` | append — new `reason` field test |
+| `tests/unit/test_orders_fills.py` | append — new `reason` field test |
 | `tests/unit/test_portfolio.py` | append — trailing-stop simulator tests |
 | `tests/unit/test_config_models.py` | append — new field defaults |
 | `tests/unit/test_config_validation.py` | append — mutual-exclusion + bounds |
@@ -344,7 +346,7 @@ When `fills` is empty, the empty DataFrame still has zero rows; downstream code 
 9. **`test_atr_stop_price_long_uses_indexed_value`** — `atr_series=[NaN, 2.0, 3.0]`, `peak_high=100`, `atr_mult=2.0` → `stop_price(+1, 1) == 96.0`; `stop_price(+1, 0) is None` (NaN ATR).
 10. **`test_disarm_clears_state`** — after `disarm()`, `armed is False`, `stop_price` returns None.
 
-### 6.3 Unit — `tests/unit/test_fills.py` (1 new test, append)
+### 6.3 Unit — `tests/unit/test_orders_fills.py` (1 new test, append)
 
 1. **`test_fill_reason_defaults_to_signal`** — `Fill(...).reason == "signal"`; override works.
 
