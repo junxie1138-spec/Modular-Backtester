@@ -16,6 +16,10 @@ class BaseStrategy(ABC, Generic[P]):
     asset_type: str = "stock"
     timeframe: str = "1d"
 
+    # v0.4.0 opt-in attributes (default False keeps v0.3.0 strategies unchanged):
+    uses_multi_symbol: bool = False
+    uses_per_bar: bool = False
+
     @classmethod
     @abstractmethod
     def params_type(cls):
