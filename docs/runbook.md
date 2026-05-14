@@ -80,6 +80,11 @@ that should be added as follow-up phases:
 - **Only percentage and ATR-multiple distance modes.** Fixed-dollar
   trailing stops are out of scope for v0.3.0 (one-line addition once a
   use case justifies it).
+- **ATR mode has an unguarded warmup window.** Until the ATR series has
+  `trailing_stop_atr_period - 1` bars of data (13 bars by default), no
+  STOP order is scheduled — the position is held without a trailing-stop
+  guard. Choose `atr_period` mindful of how quickly you want stop
+  protection to engage after entry.
 - **Same-bar precedence is hard-coded.** A trailing-stop hit always
   cancels the same-bar signal-driven order. There is no configurable
   ordering between strategy intent and stop trigger.

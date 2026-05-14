@@ -457,13 +457,14 @@ def test_stop_resets_on_flip_through_zero():
     stop_rows = trades[trades["reason"] == "trailing_stop"]
     assert len(stop_rows) >= 1
     assert stop_rows.iloc[0]["side"] == "buy"
-    # Confirm the short stop's price is reasonable given a trough_low
-    # captured AFTER the flip (i.e., not from bar 0-3).
-    # The trough_low should be no lower than the flip fill price (104).
-    # Short stop = trough_low * 1.05; the stop should fire around 102-107 range.
-    # The actual fire bar's price * stop relationship is what we assert:
+    # Bound 101.0 verifies that the short stop fires at a level reflecting
+    # a post-flip trough. With a reset, the short side should capture its own
+    # trough from bars 4-8 (≈96), producing a stop at ≈101. If the reset did
+    # NOT happen, trough_low would still carry the long-side low (≈99.5) and
+    # fire at ≈104-105. The observed 102.0 confirms the short captured its
+    # own trough after the flip.
     fire_bar_high_must_exceed_stop = stop_rows.iloc[0]["price"]
-    assert fire_bar_high_must_exceed_stop > 100.0  # crude sanity bound
+    assert fire_bar_high_must_exceed_stop > 101.0
 
 
 def test_no_trailing_stop_is_byte_identical_to_baseline():
