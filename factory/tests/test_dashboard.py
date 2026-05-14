@@ -119,3 +119,10 @@ def test_overview_carries_refresh_dataset(app_with_records) -> None:
     assert 'data-refresh-sec="10"' in body
     assert 'data-threshold-metric="wfo.oos_sharpe"' in body
     assert 'data-threshold-value="1.0"' in body
+
+
+def test_overview_has_sortable_headers(app_with_records) -> None:
+    client, _ = app_with_records
+    body = client.get("/").get_data(as_text=True)
+    assert 'data-sort="oos_sharpe"' in body
+    assert 'data-sort="timestamp"' in body

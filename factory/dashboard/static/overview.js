@@ -60,14 +60,9 @@
       const records = await recsResp.json();
       const summary = await sumResp.json();
 
-      const tbody = document.getElementById("records-body");
-      if (tbody) {
-        tbody.innerHTML = "";
-        // Newest first.
-        for (let i = records.length - 1; i >= 0; i--) {
-          tbody.appendChild(rowFor(records[i]));
-        }
-      }
+      lastRecords = records;
+      renderRows(lastRecords);
+
       const t = document.getElementById("c-total");       if (t) t.textContent = summary.total_cycles;
       const c = document.getElementById("c-complete");    if (c) c.textContent = summary.completes;
       const f = document.getElementById("c-failures");    if (f) f.textContent =
@@ -80,13 +75,69 @@
     }
   }
 
+  let currentSort = { key: null, asc: false };
+  let lastRecords = [];
+
+  function sortValueFor(rec, key) {
+    if (key === "timestamp") return rec.timestamp || "";
+    if (key === "strategy_id") return rec.strategy_id || "";
+    if (key === "status") return rec.status || "";
+    if (key === "backtest_sharpe") return rec.backtest ? rec.backtest.sharpe : null;
+    if (key === "oos_sharpe") return rec.wfo ? rec.wfo.oos_sharpe : null;
+    if (key === "oos_total_return") return rec.wfo ? rec.wfo.oos_total_return : null;
+    if (key === "oos_max_drawdown") return rec.wfo ? rec.wfo.oos_max_drawdown : null;
+    return null;
+  }
+
+  function renderRows(records) {
+    const tbody = document.getElementById("records-body");
+    if (!tbody) return;
+    let ordered = records.slice();
+    if (currentSort.key) {
+      ordered.sort((a, b) => {
+        const av = sortValueFor(a, currentSort.key);
+        const bv = sortValueFor(b, currentSort.key);
+        // Nulls sort to the end regardless of direction.
+        if (av == null && bv == null) return 0;
+        if (av == null) return 1;
+        if (bv == null) return -1;
+        if (av < bv) return currentSort.asc ? -1 : 1;
+        if (av > bv) return currentSort.asc ? 1 : -1;
+        return 0;
+      });
+    } else {
+      // Default: newest first (reverse of insertion order).
+      ordered.reverse();
+    }
+    tbody.innerHTML = "";
+    for (const rec of ordered) tbody.appendChild(rowFor(rec));
+  }
+
   document.addEventListener("click", function (ev) {
+    // Handle column sort
+    const th = ev.target.closest("th[data-sort]");
+    if (th) {
+      const key = th.dataset.sort;
+      if (currentSort.key === key) {
+        currentSort.asc = !currentSort.asc;
+      } else {
+        currentSort.key = key;
+        currentSort.asc = false;  // first click sorts DESC (good for Sharpe etc.)
+      }
+      renderRows(lastRecords);
+      return;
+    }
+
+    // Handle row click to navigate to detail view
     let el = ev.target;
     while (el && el.tagName !== "TR") el = el.parentElement;
     if (el && el.dataset && el.dataset.strategyId) {
       window.location.href = "/strategy/" + el.dataset.strategyId;
     }
   });
+
+  // Initial fetch so sorting works before the first refresh tick.
+  refresh();
 
   if (REFRESH_SEC > 0) {
     setInterval(refresh, REFRESH_SEC * 1000);
