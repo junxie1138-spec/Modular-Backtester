@@ -32,8 +32,15 @@ def main(argv: list[str] | None = None) -> int:
         raise ConfigError("run_wfo requires `wfo.enabled: true`")
     if rc.optimization is None:
         raise ConfigError("run_wfo requires an `optimization` block")
+    strategy_cls = get_strategy_class(rc.strategy)
+    is_multi = getattr(strategy_cls, "uses_multi_symbol", False)
+    if is_multi:
+        raise SystemExit(
+            "multi-symbol WFO lands in v0.4.1; for v0.4.0, run the full backtest via "
+            "run_batch and inspect window-level metrics manually."
+        )
     if len(rc.data.symbols) != 1:
-        raise SystemExit("run_wfo expects exactly one symbol")
+        raise SystemExit("run_wfo (single-symbol path) expects exactly one symbol")
 
     writer = ArtifactWriter(root=rc.output_root, run_name=rc.run_name)
     log = configure_logging(writer.log_path())
