@@ -28,7 +28,9 @@ def get_strategy_class(strategy_id: str) -> Type[BaseStrategy]:
 from strategies.sma_cross import SMACrossStrategy  # noqa: E402
 from strategies.rsi_mean_reversion import RSIMeanReversionStrategy  # noqa: E402
 from strategies.breakout_20d import Breakout20DStrategy  # noqa: E402
+from strategies.rsi_long_short import RSILongShortStrategy  # noqa: E402
 
 register_strategy(SMACrossStrategy)
 register_strategy(RSIMeanReversionStrategy)
 register_strategy(Breakout20DStrategy)
+register_strategy(RSILongShortStrategy)
