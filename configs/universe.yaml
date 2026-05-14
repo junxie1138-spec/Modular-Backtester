@@ -1,0 +1,19 @@
+# Full v0.4.0 mean-reversion universe.
+# 14 hand-curated names from the PRD ("plus one more TBD" — slot left open).
+# Sectors resolve via data/sector_map.csv; inline sector field would override.
+# Per-name `overrides` keys must be a subset of strategy_params in the run YAML.
+universe:
+  TSLA:  {sector: Auto,     overrides: {entry_atr_mult: 1.5}}
+  NVDA:  {sector: Semis}
+  AMD:   {sector: Semis}
+  COIN:  {sector: Crypto,   overrides: {entry_atr_mult: 1.5}}
+  GOOGL: {sector: BigTech}
+  MSTR:  {sector: Crypto,   overrides: {entry_atr_mult: 1.75}}
+  XPEV:  {sector: Auto}
+  NIO:   {sector: Auto}
+  PLTR:  {sector: Software, overrides: {mean_lookback: 14}}
+  SMCI:  {sector: Semis,    overrides: {entry_atr_mult: 1.5}}
+  SHOP:  {sector: Software}
+  W:     {sector: Consumer}
+  META:  {sector: BigTech}
+  NFLX:  {sector: Media}
