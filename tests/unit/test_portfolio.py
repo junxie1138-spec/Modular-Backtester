@@ -269,3 +269,40 @@ def test_long_trailing_stop_fires_on_drawdown():
     assert stop_rows.iloc[0]["side"] == "sell"
     # Position must reach flat after the stop.
     assert (positions["qty"] == 0).any()
+
+
+def test_short_trailing_stop_fires_on_rally():
+    import numpy as np
+    idx = pd.bdate_range("2024-01-02", periods=20)
+    closes = np.concatenate([
+        np.linspace(100.0, 80.0, 10),   # downtrend (good for shorts)
+        np.linspace(82.0, 100.0, 10),   # rally (stops out the short)
+    ])
+    highs = closes * 1.01
+    lows = closes * 0.99
+    opens = closes.copy()
+    data = pd.DataFrame(
+        {"open": opens, "high": highs, "low": lows, "close": closes,
+         "volume": [1_000_000] * 20},
+        index=idx,
+    )
+
+    sig = pd.DataFrame(index=idx)
+    sig["signal"] = -1
+    sig["signal"].iloc[0] = 0
+    sig["size"] = 1.0
+    sf = SignalFrame(data=sig)
+
+    cfg = ExecutionConfig(commission_bps=0.0, slippage_bps=0.0,
+                         allow_short=True, trailing_stop_pct=0.05)
+    sim = PortfolioSimulator(PortfolioConfig(size=1.0), initial_cash=10_000.0)
+    broker = Broker(cfg)
+
+    trades, positions, eq = sim.simulate(data=data, signal_frame=sf, broker=broker)
+    assert trades.iloc[0]["side"] == "sell"
+    assert trades.iloc[0]["reason"] == "signal"
+    stop_rows = trades[trades["reason"] == "trailing_stop"]
+    assert len(stop_rows) >= 1
+    assert stop_rows.iloc[0]["side"] == "buy"
+    assert (positions["qty"] < 0).any()
+    assert (positions["qty"] == 0).any()
