@@ -123,3 +123,54 @@ class FlatStrategy(BaseStrategy[FlatParams]):
         df = pd.DataFrame({"signal": 0, "size": params.size}, index=data.index)
         return SignalFrame(data=df)
 ```
+
+## v0.4.0 additions (opt-in)
+
+A strategy can opt into the v0.4.0 multi-symbol contract by setting two class
+attributes:
+
+```python
+class MyStrategy(BaseStrategy[MyParams]):
+    uses_multi_symbol = True   # routes through MultiSymbolPortfolioSimulator
+    uses_per_bar = True        # signal_for_bar(...) called per (symbol, bar)
+```
+
+When `uses_per_bar` is True, the strategy implements:
+
+```python
+def signal_for_bar(
+    self,
+    *,
+    symbol: str,
+    bar_idx: int,
+    data_panel: dict[str, pd.DataFrame],
+    indicators_panel: dict[str, pd.DataFrame],
+    ctx: StrategyContext,
+    params: MyParams,
+) -> float:
+    """Return target_position in [-1.0, 1.0]. Fractional values are
+    interpreted as partial positions (0.5 = half size)."""
+```
+
+The strategy may read:
+- `ctx.position_phase[symbol]` — a `TSPhase` value (`HARD`, `RUNNER`, or `DISARMED`)
+- `ctx.bars_in_phase[symbol]` — bars spent in the current phase
+- `ctx.recent_pnl` — rolling portfolio PnL series
+- `ctx.regime` — a `RegimeState` with `book_flat`
+
+All four fields are populated by the simulator after the just-processed bar's
+state finalizes; strategy decisions for bar `t+1` see state from bar `t`.
+
+Auxiliary OHLCV data (e.g., SPY, ^VIX for regime gates) lives in `data_panel`
+under the aux symbol keys declared in `data.aux_symbols`. Aux symbols are not
+iterated over for entries — they exist purely as input to indicators and
+regime evaluation.
+
+Regime gates (SPY 200-EMA, VIX hysteresis, strategy circuit breaker) live
+in the simulator, not the strategy. The strategy reads `ctx.regime.book_flat`
+for diagnostics; when True, the simulator forces all positions flat regardless
+of the strategy's emitted target.
+
+The v0.3.0 contract (single-symbol, signal ∈ {-1, 0, 1}, no aux_data) is
+unchanged. Strategies that do not set `uses_multi_symbol` continue to run
+through the original `PortfolioSimulator` path.
