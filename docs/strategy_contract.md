@@ -50,15 +50,29 @@ def generate_signals(self, data, indicators, ctx, params) -> SignalFrame: ...
 
 ## Signal semantics
 
-- `1` = target long position.
-- `0` = target flat.
+| Value | Meaning                                                                 |
+|-------|-------------------------------------------------------------------------|
+| `1`   | Target long position                                                    |
+| `0`   | Target flat                                                             |
+| `-1`  | Target short position (requires `execution.allow_short: true` in config)|
+
 - Signals are typically shifted by one bar (`signal.shift(1)`) so the
   engine fills the order on the **next** bar's open, not the current
   bar's close.
 - An optional `size` column scales the percent-equity allocation
-  (multiplicative with `portfolio.size`).
+  (multiplicative with `portfolio.size`). It applies to both long and
+  short legs.
 - An optional `price_column` (referenced by `SignalFrame.price_column`)
   turns the order into a LIMIT order at that price on the next bar.
+  LIMIT is honored only when entering from a flat position (flat → long
+  or flat → short). Flips through zero (long → short, short → long) and
+  exits to flat are always MARKET.
+- A strategy that emits only `{0, 1}` continues to work unchanged and
+  does not require `allow_short`.
+- A strategy that emits `-1` while `execution.allow_short` is `false`
+  causes the portfolio simulator to raise `ShortNotAllowedError` at the
+  first short signal. Strategy authors should document the requirement
+  in their class docstring (see `strategies/rsi_long_short.py`).
 
 ## Rules for AI-generated strategies
 
