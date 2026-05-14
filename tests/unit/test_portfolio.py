@@ -306,3 +306,34 @@ def test_short_trailing_stop_fires_on_rally():
     assert stop_rows.iloc[0]["side"] == "buy"
     assert (positions["qty"] < 0).any()
     assert (positions["qty"] == 0).any()
+
+
+def test_gap_through_stop_fills_at_open():
+    """When the bar's open gaps below a long trailing stop, the fill price
+    is the bar's open (realistic), not the stop level (charitable)."""
+    idx = pd.bdate_range("2024-01-02", periods=5)
+    # Bars 1-3: rise gently. Bar 4 gaps DOWN through any 5% stop.
+    data = pd.DataFrame({
+        "open":   [100.0, 101.0, 103.0, 105.0, 80.0],
+        "high":   [101.0, 102.0, 104.0, 106.0, 82.0],
+        "low":    [99.5,  100.5, 102.5, 104.5, 78.0],
+        "close":  [100.5, 101.5, 103.5, 105.5, 81.0],
+        "volume": [1_000_000] * 5,
+    }, index=idx)
+    # Enter long on bar 1; stop fires on bar 4 (gap-down).
+    sig = pd.DataFrame(index=idx)
+    sig["signal"] = [0, 1, 1, 1, 1]
+    sig["size"] = 1.0
+    sf = SignalFrame(data=sig)
+
+    cfg = ExecutionConfig(commission_bps=0.0, slippage_bps=0.0,
+                         trailing_stop_pct=0.05)
+    sim = PortfolioSimulator(PortfolioConfig(size=1.0), initial_cash=10_000.0)
+    broker = Broker(cfg)
+    trades, positions, eq = sim.simulate(data=data, signal_frame=sf, broker=broker)
+
+    stop_rows = trades[trades["reason"] == "trailing_stop"]
+    assert len(stop_rows) == 1
+    # peak_high before bar 4 is max(101,102,104,106) = 106. stop_level = 106 * 0.95 = 100.7.
+    # Bar 4 open = 80, which is BELOW stop_level. Fill price = min(open, stop) = 80.
+    assert stop_rows.iloc[0]["price"] == pytest.approx(80.0)
