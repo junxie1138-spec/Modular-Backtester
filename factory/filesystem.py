@@ -61,9 +61,8 @@ def append_registry_entry(*, strategy_id: str, registry_file: Path) -> None:
         raise FilesystemError(f"registry file not found: {registry_file}")
     text = registry_file.read_text(encoding="utf-8")
     alias = f"_{strategy_id}"
-    needle_import = f"as {alias}"
     needle_register = f"register_strategy({alias})"
-    if needle_import in text or needle_register in text:
+    if needle_register in text:
         raise RegistryAlreadyHasStrategy(
             f"registry already has strategy {strategy_id!r}"
         )

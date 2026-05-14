@@ -67,6 +67,22 @@ def test_append_registry_is_idempotent(tmp_path: Path) -> None:
         append_registry_entry(strategy_id="gen_42", registry_file=reg)
 
 
+def test_append_registry_does_not_false_positive_on_prefix_match(tmp_path: Path) -> None:
+    """Regression: gen_42's alias _gen_42 must not be detected as already-present
+    when only the longer-suffix _gen_42_2 is registered.
+    """
+    reg = tmp_path / "backtester" / "strategies" / "registry.py"
+    _seed_registry(reg)
+    # Register the longer-suffixed strategy first.
+    append_registry_entry(strategy_id="gen_42_2", registry_file=reg)
+    # Now register the shorter base id; this must succeed.
+    append_registry_entry(strategy_id="gen_42", registry_file=reg)
+    text = reg.read_text(encoding="utf-8")
+    # Both aliases must be present.
+    assert "register_strategy(_gen_42_2)" in text
+    assert "register_strategy(_gen_42)" in text
+
+
 def test_pick_unused_strategy_id_returns_base_when_free(tmp_path: Path) -> None:
     strat = tmp_path / "strategies"
     strat.mkdir()
