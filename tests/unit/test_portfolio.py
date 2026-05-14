@@ -378,3 +378,43 @@ def test_atr_mode_fires_and_warms_up():
     # Stop-out timestamp must be at or after index 14.
     stop_ts = stop_rows.iloc[0]["timestamp"]
     assert stop_ts >= idx[14]
+
+
+def test_stop_wins_over_signal_flip_same_bar():
+    """Long open, signal flips to -1 the same bar a long-stop would fire.
+    Expected: stop fires (reason=trailing_stop), the signal-driven flip
+    order is cancelled, the position lands flat (NOT short) at end-of-bar.
+    The next bar may re-enter short normally."""
+    idx = pd.bdate_range("2024-01-02", periods=8)
+    # Bars 1-3 rise; bar 4 gaps down hard.
+    data = pd.DataFrame({
+        "open":   [100.0, 101.0, 103.0, 105.0, 80.0, 80.5, 81.0, 80.0],
+        "high":   [101.0, 102.0, 104.0, 106.0, 82.0, 81.5, 81.5, 81.0],
+        "low":    [99.0,  100.5, 102.5, 104.5, 78.0, 79.5, 80.5, 79.0],
+        "close":  [100.5, 101.5, 103.5, 105.5, 81.0, 80.5, 81.0, 80.5],
+        "volume": [1_000_000] * 8,
+    }, index=idx)
+    # Long bars 1..3, then flip to SHORT at bar 3 -> order scheduled for bar 4.
+    # On bar 4, the trailing stop also fires (gap down through 5% level).
+    sig = pd.DataFrame(index=idx)
+    sig["signal"] = [0, 1, 1, -1, -1, -1, -1, -1]
+    sig["size"] = 1.0
+    sf = SignalFrame(data=sig)
+
+    cfg = ExecutionConfig(commission_bps=0.0, slippage_bps=0.0,
+                         allow_short=True, trailing_stop_pct=0.05)
+    sim = PortfolioSimulator(PortfolioConfig(size=1.0), initial_cash=10_000.0)
+    broker = Broker(cfg)
+    trades, positions, eq = sim.simulate(data=data, signal_frame=sf, broker=broker)
+
+    # The bar-4 transition: stop fills first (reason=trailing_stop), the
+    # signal-driven combined-flip SELL is CANCELLED, so position is flat
+    # at end-of-bar-4 (NOT short).
+    bar4_stop = trades[(trades["timestamp"] == idx[4]) & (trades["reason"] == "trailing_stop")]
+    assert len(bar4_stop) == 1
+    assert bar4_stop.iloc[0]["side"] == "sell"
+    # No same-bar combined-flip — the signal order was cancelled.
+    bar4_signal_sell = trades[(trades["timestamp"] == idx[4]) & (trades["reason"] == "signal") & (trades["side"] == "sell")]
+    assert len(bar4_signal_sell) == 0
+    # Position at bar 4 is flat (qty == 0).
+    assert positions.loc[idx[4], "qty"] == 0
