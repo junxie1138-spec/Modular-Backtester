@@ -464,3 +464,40 @@ def test_stop_resets_on_flip_through_zero():
     # The actual fire bar's price * stop relationship is what we assert:
     fire_bar_high_must_exceed_stop = stop_rows.iloc[0]["price"]
     assert fire_bar_high_must_exceed_stop > 100.0  # crude sanity bound
+
+
+def test_no_trailing_stop_is_byte_identical_to_baseline():
+    """Two simulator runs on the same data with the trailing stop OFF must
+    produce identical trades.csv-equivalent and equity_curve DataFrames.
+    Pins the backwards-compat invariant at the unit level."""
+    data = make_ohlcv(n=120, seed=42, start_price=100.0, drift=0.001, vol=0.012)
+    sig = pd.DataFrame(index=data.index)
+    sig["signal"] = 0
+    sig["signal"].iloc[10:60] = 1
+    sig["signal"].iloc[60:100] = 0
+    sig["size"] = 1.0
+    sf = SignalFrame(data=sig)
+
+    # Run 1: default ExecutionConfig (no trailing fields set).
+    cfg_a = ExecutionConfig(commission_bps=2.0, slippage_bps=5.0)
+    sim_a = PortfolioSimulator(PortfolioConfig(size=1.0), initial_cash=10_000.0)
+    trades_a, positions_a, eq_a = sim_a.simulate(
+        data=data, signal_frame=sf, broker=Broker(cfg_a)
+    )
+
+    # Run 2: trailing fields explicitly None.
+    cfg_b = ExecutionConfig(
+        commission_bps=2.0, slippage_bps=5.0,
+        trailing_stop_pct=None, trailing_stop_atr_mult=None,
+    )
+    sim_b = PortfolioSimulator(PortfolioConfig(size=1.0), initial_cash=10_000.0)
+    trades_b, positions_b, eq_b = sim_b.simulate(
+        data=data, signal_frame=sf, broker=Broker(cfg_b)
+    )
+
+    pd.testing.assert_frame_equal(trades_a, trades_b)
+    pd.testing.assert_frame_equal(positions_a, positions_b)
+    pd.testing.assert_frame_equal(eq_a, eq_b)
+    # And: every trade's reason is exactly "signal".
+    if not trades_a.empty:
+        assert set(trades_a["reason"]) == {"signal"}
