@@ -72,6 +72,7 @@ class MultiSymbolPortfolioSimulator:
         regime_config: Optional[Any] = None,
         strategy: Optional[Any] = None,
         strategy_params: Optional[Any] = None,
+        indicators_panel: Optional[dict] = None,
     ) -> MultiSymbolResult:
         """Run the multi-symbol backtest."""
         index = data[symbols[0]].index
@@ -82,6 +83,7 @@ class MultiSymbolPortfolioSimulator:
         trades: dict[str, list[Fill]] = {s: [] for s in symbols}
         pending_signal: dict[str, Optional[Order]] = {s: None for s in symbols}
         pending_stop: dict[str, Optional[Order]] = {s: None for s in symbols}
+        bars_in_phase: dict[str, int] = {s: 0 for s in symbols}
 
         # Build per-symbol TrancheStopState if ExecutionConfig has v0.4.0 keys.
         ts_states: dict[str, TrancheStopState] = {}
@@ -150,17 +152,25 @@ class MultiSymbolPortfolioSimulator:
                     # Flat -> non-flat: reset.
                     last_fill = trades[s][-1]
                     ts_states[s].reset(entry_price=last_fill.price, bar_idx=i)
+                    bars_in_phase[s] = 0
                 elif prev != 0 and new == 0:
                     # Non-flat -> flat: disarm (whether stop- or signal-driven).
                     ts_states[s].disarm()
+                    bars_in_phase[s] = 0
                 elif prev != 0 and new != 0 and (prev > 0) == (new > 0) and abs(new) < abs(prev):
                     # Same-sign partial close -> promote.
                     ts_states[s].promote_to_runner()
+                    bars_in_phase[s] = 0
 
             # Step 5: update peak/trough on close.
             for s in symbols:
                 if s in ts_states:
                     ts_states[s].update(data[s].iloc[i])
+
+            # Increment bars_in_phase for all symbols that are NOT disarmed.
+            for s in symbols:
+                if s in ts_states and ts_states[s].phase is not TSPhase.DISARMED:
+                    bars_in_phase[s] += 1
 
             # Step 6: extend recent_pnl with this bar's portfolio PnL delta.
             position_value_now = sum(
@@ -187,14 +197,15 @@ class MultiSymbolPortfolioSimulator:
                     position_phase={
                         s: ts_states[s].phase if s in ts_states else None for s in symbols
                     },
-                    bars_in_phase={s: 0 for s in symbols},
+                    bars_in_phase=dict(bars_in_phase),  # snapshot the live counter
                     recent_pnl=recent_pnl_series,
                     regime=regime_state,
                 )
                 for s in symbols:
                     target_val = strategy.signal_for_bar(
                         symbol=s, bar_idx=i, data_panel=data,
-                        indicators_panel={}, ctx=ctx, params=strategy_params,
+                        indicators_panel=indicators_panel if indicators_panel is not None else {},
+                        ctx=ctx, params=strategy_params,
                     )
                     # Overwrite the pre-computed signals frame for this bar.
                     if not signals[s].index.is_unique:
