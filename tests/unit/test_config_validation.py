@@ -4,6 +4,7 @@ import pytest
 
 from backtester.config.models import (
     DataConfig, ExecutionConfig, PortfolioConfig, RunConfig, WFOConfig,
+    RegimesConfig,
 )
 from backtester.config.validation import validate_run_config
 from backtester.core.exceptions import ConfigError
@@ -22,6 +23,13 @@ def _base_run_config():
         portfolio=PortfolioConfig(sizing_mode="percent_equity", size=0.95),
         output_root="output/runs",
     )
+
+
+def _base_with_regimes():
+    """Helper: base config with regimes enabled."""
+    rc = _base_run_config()
+    rc.regimes = RegimesConfig()
+    return rc
 
 
 def _make(**over):
@@ -185,3 +193,48 @@ def test_validation_rule_09_vol_target_positive_when_vol_targeted():
     rc.portfolio.sizing_mode = "percent_equity"
     rc.portfolio.vol_target = 0.0
     validate_run_config(rc)  # no raise
+
+
+# Task 13: Regime validation rules (rules 10-14)
+def test_validation_rule_10_circuit_breaker_pause_days_nonneg():
+    rc = _base_with_regimes()
+    rc.regimes.circuit_breaker.pause_days = -1
+    with pytest.raises(ConfigError, match="pause_days"):
+        validate_run_config(rc)
+
+
+def test_validation_rule_11_vix_resume_below_trip():
+    rc = _base_with_regimes()
+    rc.regimes.vix.trip_threshold = 25
+    rc.regimes.vix.resume_threshold = 30
+    with pytest.raises(ConfigError, match="resume_threshold.*trip_threshold"):
+        validate_run_config(rc)
+
+
+def test_validation_rule_12_spy_pct_signs():
+    rc = _base_with_regimes()
+    rc.regimes.spy_ema.trip_pct = 0.02  # must be <= 0
+    with pytest.raises(ConfigError, match="spy_ema.trip_pct"):
+        validate_run_config(rc)
+    rc = _base_with_regimes()
+    rc.regimes.spy_ema.resume_pct = -0.02  # must be >= 0
+    with pytest.raises(ConfigError, match="spy_ema.resume_pct"):
+        validate_run_config(rc)
+
+
+def test_validation_rule_13_vix_consec_min_1():
+    rc = _base_with_regimes()
+    rc.regimes.vix.trip_consec = 0
+    with pytest.raises(ConfigError, match="vix.trip_consec"):
+        validate_run_config(rc)
+    rc = _base_with_regimes()
+    rc.regimes.vix.resume_consec = 0
+    with pytest.raises(ConfigError, match="vix.resume_consec"):
+        validate_run_config(rc)
+
+
+def test_validation_rule_14_circuit_breaker_trip_pct_negative():
+    rc = _base_with_regimes()
+    rc.regimes.circuit_breaker.trip_pct = 0.05
+    with pytest.raises(ConfigError, match="circuit_breaker.trip_pct"):
+        validate_run_config(rc)

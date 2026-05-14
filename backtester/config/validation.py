@@ -55,6 +55,8 @@ def validate_run_config(rc: RunConfig) -> None:
     _validate_tranche_stop(rc)
     # v0.4.0 portfolio sizing validation
     _validate_portfolio_sizing(rc)
+    # v0.4.0 regime gates validation
+    _validate_regimes(rc)
 
 
 def _validate_tranche_stop(rc: RunConfig) -> None:
@@ -94,3 +96,27 @@ def _validate_portfolio_sizing(rc: RunConfig) -> None:
         raise ConfigError(f"portfolio.sector_cap_pct must be in (0, 1]; got {p.sector_cap_pct}")
     if p.sizing_mode == "vol_targeted" and p.vol_target <= 0:
         raise ConfigError(f"portfolio.vol_target must be > 0 when sizing_mode='vol_targeted'")
+
+
+def _validate_regimes(rc: RunConfig) -> None:
+    """Validate regime gates (SPY pcts, VIX hysteresis, circuit breaker)."""
+    if rc.regimes is None:
+        return
+    r = rc.regimes
+    if r.circuit_breaker.pause_days < 0:
+        raise ConfigError(f"regimes.circuit_breaker.pause_days must be >= 0; got {r.circuit_breaker.pause_days}")
+    if r.vix.resume_threshold >= r.vix.trip_threshold:
+        raise ConfigError(
+            f"regimes.vix.resume_threshold ({r.vix.resume_threshold}) must be < "
+            f"trip_threshold ({r.vix.trip_threshold})"
+        )
+    if r.spy_ema.trip_pct > 0:
+        raise ConfigError(f"regimes.spy_ema.trip_pct must be <= 0; got {r.spy_ema.trip_pct}")
+    if r.spy_ema.resume_pct < 0:
+        raise ConfigError(f"regimes.spy_ema.resume_pct must be >= 0; got {r.spy_ema.resume_pct}")
+    if r.vix.trip_consec < 1:
+        raise ConfigError(f"regimes.vix.trip_consec must be >= 1; got {r.vix.trip_consec}")
+    if r.vix.resume_consec < 1:
+        raise ConfigError(f"regimes.vix.resume_consec must be >= 1; got {r.vix.resume_consec}")
+    if r.circuit_breaker.trip_pct >= 0:
+        raise ConfigError(f"regimes.circuit_breaker.trip_pct must be < 0; got {r.circuit_breaker.trip_pct}")
