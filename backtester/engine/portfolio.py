@@ -31,7 +31,7 @@ class PortfolioSimulator:
         price_col = signal_frame.price_column
 
         symbol = "ASSET"  # filled in by engine via ctx; for primitives we use a fixed tag
-        pos = Position(symbol=symbol)
+        pos = Position(symbol=symbol, allow_short=broker.allow_short)
         cash = self.initial_cash
 
         fills: List[Fill] = []

@@ -18,6 +18,7 @@ class Broker:
             slippage_bps=config.slippage_bps,
         )
         self.allow_fractional = config.allow_fractional
+        self.allow_short = config.allow_short
 
     def round_qty(self, qty: float) -> float:
         if self.allow_fractional:
