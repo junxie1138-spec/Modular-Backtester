@@ -82,6 +82,9 @@ class RegimesConfig:
 class OptimizationConfig:
     objective: str = "sharpe"
     param_space: Dict[str, List[Any]] = field(default_factory=dict)
+    sampling: str = "grid"
+    random_n: int = 100
+    random_seed: int = 0
 
 
 @dataclass(slots=True)
