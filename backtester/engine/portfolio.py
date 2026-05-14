@@ -80,15 +80,7 @@ class PortfolioSimulator:
             if pending_stop is not None:
                 fill = broker.submit(pending_stop, bar)
                 if fill is not None:
-                    fill = Fill(
-                        timestamp=fill.timestamp,
-                        symbol=fill.symbol,
-                        side=fill.side,
-                        qty=fill.qty,
-                        price=fill.price,
-                        commission=fill.commission,
-                        reason="trailing_stop",
-                    )
+                    fill.reason = "trailing_stop"
                     fills.append(fill)
                     cash += fill.cash_delta
                     pos.apply_fill(fill)
