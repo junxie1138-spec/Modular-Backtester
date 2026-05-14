@@ -209,6 +209,15 @@ Bundled sample CSVs (`SPY.csv`, `AAPL.csv`) are deterministic synthetic data pro
 - Order types: **MARKET**, **LIMIT**, **STOP**. Strategies emit `signal` and optionally a `limit_price` column to use LIMIT orders. LIMIT is honored only when entering from flat (flat → long or flat → short); flips through zero (long → short and short → long) and exits to flat are always MARKET, emitted as a single combined order that closes the prior leg and opens the new one in one fill.
 - Signals are typically **shifted by one bar** — the strategy emits intent at bar N's close; the order fills at bar N+1's open (plus configurable slippage in basis points).
 - Commission and slippage are both in bps and applied per fill.
+- **Trailing stops** (v0.3.0). Set `execution.trailing_stop_pct: 0.05`
+  (or `execution.trailing_stop_atr_mult: 3.0` with
+  `trailing_stop_atr_period: 14`) to attach a trailing stop to every
+  position. The stop trails the running peak (long) or trough (short)
+  since entry and fires as a STOP order on the next bar. Stop-out fills
+  are tagged `reason="trailing_stop"` in `trades.csv`; signal-driven
+  fills are tagged `reason="signal"`. Trailing-stop hits take priority
+  over the strategy signal on the same bar. A 5% trailing stop does NOT
+  always improve drawdown — see `docs/runbook.md` for limitations.
 - Short-position accounting has known limitations (no borrow cost, no margin call, no per-symbol bans). See [`docs/runbook.md`](docs/runbook.md) for the full list.
 
 ---
@@ -269,6 +278,14 @@ The test suite is **172 tests** covering every public surface — types, excepti
 ## Status
 
 `v0.2.0` — Long/short execution. Adds short-position support end-to-end: signed-quantity `Position` arithmetic, tri-state portfolio simulator with combined-order flips through zero, a symmetric `rsi_long_short` sample strategy, and matching WFO + CLI integration coverage. Long-only configs are unchanged; `execution.allow_short` defaults to `false`. See [`docs/superpowers/plans/2026-05-14-short-positions.md`](docs/superpowers/plans/2026-05-14-short-positions.md) for the design.
+
+`v0.3.0` — Trailing stops. Adds an execution-layer trailing stop with
+two distance modes (percentage of peak/trough, or multiple of recent
+ATR). Stop-out exits are tagged `reason="trailing_stop"` in
+`trades.csv`. Long-only and long/short configs are unchanged when both
+trailing fields are unset. See
+[`docs/superpowers/plans/2026-05-14-trailing-stops.md`](docs/superpowers/plans/2026-05-14-trailing-stops.md)
+for the design.
 
 `v0.1.0` — MVP: backtest, optimize, and WFO workflows with three long-only sample strategies (`sma_cross`, `rsi_mean_reversion`, `breakout_20d`) over MARKET/LIMIT/STOP orders.
 
