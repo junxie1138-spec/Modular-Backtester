@@ -168,6 +168,7 @@ execution:
   commission_bps: 2
   slippage_bps: 5
   allow_fractional: false
+  allow_short: false         # set true to enable -1 signals (short positions)
 
 portfolio:
   sizing_mode: "percent_equity"
@@ -204,10 +205,11 @@ Bundled sample CSVs (`SPY.csv`, `AAPL.csv`) are deterministic synthetic data pro
 
 ## Execution model
 
-- **Long-only** for the MVP.
-- Order types: **MARKET**, **LIMIT**, **STOP**. Strategies emit `signal` (0/1) and optionally a `limit_price` column to use LIMIT orders.
+- **Long, flat, and short** positions are all supported. Strategies emit `signal` in `{-1, 0, 1}`. Set `execution.allow_short: true` in your config to enable `-1`; otherwise the simulator raises `ShortNotAllowedError` on the first short signal. Default is `false`, so long-only strategies and configs run unchanged.
+- Order types: **MARKET**, **LIMIT**, **STOP**. Strategies emit `signal` and optionally a `limit_price` column to use LIMIT orders. LIMIT is honored only when entering from flat (flat → long or flat → short); flips through zero (long → short and short → long) and exits to flat are always MARKET, emitted as a single combined order that closes the prior leg and opens the new one in one fill.
 - Signals are typically **shifted by one bar** — the strategy emits intent at bar N's close; the order fills at bar N+1's open (plus configurable slippage in basis points).
 - Commission and slippage are both in bps and applied per fill.
+- Short-position accounting has known limitations (no borrow cost, no margin call, no per-symbol bans). See [`docs/runbook.md`](docs/runbook.md) for the full list.
 
 ---
 
@@ -234,7 +236,7 @@ backtester/                # framework (do not modify per-strategy)
   runners/                 # run_backtest, run_optimize, run_wfo, run_batch
   io/                      # artifact writer, logging, serialization
 
-strategies/                # user/AI-authored strategies (sma_cross, rsi_mean_reversion, breakout_20d)
+strategies/                # user/AI-authored strategies (sma_cross, rsi_mean_reversion, breakout_20d, rsi_long_short)
 configs/                   # YAML configs for runs (backtests/, optimize/, wfo/)
 data/raw/                  # OHLCV inputs
 output/runs/               # per-run artifact bundles (gitignored)
@@ -260,12 +262,14 @@ scripts/                   # sample data generator
 python -m pytest -q
 ```
 
-The test suite is **135 tests** covering every public surface — types, exceptions, data loaders, validators, the engine, analytics, all three sample strategies, the optimizer, WFO, and the four CLIs as end-to-end integration tests.
+The test suite is **161 tests** covering every public surface — types, exceptions, data loaders, validators, the engine (including signed-qty Position arithmetic and tri-state simulator transitions), analytics, all four sample strategies, the optimizer, WFO, and the four CLIs as end-to-end integration tests.
 
 ---
 
 ## Status
 
-`v0.1.0` — MVP complete: backtest, optimize, and WFO workflows with three sample strategies. Long-only execution with MARKET/LIMIT/STOP orders.
+`v0.2.0` — Long/short execution. Adds short-position support end-to-end: signed-quantity `Position` arithmetic, tri-state portfolio simulator with combined-order flips through zero, a symmetric `rsi_long_short` sample strategy, and matching WFO + CLI integration coverage. Long-only configs are unchanged; `execution.allow_short` defaults to `false`. See [`docs/superpowers/plans/2026-05-14-short-positions.md`](docs/superpowers/plans/2026-05-14-short-positions.md) for the design.
 
-Deferred to future versions: short selling, intraday timeframes, parallel grid search, portfolio-level constraints, HTML report generation, dynamic plugin discovery (currently strategies are explicit-registry only — by design, for predictability).
+`v0.1.0` — MVP: backtest, optimize, and WFO workflows with three long-only sample strategies (`sma_cross`, `rsi_mean_reversion`, `breakout_20d`) over MARKET/LIMIT/STOP orders.
+
+Deferred to future versions: borrow-cost / hard-to-borrow modeling, margin-call simulation, per-symbol short bans, intraday timeframes, parallel grid search, portfolio-level constraints, HTML report generation, dynamic plugin discovery (currently strategies are explicit-registry only — by design, for predictability).
