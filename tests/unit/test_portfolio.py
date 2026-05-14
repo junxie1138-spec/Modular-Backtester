@@ -76,3 +76,150 @@ def test_limit_orders_via_price_column():
     sf = SignalFrame(data=sig, price_column="limit_price")
     trades, _, eq = sim.simulate(data=data, signal_frame=sf, broker=broker)
     assert len(trades) == 0
+
+
+# --- Short-position simulator tests (Phase 0.2) ---
+
+from backtester.core.enums import OrderSide, OrderType
+from backtester.engine.orders import Order
+from backtester.engine.position import Position
+from backtester.engine.fills import Fill
+
+
+def _short_broker():
+    return Broker(ExecutionConfig(commission_bps=0.0, slippage_bps=0.0, allow_short=True))
+
+
+def test_flat_to_short_emits_one_sell(ohlcv_small):
+    sim = PortfolioSimulator(PortfolioConfig(size=1.0), initial_cash=10_000.0)
+    broker = _short_broker()
+    sig = pd.DataFrame(index=ohlcv_small.index)
+    sig["signal"] = 0
+    sig["signal"].iloc[1:20] = -1
+    sig["size"] = 1.0
+    sf = SignalFrame(data=sig)
+
+    trades, positions, eq = sim.simulate(data=ohlcv_small, signal_frame=sf, broker=broker)
+    assert len(trades) == 2, "expected one short entry + one cover"
+    assert trades.iloc[0]["side"] == "sell"
+    assert trades.iloc[1]["side"] == "buy"
+    # At some point position qty should be negative
+    assert (positions["qty"] < 0).any()
+
+
+def test_short_signal_blocked_when_allow_short_false(ohlcv_small):
+    from backtester.core.exceptions import ShortNotAllowedError
+    sim = PortfolioSimulator(PortfolioConfig(size=1.0), initial_cash=10_000.0)
+    # Default allow_short=False
+    broker = Broker(ExecutionConfig(commission_bps=0.0, slippage_bps=0.0))
+    sig = pd.DataFrame(index=ohlcv_small.index)
+    sig["signal"] = 0
+    sig["signal"].iloc[1] = -1
+    sig["size"] = 1.0
+    sf = SignalFrame(data=sig)
+
+    with pytest.raises(ShortNotAllowedError, match="allow_short"):
+        sim.simulate(data=ohlcv_small, signal_frame=sf, broker=broker)
+
+
+def test_long_to_short_flip_in_one_order(ohlcv_small):
+    """A signal sequence long -> short emits a single SELL that closes the
+    long and opens a new short in one fill (combined-order design)."""
+    sim = PortfolioSimulator(PortfolioConfig(size=1.0), initial_cash=10_000.0)
+    broker = _short_broker()
+    n = len(ohlcv_small)
+    sig = pd.DataFrame(index=ohlcv_small.index)
+    sig["signal"] = 0
+    sig["signal"].iloc[1:15] = 1
+    sig["signal"].iloc[15:n - 1] = -1
+    sig["size"] = 1.0
+    sf = SignalFrame(data=sig)
+
+    trades, positions, eq = sim.simulate(data=ohlcv_small, signal_frame=sf, broker=broker)
+    # Long entry, flip-to-short combined SELL, cover BUY = 3 fills
+    assert len(trades) == 3
+    assert list(trades["side"]) == ["buy", "sell", "buy"]
+    # The flip SELL qty exceeds the prior long qty (closes long + opens short)
+    long_entry_qty = trades.iloc[0]["qty"]
+    flip_sell_qty = trades.iloc[1]["qty"]
+    assert flip_sell_qty > long_entry_qty
+    # Position goes long, then negative
+    assert (positions["qty"] > 0).any()
+    assert (positions["qty"] < 0).any()
+
+
+def test_short_to_long_flip_in_one_order(ohlcv_small):
+    sim = PortfolioSimulator(PortfolioConfig(size=1.0), initial_cash=10_000.0)
+    broker = _short_broker()
+    n = len(ohlcv_small)
+    sig = pd.DataFrame(index=ohlcv_small.index)
+    sig["signal"] = 0
+    sig["signal"].iloc[1:15] = -1
+    sig["signal"].iloc[15:n - 1] = 1
+    sig["size"] = 1.0
+    sf = SignalFrame(data=sig)
+
+    trades, positions, eq = sim.simulate(data=ohlcv_small, signal_frame=sf, broker=broker)
+    assert len(trades) == 3
+    assert list(trades["side"]) == ["sell", "buy", "sell"]
+    assert (positions["qty"] < 0).any()
+    assert (positions["qty"] > 0).any()
+
+
+def test_short_entry_via_sell_limit():
+    """SELL LIMIT short entry: limit price above current market should fill at
+    the limit when the next bar's high reaches it."""
+    data = make_ohlcv(n=20, seed=7)
+    sim = PortfolioSimulator(PortfolioConfig(size=1.0), initial_cash=10_000.0)
+    broker = _short_broker()
+    sig = pd.DataFrame(index=data.index)
+    sig["signal"] = 0
+    sig["signal"].iloc[1] = -1
+    sig["size"] = 1.0
+    # Place SELL LIMIT slightly above the very high of bar 2 -> should NOT fill
+    sig["limit_price"] = data["high"].iloc[2] * 2.0
+    sf = SignalFrame(data=sig, price_column="limit_price")
+    trades, _, _ = sim.simulate(data=data, signal_frame=sf, broker=broker)
+    assert len(trades) == 0
+
+    # Now place a SELL LIMIT below the next bar's high -> should fill
+    sig2 = sig.copy()
+    sig2["limit_price"] = data["low"].iloc[2] * 0.5
+    sf2 = SignalFrame(data=sig2, price_column="limit_price")
+    trades2, positions2, _ = sim.simulate(data=data, signal_frame=sf2, broker=broker)
+    assert len(trades2) >= 1
+    assert trades2.iloc[0]["side"] == "sell"
+    assert (positions2["qty"] < 0).any()
+
+
+def test_buy_stop_covers_a_short_when_price_rises_into_stop():
+    """STOP support is exercised directly through Broker+Position rather than
+    via the simulator's signal->order path (the simulator does not emit STOP
+    orders). This verifies the FillEngine + Position wiring for shorts."""
+    data = make_ohlcv(n=10, seed=3)
+    broker = _short_broker()
+    pos = Position(symbol="SPY", allow_short=True)
+
+    # Open a short directly (skip the simulator)
+    short_fill = Fill(
+        timestamp=data.index[0], symbol="SPY", side=OrderSide.SELL,
+        qty=10.0, price=float(data["close"].iloc[0]), commission=0.0,
+    )
+    pos.apply_fill(short_fill)
+    assert pos.qty == -10.0
+
+    # Build a BUY STOP at a level the next bar's high will exceed
+    next_bar = data.iloc[1]
+    stop_price = float(next_bar["low"])  # guaranteed <= high
+    order = Order(
+        timestamp=next_bar.name, symbol="SPY",
+        side=OrderSide.BUY, qty=10.0,
+        order_type=OrderType.STOP, stop_price=stop_price,
+    )
+    fill = broker.submit(order, next_bar)
+    assert fill is not None
+    pos.apply_fill(fill)
+    assert pos.is_flat
+    # cover above short entry means a loss; below means a gain — either way
+    # realized_pnl is well-defined and non-NaN
+    assert pos.realized_pnl == pos.realized_pnl  # not NaN
