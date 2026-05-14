@@ -131,7 +131,9 @@ def test_long_to_short_flip_in_one_order(ohlcv_small):
     sig = pd.DataFrame(index=ohlcv_small.index)
     sig["signal"] = 0
     sig["signal"].iloc[1:15] = 1
-    sig["signal"].iloc[15:n - 1] = -1
+    # Short region ends well before the last bar so the short->flat
+    # transition has an execution bar following it.
+    sig["signal"].iloc[15:n - 10] = -1
     sig["size"] = 1.0
     sf = SignalFrame(data=sig)
 
@@ -155,7 +157,9 @@ def test_short_to_long_flip_in_one_order(ohlcv_small):
     sig = pd.DataFrame(index=ohlcv_small.index)
     sig["signal"] = 0
     sig["signal"].iloc[1:15] = -1
-    sig["signal"].iloc[15:n - 1] = 1
+    # Long region ends well before the last bar so the long->flat
+    # transition has an execution bar following it.
+    sig["signal"].iloc[15:n - 10] = 1
     sig["size"] = 1.0
     sf = SignalFrame(data=sig)
 
