@@ -94,6 +94,14 @@ def create_app(*, settings: Settings) -> Flask:
             threshold=settings.alerts.alert_threshold,
         ))
 
+    @app.get("/strategy/<sid>")
+    def detail(sid: str):
+        records = read_records(settings.paths.results_store)
+        match = next((r for r in records if r.get("strategy_id") == sid), None)
+        if match is None:
+            return ("not found", 404)
+        return render_template("detail.html", record=match)
+
     return app
 
 

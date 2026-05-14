@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>{{ record.strategy_id or 'failed cycle' }} — detail</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <p><a href="/">&laquo; back to overview</a></p>
+  <h1>{{ record.strategy_id or '(no strategy id — generation failed)' }}</h1>
+  <div class="banner">
+    Shortlist signal, not a verdict. A held-out gate is required before any row
+    here is treated as a real candidate.
+  </div>
+
+  <h2>Slots</h2>
+  <ul>
+    {% for k, v in record.slots.items() %}<li><strong>{{ k }}:</strong> {{ v }}</li>{% endfor %}
+  </ul>
+
+  <h2>Idea</h2>
+  {% if record.idea %}
+    <ul>
+      <li><strong>summary:</strong> {{ record.idea.one_line_summary }}</li>
+      <li><strong>hypothesis:</strong> {{ record.idea.hypothesis }}</li>
+      <li><strong>novelty:</strong> {{ record.idea.novelty_justification }}</li>
+      <li><strong>failure mode:</strong> {{ record.idea.failure_mode }}</li>
+      <li><strong>allow_short:</strong> {{ record.idea.allow_short }}</li>
+    </ul>
+  {% else %}
+    <p>(no idea was generated — see error below)</p>
+  {% endif %}
+
+  <p><strong>Status:</strong>
+    {% if record.status == 'failed' %}
+      <span class="failed-stage">FAILED at {{ record.failed_stage }}</span>
+    {% else %}
+      complete
+    {% endif %}
+  </p>
+  {% if record.error %}<p><strong>Error:</strong></p><pre>{{ record.error }}</pre>{% endif %}
+  <p><strong>Generation cost:</strong> ${{ "%.4f" | format(record.generation_cost_usd) }}</p>
+
+  <h2>Stage 1 — Backtest</h2>
+  {% if record.backtest %}
+    <ul>
+      {% for k, v in record.backtest.items() %}
+        <li><strong>{{ k }}:</strong> {{ v }}</li>
+      {% endfor %}
+    </ul>
+  {% else %}<p>(not reached)</p>{% endif %}
+
+  <h2>Stage 2 — Optimize</h2>
+  {% if record.optimize %}
+    <ul>
+      <li><strong>best_params:</strong> {{ record.optimize.best_params }}</li>
+      <li><strong>objective:</strong> {{ record.optimize.objective }}</li>
+      <li><strong>best_score:</strong> {{ "%.4f" | format(record.optimize.best_score) }}</li>
+      <li><strong>run_bundle_path:</strong> {{ record.optimize.run_bundle_path }}</li>
+    </ul>
+  {% else %}<p>(not reached)</p>{% endif %}
+
+  <h2>Stage 3 — WFO</h2>
+  {% if record.wfo %}
+    <ul>
+      <li><strong>oos_sharpe:</strong> {{ "%.3f" | format(record.wfo.oos_sharpe) }}</li>
+      <li><strong>oos_total_return:</strong> {{ "%.2f%%" | format(record.wfo.oos_total_return * 100) }}</li>
+      <li><strong>oos_max_drawdown:</strong> {{ "%.2f%%" | format(record.wfo.oos_max_drawdown * 100) }}</li>
+      <li><strong>oos_n_trades:</strong> {{ record.wfo.oos_n_trades }}</li>
+      <li><strong>n_windows:</strong> {{ record.wfo.n_windows }}</li>
+      <li><strong>parameter_stability:</strong>
+        <pre>{{ record.wfo.parameter_stability | tojson(indent=2) }}</pre></li>
+      <li><strong>run_bundle_path:</strong> {{ record.wfo.run_bundle_path }}</li>
+    </ul>
+  {% else %}<p>(not reached)</p>{% endif %}
+
+  <p><strong>Alerted:</strong> {{ record.alerted }}</p>
+</body>
+</html>

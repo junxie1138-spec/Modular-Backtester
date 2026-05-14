@@ -83,3 +83,31 @@ def test_api_summary_aggregates_counts(app_with_records) -> None:
     assert data["cumulative_spend_usd"] == pytest.approx(0.05)
     assert data["threshold_metric"] == "wfo.oos_sharpe"
     assert data["threshold_value"] == 1.0
+
+
+def test_detail_view_renders_complete_record(app_with_records) -> None:
+    client, _ = app_with_records
+    resp = client.get("/strategy/gen_1")
+    assert resp.status_code == 200
+    body = resp.get_data(as_text=True)
+    assert "gen_1" in body
+    assert "shortlist signal" in body.lower()
+    # OOS values should appear formatted.
+    assert "1.200" in body or "1.2" in body  # oos_sharpe
+    # Run-bundle path is surfaced so the user can inspect artifacts.
+    assert "run_bundle_path" in body or "Run bundle" in body
+
+
+def test_detail_view_for_failed_cycle_shows_error(app_with_records) -> None:
+    client, _ = app_with_records
+    resp = client.get("/strategy/gen_2")
+    assert resp.status_code == 200
+    body = resp.get_data(as_text=True)
+    assert "missing .shift(1)" in body
+    assert "failed" in body.lower()
+
+
+def test_detail_view_404_on_missing_id(app_with_records) -> None:
+    client, _ = app_with_records
+    resp = client.get("/strategy/does_not_exist")
+    assert resp.status_code == 404
