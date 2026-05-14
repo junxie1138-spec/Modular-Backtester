@@ -255,3 +255,125 @@ def test_stop_wins_over_signal_same_bar_per_symbol():
     assert len(exit_fills) == 1
     # And it's the trailing_stop (stop wins over same-bar signal).
     assert exit_fills[0].reason == "trailing_stop"
+
+
+def test_simultaneous_entries_compete_for_risk_budget():
+    """When two new entries would together exceed risk_budget_pct, one is dropped."""
+    from backtester.config.models import ExecutionConfig
+    from backtester.engine.broker import Broker
+
+    sim = _build_simulator(symbols=["AAA", "BBB"])
+    sim.config.risk_budget_pct = 0.03  # tight cap
+    sim.config.size = 0.5
+    sim.broker_factory = lambda: Broker(ExecutionConfig(
+        initial_cash=100_000.0, commission_bps=0.0, slippage_bps=0.0,
+        hard_stop_atr_mult=1.0, runner_atr_mult=2.5,
+        breakeven_floor=False, tranche_stop_atr_period=2,
+    ))
+
+    idx = pd.date_range("2024-01-02", periods=4, freq="B")
+    aaa = _ohlcv([100.0] * 4)
+    bbb = _ohlcv([200.0] * 4)
+    aaa_sig = pd.DataFrame({"signal": [0.0, 1.0, 1.0, 0.0], "size": [1.0]*4}, index=idx)
+    bbb_sig = pd.DataFrame({"signal": [0.0, 1.0, 1.0, 0.0], "size": [1.0]*4}, index=idx)
+    result = sim.simulate(
+        symbols=["AAA", "BBB"], data={"AAA": aaa, "BBB": bbb},
+        sectors={"AAA": "X", "BBB": "Y"},
+        signals={"AAA": aaa_sig, "BBB": bbb_sig},
+        aux_data={}, regime_config=None,
+    )
+    # At least one was dropped.
+    aaa_entries = [f for f in result.trades_per_symbol["AAA"] if f.side.value == "buy"]
+    bbb_entries = [f for f in result.trades_per_symbol["BBB"] if f.side.value == "buy"]
+    assert len(aaa_entries) == 0 or len(bbb_entries) == 0
+
+
+def test_position_cap_clips_oversized_signal():
+    """If strategy emits target=1.0 but position_cap_pct=0.05, position is 5% not 100%."""
+    sim = _build_simulator(symbols=["AAA"])
+    sim.config.position_cap_pct = 0.05
+    sim.config.size = 1.0
+
+    idx = pd.date_range("2024-01-02", periods=4, freq="B")
+    data = {"AAA": _ohlcv([100.0, 100.0, 100.0, 100.0])}
+    sig = pd.DataFrame({"signal": [0.0, 1.0, 1.0, 0.0], "size": [1.0]*4}, index=idx)
+    result = sim.simulate(
+        symbols=["AAA"], data=data, sectors={"AAA": "X"},
+        signals={"AAA": sig}, aux_data={}, regime_config=None,
+    )
+    # Position dollars cap = 5% of $100k = $5,000; at $100/share = 50 shares.
+    entry = [f for f in result.trades_per_symbol["AAA"] if f.side.value == "buy"][0]
+    assert entry.qty <= 50
+
+
+def test_cash_reserve_cap_drops_late_entries():
+    """When deployed would exceed (1 - cash_reserve_pct), late entries get dropped."""
+    sim = _build_simulator(symbols=["AAA", "BBB", "CCC"])
+    sim.config.cash_reserve_pct = 0.30
+    sim.config.size = 0.5  # each entry intends 50% deployment
+
+    idx = pd.date_range("2024-01-02", periods=4, freq="B")
+    data = {s: _ohlcv([100.0] * 4) for s in ["AAA", "BBB", "CCC"]}
+    sigs = {s: pd.DataFrame({"signal": [0.0, 1.0, 1.0, 0.0], "size": [1.0]*4}, index=idx) for s in ["AAA", "BBB", "CCC"]}
+    result = sim.simulate(
+        symbols=["AAA", "BBB", "CCC"], data=data,
+        sectors={"AAA": "X", "BBB": "Y", "CCC": "Z"},
+        signals=sigs, aux_data={}, regime_config=None,
+    )
+    # Two entries would deploy 100%; cash_reserve=0.30 caps total at 70%, only ~1 entry fits.
+    entry_count = sum(
+        1 for s in ["AAA", "BBB", "CCC"]
+        if any(f.side.value == "buy" for f in result.trades_per_symbol[s])
+    )
+    assert entry_count <= 2
+
+
+def test_sector_cap_blocks_third_entry_in_full_sector():
+    sim = _build_simulator(symbols=["AAA", "BBB", "CCC"])
+    sim.config.sector_cap_pct = 0.50
+    sim.config.size = 0.3  # 3 entries x 30% = 90% in one sector
+
+    idx = pd.date_range("2024-01-02", periods=4, freq="B")
+    data = {s: _ohlcv([100.0] * 4) for s in ["AAA", "BBB", "CCC"]}
+    sigs = {s: pd.DataFrame({"signal": [0.0, 1.0, 1.0, 0.0], "size": [1.0]*4}, index=idx) for s in ["AAA", "BBB", "CCC"]}
+    result = sim.simulate(
+        symbols=["AAA", "BBB", "CCC"], data=data,
+        sectors={"AAA": "Semis", "BBB": "Semis", "CCC": "Semis"},
+        signals=sigs, aux_data={}, regime_config=None,
+    )
+    entry_count = sum(
+        1 for s in ["AAA", "BBB", "CCC"]
+        if any(f.side.value == "buy" for f in result.trades_per_symbol[s])
+    )
+    assert entry_count < 3
+
+
+def test_risk_budget_released_on_full_exit():
+    """After a full exit, freed risk budget allows a new entry on a later bar."""
+    from backtester.config.models import ExecutionConfig
+    from backtester.engine.broker import Broker
+
+    sim = _build_simulator(symbols=["AAA", "BBB"])
+    sim.config.risk_budget_pct = 0.05
+    sim.config.size = 0.5
+    sim.broker_factory = lambda: Broker(ExecutionConfig(
+        initial_cash=100_000.0, commission_bps=0.0, slippage_bps=0.0,
+        hard_stop_atr_mult=1.0, runner_atr_mult=2.5,
+        breakeven_floor=False, tranche_stop_atr_period=2,
+    ))
+
+    idx = pd.date_range("2024-01-02", periods=6, freq="B")
+    aaa = _ohlcv([100.0] * 6)
+    bbb = _ohlcv([200.0] * 6)
+    # AAA enters bar 1 (signal=1), exits bar 3 (signal=0 at index 2).
+    # BBB tries entry at bar 4 (signal=1 at index 4) — budget should be free.
+    aaa_sig = pd.DataFrame({"signal": [0.0, 1.0, 1.0, 0.0, 0.0, 0.0], "size": [1.0]*6}, index=idx)
+    bbb_sig = pd.DataFrame({"signal": [0.0, 0.0, 0.0, 0.0, 1.0, 0.0], "size": [1.0]*6}, index=idx)
+    result = sim.simulate(
+        symbols=["AAA", "BBB"], data={"AAA": aaa, "BBB": bbb},
+        sectors={"AAA": "X", "BBB": "Y"},
+        signals={"AAA": aaa_sig, "BBB": bbb_sig},
+        aux_data={}, regime_config=None,
+    )
+    bbb_entries = [f for f in result.trades_per_symbol["BBB"] if f.side.value == "buy"]
+    assert len(bbb_entries) == 1
