@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import numpy as np
 import pandas as pd
-import pytest
 
 from backtester.core.types import StrategyContext
 
@@ -73,7 +72,7 @@ def test_long_entry_fires_on_streak_plus_volume():
     closes = [100.0, 100.0, 100.0,  # warmup, flat
               101.0, 102.0, 103.0,  # 3 greens
               103.5]                # extra bar to observe the shifted signal
-    volumes = [1_000_000] * 3 + [5_000_000] * 3 + [1_000_000]
+    volumes = [1_000_000] * 3 + [5_000_000, 5_000_000, 6_000_000] + [1_000_000]
     data = _ohlcv_from_closes(closes, volumes)
     params = MomentumStreakParams(entry_streak=3, exit_streak=2,
                                   vol_lookback=3, vol_mult=1.0)
@@ -114,7 +113,7 @@ def test_long_exit_after_exit_streak_reds():
               104.0,                          # held long, still green (state stays +1)
               103.0, 102.0,                   # 2 reds -> exit triggers at idx 8
               102.0]                          # extra bar so we observe the shifted 0
-    volumes = [1_000_000] * 3 + [5_000_000] * 3 + [1_000_000] * 4
+    volumes = [1_000_000] * 3 + [5_000_000, 5_000_000, 6_000_000] + [1_000_000] * 4
     data = _ohlcv_from_closes(closes, volumes)
     params = MomentumStreakParams(entry_streak=3, exit_streak=2,
                                   vol_lookback=3, vol_mult=1.0)
@@ -135,7 +134,7 @@ def test_short_entry_symmetric_to_long():
     closes = [100.0, 100.0, 100.0,    # warmup
               99.0, 98.0, 97.0,       # 3 reds
               97.0]                   # observation bar
-    volumes = [1_000_000] * 3 + [5_000_000] * 3 + [1_000_000]
+    volumes = [1_000_000] * 3 + [5_000_000, 5_000_000, 6_000_000] + [1_000_000]
     data = _ohlcv_from_closes(closes, volumes)
     params = MomentumStreakParams(entry_streak=3, exit_streak=2,
                                   vol_lookback=3, vol_mult=1.0)
@@ -157,7 +156,7 @@ def test_direct_long_to_short_flip_on_opposite_high_volume_streak():
               104.0,                      # held long (bar 6)
               103.0, 102.0, 101.0,        # 3 reds with vol -> flip at bar 9
               101.0]                      # observation (bar 10)
-    volumes = [1_000_000] * 3 + [5_000_000] * 3 + [1_000_000] + [5_000_000] * 3 + [1_000_000]
+    volumes = [1_000_000] * 3 + [5_000_000, 5_000_000, 6_000_000] + [1_000_000] + [5_000_000, 5_000_000, 6_000_000] + [1_000_000]
     data = _ohlcv_from_closes(closes, volumes)
     params = MomentumStreakParams(entry_streak=3, exit_streak=2,
                                   vol_lookback=3, vol_mult=1.0)
