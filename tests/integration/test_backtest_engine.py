@@ -59,3 +59,61 @@ def test_engine_validates_data():
     bad = make_ohlcv(n=10, seed=1).drop(columns=["volume"])
     with pytest.raises(ValueError, match="volume"):
         engine.run(_BuyAndHoldStrategy(), bad, _BHParams(), symbol="X", timeframe="1d")
+
+
+def _downtrending_ohlcv(n: int = 200) -> pd.DataFrame:
+    """Deterministic monotonic downtrend with mild noise — perfect for a
+    short strategy to make money on."""
+    import numpy as np
+    rng = np.random.default_rng(123)
+    idx = pd.bdate_range("2020-01-02", periods=n)
+    close = 100.0 * np.exp(np.cumsum(rng.normal(loc=-0.003, scale=0.005, size=n)))
+    open_ = np.empty(n); open_[0] = 100.0; open_[1:] = close[:-1] * (1.0 + rng.normal(0.0, 0.001, n - 1))
+    high = np.maximum(open_, close) * 1.005
+    low = np.minimum(open_, close) * 0.995
+    volume = np.full(n, 1_000_000, dtype=int)
+    return pd.DataFrame({"open": open_, "high": high, "low": low, "close": close, "volume": volume}, index=idx)
+
+
+def test_short_strategy_profits_on_downtrend():
+    """A persistent-short strategy on a synthetic downtrend should finish
+    with positive total_return and a non-empty trade log."""
+
+    @dataclass(slots=True)
+    class _AlwaysShortParams:
+        size: float = 1.0
+
+    class _AlwaysShortStrategy(BaseStrategy[_AlwaysShortParams]):
+        strategy_id = "_always_short_test"
+
+        @classmethod
+        def params_type(cls):
+            return _AlwaysShortParams
+
+        def indicators(self, data, params):
+            return pd.DataFrame(index=data.index)
+
+        def generate_signals(self, data, indicators, ctx: StrategyContext, params):
+            df = pd.DataFrame(index=data.index)
+            df["signal"] = -1
+            df["signal"].iloc[0] = 0  # enter on bar 2
+            df["size"] = params.size
+            return SignalFrame(data=df)
+
+    data = _downtrending_ohlcv(n=200)
+    broker = Broker(ExecutionConfig(
+        commission_bps=0.0, slippage_bps=0.0, allow_short=True,
+    ))
+    portfolio = PortfolioSimulator(PortfolioConfig(size=1.0), initial_cash=10_000.0)
+    engine = BacktestEngine(broker=broker, portfolio=portfolio)
+
+    result = engine.run(_AlwaysShortStrategy(), data, _AlwaysShortParams(),
+                        symbol="SYN", timeframe="1d")
+
+    assert result.summary["total_return"] > 0, (
+        f"expected positive return on downtrend short, got "
+        f"{result.summary['total_return']}"
+    )
+    assert result.summary["n_trades"] > 0
+    # Position should have been short at least once
+    assert (result.positions["qty"] < 0).any()
