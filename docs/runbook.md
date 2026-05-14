@@ -71,3 +71,34 @@ several real-broker features that should be added as follow-up phases:
 
 If your strategy or backtest depends on any of these effects, treat the
 results as an upper bound on real-world performance.
+
+## Trailing-stop limitations (v0.3.0)
+
+The execution-layer trailing stop intentionally omits several features
+that should be added as follow-up phases:
+
+- **Only percentage and ATR-multiple distance modes.** Fixed-dollar
+  trailing stops are out of scope for v0.3.0 (one-line addition once a
+  use case justifies it).
+- **Same-bar precedence is hard-coded.** A trailing-stop hit always
+  cancels the same-bar signal-driven order. There is no configurable
+  ordering between strategy intent and stop trigger.
+- **No partial exits.** Stops always close the full position (`qty =
+  abs(pos.qty)`). There is no "trail half, hold the rest" mechanism.
+- **No grid- or WFO-searchable trailing parameters.** `trailing_stop_*`
+  fields are not first-class entries in `OptimizationConfig.param_space`
+  yet. To tune them you must hand-run multiple configs.
+- **No re-entry cooldown.** After a stop fires, if the strategy signal
+  still requests a position on the very next bar, the simulator
+  re-enters immediately. Strategies that want a "wait N bars after a
+  stop-out" rule must implement it themselves.
+- **Drawdown is not guaranteed to improve.** A tight trailing stop can
+  *increase* drawdown when paired with a noisy entry signal (whipsaw
+  effect: stop exits during normal pullbacks, then re-enters at higher
+  prices). E.g., on 2015-2024 SPY data, sma_cross with a 5% trailing
+  stop produced a *larger* max drawdown than the no-stop baseline
+  (-0.77 vs -0.37). Trailing stops require strategy-specific tuning;
+  they are not a free improvement.
+- **No interaction with borrow-cost accounting** (which is itself a
+  documented v0.2.0 limitation). A short stopped out by a rally still
+  pays no borrow during the holding period.
