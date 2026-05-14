@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 import pandas as pd
+import yaml
 
 from backtester.config.models import RunConfig
 from backtester.core.exceptions import ConfigError
@@ -12,7 +15,8 @@ def validate_run_config(rc: RunConfig) -> None:
     if not rc.strategy:
         raise ConfigError("strategy must be non-empty")
 
-    if not rc.data.symbols:
+    # Allow empty symbols if universe_path is provided (v0.4.0)
+    if not rc.data.symbols and not rc.universe_path:
         raise ConfigError("data.symbols must contain at least one symbol")
     try:
         start = pd.Timestamp(rc.data.start)
@@ -57,6 +61,9 @@ def validate_run_config(rc: RunConfig) -> None:
     _validate_portfolio_sizing(rc)
     # v0.4.0 regime gates validation
     _validate_regimes(rc)
+    # v0.4.0 universe membership validation
+    _validate_universe_path(rc)
+    _validate_aux_symbols(rc)
 
 
 def _validate_tranche_stop(rc: RunConfig) -> None:
@@ -120,3 +127,44 @@ def _validate_regimes(rc: RunConfig) -> None:
         raise ConfigError(f"regimes.vix.resume_consec must be >= 1; got {r.vix.resume_consec}")
     if r.circuit_breaker.trip_pct >= 0:
         raise ConfigError(f"regimes.circuit_breaker.trip_pct must be < 0; got {r.circuit_breaker.trip_pct}")
+
+
+def _validate_universe_path(rc: RunConfig) -> None:
+    """Validate universe-membership rules (path exists, overrides subset)."""
+    if rc.universe_path is None:
+        return
+    if rc.data.symbols:
+        raise ConfigError(
+            "data.symbols and universe_path are mutually exclusive; universe.yaml "
+            "is the single source of symbol membership for multi-symbol runs"
+        )
+    if not Path(rc.universe_path).exists():
+        raise ConfigError(f"universe_path does not exist: {rc.universe_path}")
+    with open(rc.universe_path, encoding="utf-8") as f:
+        doc = yaml.safe_load(f)
+    universe = (doc or {}).get("universe", {})
+    allowed_keys = set(rc.strategy_params.keys())
+    for sym, meta in universe.items():
+        overrides = (meta or {}).get("overrides", {}) or {}
+        unknown = set(overrides) - allowed_keys
+        if unknown:
+            raise ConfigError(
+                f"universe.yaml: {sym} overrides reference keys not in strategy_params: {sorted(unknown)}"
+            )
+
+
+def _validate_aux_symbols(rc: RunConfig) -> None:
+    """Validate aux_symbols required by enabled regimes."""
+    if rc.regimes is None:
+        return
+    required = []
+    if rc.regimes.spy_ema.enabled:
+        required.append("SPY")
+    if rc.regimes.vix.enabled:
+        required.append("^VIX")
+    missing = [s for s in required if s not in rc.data.aux_symbols]
+    if missing:
+        raise ConfigError(
+            f"data.aux_symbols must include {missing} because regimes are enabled "
+            f"that depend on them"
+        )

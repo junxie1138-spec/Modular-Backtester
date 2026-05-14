@@ -238,3 +238,43 @@ def test_validation_rule_14_circuit_breaker_trip_pct_negative():
     rc.regimes.circuit_breaker.trip_pct = 0.05
     with pytest.raises(ConfigError, match="circuit_breaker.trip_pct"):
         validate_run_config(rc)
+
+
+# Task 14: Universe-membership validation rules (rules 15-18)
+def test_validation_rule_15_universe_path_exists(tmp_path):
+    rc = _base_run_config()
+    rc.universe_path = str(tmp_path / "missing.yaml")
+    rc.data.symbols = []  # clear, otherwise rule 18 fires first
+    with pytest.raises(ConfigError, match="universe_path"):
+        validate_run_config(rc)
+
+
+def test_validation_rule_16_overrides_subset_of_strategy_params(tmp_path):
+    universe_yaml = tmp_path / "universe.yaml"
+    universe_yaml.write_text(
+        "universe:\n"
+        "  SPY: {sector: Index, overrides: {nonexistent_key: 1}}\n"
+    )
+    rc = _base_run_config()
+    rc.universe_path = str(universe_yaml)
+    rc.data.symbols = []
+    with pytest.raises(ConfigError, match="overrides"):
+        validate_run_config(rc)
+
+
+def test_validation_rule_17_aux_symbols_required_when_regimes_enabled():
+    rc = _base_with_regimes()
+    rc.regimes.spy_ema.enabled = True
+    rc.data.aux_symbols = []
+    with pytest.raises(ConfigError, match="aux_symbols.*SPY"):
+        validate_run_config(rc)
+
+
+def test_validation_rule_18_symbols_and_universe_path_mutex(tmp_path):
+    universe_yaml = tmp_path / "universe.yaml"
+    universe_yaml.write_text("universe:\n  SPY: {sector: Index}\n")
+    rc = _base_run_config()
+    rc.universe_path = str(universe_yaml)
+    # data.symbols already has SPY from _base_run_config
+    with pytest.raises(ConfigError, match="mutually exclusive"):
+        validate_run_config(rc)
