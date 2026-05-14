@@ -54,8 +54,9 @@ def test_full_sell_returns_to_flat():
 
 
 def test_sell_when_flat_raises():
-    p = Position(symbol="SPY")
-    with pytest.raises(ValueError, match="long-only"):
+    from backtester.core.exceptions import ShortNotAllowedError
+    p = Position(symbol="SPY")  # allow_short defaults to False
+    with pytest.raises(ShortNotAllowedError, match="shorts not allowed"):
         p.apply_fill(_fill(OrderSide.SELL, 1, 100.0))
 
 
