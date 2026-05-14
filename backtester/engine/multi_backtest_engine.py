@@ -10,6 +10,28 @@ from backtester.engine.multi_portfolio import (
 )
 
 
+def _align_panel(
+    data: dict[str, pd.DataFrame],
+    aux_data: dict[str, pd.DataFrame],
+) -> tuple[dict[str, pd.DataFrame], dict[str, pd.DataFrame]]:
+    """Reindex all panels to the union of their datetime indices.
+
+    Missing bars (e.g., pre-IPO for late symbols) are padded with NaN. The
+    strategy and simulator are warmup-aware and skip NaN bars naturally.
+    """
+    all_indices: set[pd.Timestamp] = set()
+    for df in data.values():
+        all_indices.update(df.index)
+    for df in aux_data.values():
+        all_indices.update(df.index)
+    if not all_indices:
+        return data, aux_data
+    union_index = pd.DatetimeIndex(sorted(all_indices))
+    aligned_data = {sym: df.reindex(union_index) for sym, df in data.items()}
+    aligned_aux = {sym: df.reindex(union_index) for sym, df in aux_data.items()}
+    return aligned_data, aligned_aux
+
+
 @dataclass
 class MultiSymbolBacktestEngine:
     simulator: MultiSymbolPortfolioSimulator
@@ -25,6 +47,12 @@ class MultiSymbolBacktestEngine:
         params: Any,
         regime_config: Optional[Any] = None,
     ) -> MultiSymbolResult:
+        # Align all symbol panels (and aux) to the union of their indices.
+        # IPO-late symbols (e.g., COIN, PLTR) get NaN-padded for pre-IPO dates.
+        # The simulator's per-bar loop iterates against this union; indicators
+        # and the strategy already handle NaN-bars by emitting 0 (warmup-aware).
+        data, aux_data = _align_panel(data, aux_data)
+
         # Pre-compute indicators for ALL strategies (per-bar AND non-per-bar).
         indicators_panel: dict[str, Any] = {}
         if hasattr(strategy, "indicators"):

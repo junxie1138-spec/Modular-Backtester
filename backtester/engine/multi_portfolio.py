@@ -173,9 +173,13 @@ class MultiSymbolPortfolioSimulator:
                     bars_in_phase[s] += 1
 
             # Step 6: extend recent_pnl with this bar's portfolio PnL delta.
-            position_value_now = sum(
-                positions[s].qty * float(data[s]["close"].iloc[i]) for s in symbols
-            )
+            # IPO-late symbols may have NaN close; skip them (0 * NaN = NaN in Python).
+            position_value_now = 0.0
+            for s in symbols:
+                close_now = float(data[s]["close"].iloc[i])
+                if pd.isna(close_now):
+                    continue
+                position_value_now += positions[s].qty * close_now
             current_equity = cash + position_value_now
             pnl_delta = current_equity - prev_equity
             recent_pnl_list.append(pnl_delta)
@@ -214,17 +218,20 @@ class MultiSymbolPortfolioSimulator:
 
             # Step 10: schedule orders for bar i+1.
             if i + 1 < len(index):
-                portfolio_equity_now = cash + sum(
-                    positions[s].qty * float(data[s]["close"].iloc[i]) for s in symbols
-                )
-                deployed_total = sum(
-                    abs(positions[s].qty) * float(data[s]["close"].iloc[i]) for s in symbols
-                )
+                # Compute portfolio equity and deployed dollars, skipping NaN-close symbols
+                # (IPO-late symbols on pre-IPO bars).
+                portfolio_equity_now = cash
+                deployed_total = 0.0
                 deployed_per_sector: dict[str, float] = {}
                 for s in symbols:
+                    close_i = float(data[s]["close"].iloc[i])
+                    if pd.isna(close_i):
+                        continue
+                    portfolio_equity_now += positions[s].qty * close_i
+                    deployed_total += abs(positions[s].qty) * close_i
                     sec = sectors[s]
                     deployed_per_sector[sec] = deployed_per_sector.get(sec, 0.0) + (
-                        abs(positions[s].qty) * float(data[s]["close"].iloc[i])
+                        abs(positions[s].qty) * close_i
                     )
                 current_risk_dollars = 0.0
                 for s in symbols:
@@ -258,6 +265,9 @@ class MultiSymbolPortfolioSimulator:
                     target = float(signals[s]["signal"].iloc[i])
                     capped = max(-1.0, min(1.0, target))
                     close_px = float(data[s]["close"].iloc[i])
+                    if pd.isna(close_px) or close_px <= 0:
+                        # Symbol not yet available (pre-IPO bar) or invalid price; skip.
+                        continue
                     # Apply position_cap_pct via vol-targeted or percent-equity sizing.
                     intent_dollars = self._vol_targeted_dollars(
                         target=capped, symbol=s, close=close_px,
@@ -284,6 +294,7 @@ class MultiSymbolPortfolioSimulator:
                             sec_decision = sector_enforcer.evaluate(
                                 sector=sectors[s], deployed_per_sector=running_deployed_per_sector,
                                 deployed_total=running_deployed_total, proposed_dollars=additional,
+                                portfolio_equity=portfolio_equity_now,
                             )
                             if not sec_decision.admitted:
                                 intent_dollars = existing_dollars * (1 if intent_dollars > 0 else -1)
@@ -359,30 +370,59 @@ class MultiSymbolPortfolioSimulator:
                         )
 
                     # Stop-order scheduling (preserved from Task 26).
-                    if s in ts_states and ts_states[s].phase is not TSPhase.DISARMED and target_qty != 0:
-                        sgn = 1 if target_qty > 0 else -1
+                    # Stop must size to the CURRENT position (the qty that exists on
+                    # bar i+1 when the stop fires), not the future target_qty. The
+                    # signal order on bar i+1 fires AFTER the stop, so the position
+                    # at stop-fire time equals positions[s].qty at end of bar i.
+                    current_qty = positions[s].qty
+                    if s in ts_states and ts_states[s].phase is not TSPhase.DISARMED and current_qty != 0:
+                        sgn = 1 if current_qty > 0 else -1
                         stop_px = ts_states[s].stop_price(sign=sgn, bar_idx=i + 1)
                         if stop_px is not None:
                             stop_side = OrderSide.SELL if sgn > 0 else OrderSide.BUY
                             pending_stop[s] = Order(
-                                symbol=s, side=stop_side, qty=abs(target_qty),
+                                symbol=s, side=stop_side, qty=abs(current_qty),
                                 order_type=OrderType.STOP, stop_price=stop_px, timestamp=next_ts,
                             )
-                    elif s in ts_states and target_qty == 0:
+                    elif s in ts_states and current_qty == 0:
                         pending_stop[s] = None
 
             # Step 11: mark to market.
-            position_value = sum(
-                positions[s].qty * float(data[s]["close"].iloc[i]) for s in symbols
-            )
+            # Step 11: mark-to-market. Skip NaN-close symbols (0 * NaN = NaN in Python).
+            position_value = 0.0
+            for s in symbols:
+                close_now = float(data[s]["close"].iloc[i])
+                if pd.isna(close_now):
+                    continue
+                position_value += positions[s].qty * close_now
             equity_history.append(cash + position_value)
 
         equity_curve = pd.Series(equity_history, index=index, name="equity")
+
+        # Compute portfolio metrics from the equity curve.
+        if len(equity_curve) > 0 and equity_curve.iloc[0] > 0:
+            returns = equity_curve.pct_change().dropna()
+            # Sharpe: annualized, 252-day convention, zero risk-free.
+            sharpe = 0.0
+            if len(returns) > 1 and returns.std() > 0:
+                sharpe = float(returns.mean() / returns.std() * np.sqrt(252))
+            # Max drawdown: minimum of (equity - cummax) / cummax across the curve.
+            peak = equity_curve.cummax()
+            drawdown = (equity_curve - peak) / peak
+            max_drawdown = float(drawdown.min()) if len(drawdown) > 0 else 0.0
+            total_return = float(equity_curve.iloc[-1] / equity_curve.iloc[0] - 1.0)
+        else:
+            sharpe = 0.0
+            max_drawdown = 0.0
+            total_return = 0.0
+
         return MultiSymbolResult(
             equity_curve=equity_curve,
             final_equity=float(equity_curve.iloc[-1]),
             trades_per_symbol=trades,
-            portfolio_total_return=float(equity_curve.iloc[-1]) / self.initial_cash - 1.0,
+            portfolio_total_return=total_return,
+            portfolio_max_drawdown=max_drawdown,
+            portfolio_sharpe=sharpe,
             tranche_phase_at_end={
                 s: ts_states[s].phase if s in ts_states else None for s in symbols
             },

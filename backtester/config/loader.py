@@ -78,6 +78,9 @@ def _from_dict(raw: Dict[str, Any], config_file_path: Optional[Path] = None) -> 
             opt = OptimizationConfig(
                 objective=opt_raw.get("objective", "sharpe"),
                 param_space=dict(opt_raw.get("param_space", {})),
+                sampling=opt_raw.get("sampling", "grid"),
+                random_n=int(opt_raw.get("random_n", 100)),
+                random_seed=int(opt_raw.get("random_seed", 0)),
             )
 
         wfo = None
