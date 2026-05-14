@@ -75,7 +75,29 @@ class MeanReversionAtrStrategy(BaseStrategy[MeanReversionAtrParams]):
         ctx: StrategyContext,
         params: MeanReversionAtrParams,
     ) -> float:
-        """Per-bar signal in [-1.0, 1.0]. Implemented incrementally in Tasks 32-33."""
+        data = data_panel[symbol]
+        indicators = indicators_panel.get(symbol)
+        if indicators is None:
+            indicators = self.indicators(data, params)
+        if bar_idx >= len(data):
+            return 0.0
+
+        close = float(data["close"].iloc[bar_idx])
+        mean10 = float(indicators["mean10"].iloc[bar_idx])
+        atr20 = float(indicators["atr20"].iloc[bar_idx])
+        if pd.isna(mean10) or pd.isna(atr20):
+            return 0.0  # warmup
+
+        phase = ctx.position_phase.get(symbol)
+        regime = getattr(ctx, "regime", None)
+        book_flat = (regime is not None and getattr(regime, "book_flat", False))
+
+        # Entry gate (DISARMED + not book_flat + not trend_active + dip below threshold).
+        if phase is TSPhase.DISARMED and not book_flat:
+            trend_active = bool(indicators["trend_active"].iloc[bar_idx])
+            if not trend_active and close <= mean10 - params.entry_atr_mult * atr20:
+                return 1.0
+
         return 0.0
 
     def generate_signals(self, data, indicators, ctx, params):
