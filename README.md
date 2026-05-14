@@ -236,7 +236,7 @@ backtester/                # framework (do not modify per-strategy)
   runners/                 # run_backtest, run_optimize, run_wfo, run_batch
   io/                      # artifact writer, logging, serialization
 
-strategies/                # user/AI-authored strategies (sma_cross, rsi_mean_reversion, breakout_20d, rsi_long_short)
+strategies/                # user/AI-authored strategies (sma_cross, rsi_mean_reversion, breakout_20d, rsi_long_short, momentum_streak)
 configs/                   # YAML configs for runs (backtests/, optimize/, wfo/)
 data/raw/                  # OHLCV inputs
 output/runs/               # per-run artifact bundles (gitignored)
@@ -262,7 +262,7 @@ scripts/                   # sample data generator
 python -m pytest -q
 ```
 
-The test suite is **161 tests** covering every public surface — types, exceptions, data loaders, validators, the engine (including signed-qty Position arithmetic and tri-state simulator transitions), analytics, all four sample strategies, the optimizer, WFO, and the four CLIs as end-to-end integration tests.
+The test suite is **172 tests** covering every public surface — types, exceptions, data loaders, validators, the engine (including signed-qty Position arithmetic and tri-state simulator transitions), analytics, all five sample strategies, the optimizer, WFO, and the four CLIs as end-to-end integration tests.
 
 ---
 
