@@ -337,3 +337,44 @@ def test_gap_through_stop_fills_at_open():
     # peak_high before bar 4 is max(101,102,104,106) = 106. stop_level = 106 * 0.95 = 100.7.
     # Bar 4 open = 80, which is BELOW stop_level. Fill price = min(open, stop) = 80.
     assert stop_rows.iloc[0]["price"] == pytest.approx(80.0)
+
+
+def test_atr_mode_fires_and_warms_up():
+    import numpy as np
+    idx = pd.bdate_range("2024-01-02", periods=30)
+    # Steady uptrend for 25 bars then a sharp drop in the last 5.
+    closes = np.concatenate([
+        np.linspace(100.0, 120.0, 25),
+        np.linspace(118.0, 100.0, 5),
+    ])
+    highs = closes * 1.005
+    lows = closes * 0.995
+    opens = closes.copy()
+    data = pd.DataFrame(
+        {"open": opens, "high": highs, "low": lows, "close": closes,
+         "volume": [1_000_000] * 30},
+        index=idx,
+    )
+
+    sig = pd.DataFrame(index=idx)
+    sig["signal"] = 1
+    sig["signal"].iloc[0] = 0
+    sig["size"] = 1.0
+    sf = SignalFrame(data=sig)
+
+    cfg = ExecutionConfig(
+        commission_bps=0.0, slippage_bps=0.0,
+        trailing_stop_atr_mult=3.0, trailing_stop_atr_period=14,
+    )
+    sim = PortfolioSimulator(PortfolioConfig(size=1.0), initial_cash=10_000.0)
+    broker = Broker(cfg)
+    trades, positions, eq = sim.simulate(data=data, signal_frame=sf, broker=broker)
+
+    # Entry on bar 1 is fine. ATR is NaN until bar 13 (period=14, first defined
+    # at index 13). So no STOP order is scheduled for any bar in [0, 12]; the
+    # earliest stop-out can only happen on bar 14 or later.
+    stop_rows = trades[trades["reason"] == "trailing_stop"]
+    assert len(stop_rows) >= 1
+    # Stop-out timestamp must be at or after index 14.
+    stop_ts = stop_rows.iloc[0]["timestamp"]
+    assert stop_ts >= idx[14]
