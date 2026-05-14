@@ -172,3 +172,143 @@ def validate_static(
             f"config execution.allow_short={exec_block.get('allow_short')} "
             f"does not match strategy allow_short={allow_short}"
         )
+
+
+import importlib.util
+import sys
+import uuid
+from pathlib import Path
+
+import pandas as pd
+
+
+def _load_strategy_module(src: str, tmp_dir: Path) -> object:
+    """Load a strategy source file as a one-off module without touching the
+    registered strategies. Returns the imported module object.
+    """
+    tmp_dir.mkdir(parents=True, exist_ok=True)
+    mod_name = f"_factory_validate_{uuid.uuid4().hex}"
+    path = tmp_dir / f"{mod_name}.py"
+    path.write_text(src, encoding="utf-8")
+    try:
+        spec = importlib.util.spec_from_file_location(mod_name, path)
+        if spec is None or spec.loader is None:
+            raise FunctionalValidationError(f"could not build import spec for {path}")
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[mod_name] = module
+        spec.loader.exec_module(module)
+        return module
+    except FunctionalValidationError:
+        raise
+    except Exception as exc:
+        raise FunctionalValidationError(
+            f"strategy failed to import: {type(exc).__name__}: {exc}"
+        ) from exc
+
+
+def validate_functional(
+    *,
+    strategy_id: str,
+    strategy_src: str,
+    allow_short: bool,
+    tmp_dir: Path,
+) -> None:
+    """Tier 2 functional smoke test.
+
+    Imports the strategy in isolation (no registry pollution), instantiates it,
+    runs indicators() + generate_signals() against a 200-bar synthetic OHLCV
+    frame, and asserts the SignalFrame contract.
+    """
+    # Import dependencies lazily so unit tests of Tier 1 don't need pandas
+    # to load this module.
+    from backtester.core.types import SignalFrame, StrategyContext
+    from factory.synth_ohlcv import make_synthetic_ohlcv
+
+    module = _load_strategy_module(strategy_src, tmp_dir)
+
+    cls = getattr(module, "GeneratedStrategy", None)
+    if cls is None:
+        raise FunctionalValidationError("imported module has no GeneratedStrategy")
+
+    # Instantiate. params_type() should be a dataclass with all-defaulted fields.
+    try:
+        params_cls = cls.params_type()
+        params = params_cls()
+        strategy = cls()
+    except Exception as exc:
+        raise FunctionalValidationError(
+            f"strategy/params instantiation failed: {type(exc).__name__}: {exc}"
+        ) from exc
+
+    # warmup_bars sanity.
+    try:
+        warmup = int(strategy.warmup_bars(params))
+    except Exception as exc:
+        raise FunctionalValidationError(f"warmup_bars raised: {exc}") from exc
+    if warmup < 0 or warmup > 1000:
+        raise FunctionalValidationError(f"warmup_bars out of sane range: {warmup}")
+
+    data = make_synthetic_ohlcv(n_bars=max(200, warmup + 50))
+
+    # Indicators.
+    try:
+        ind = strategy.indicators(data, params)
+    except Exception as exc:
+        raise FunctionalValidationError(
+            f"indicators() raised: {type(exc).__name__}: {exc}"
+        ) from exc
+    if not isinstance(ind, pd.DataFrame):
+        raise FunctionalValidationError(
+            f"indicators() returned {type(ind).__name__}, expected DataFrame"
+        )
+    if not ind.index.equals(data.index):
+        raise FunctionalValidationError("indicators index does not match data index")
+
+    # Signals.
+    ctx = StrategyContext(symbol="SPY", timeframe="1d", warmup_bars=warmup)
+    try:
+        sf = strategy.generate_signals(data, ind, ctx, params)
+    except Exception as exc:
+        raise FunctionalValidationError(
+            f"generate_signals() raised: {type(exc).__name__}: {exc}"
+        ) from exc
+    if not isinstance(sf, SignalFrame):
+        raise FunctionalValidationError(
+            f"generate_signals returned {type(sf).__name__}, expected SignalFrame"
+        )
+
+    df = sf.data
+    if not isinstance(df, pd.DataFrame):
+        raise FunctionalValidationError("SignalFrame.data is not a DataFrame")
+    if "signal" not in df.columns:
+        raise FunctionalValidationError("SignalFrame missing 'signal' column")
+    if not df.index.equals(data.index):
+        raise FunctionalValidationError("SignalFrame index does not match data index")
+
+    sig = df["signal"]
+    # Integer dtype required.
+    if not pd.api.types.is_integer_dtype(sig):
+        raise FunctionalValidationError(
+            f"signal column dtype must be integer, got {sig.dtype}"
+        )
+
+    unique = set(int(x) for x in sig.dropna().unique())
+    allowed = {-1, 0, 1} if allow_short else {0, 1}
+    extra = unique - allowed
+    if extra:
+        raise FunctionalValidationError(
+            f"signal values outside allowed set {sorted(allowed)}: found {sorted(extra)}"
+        )
+
+    # size column required and positive.
+    if sf.size_column is None or sf.size_column not in df.columns:
+        raise FunctionalValidationError("SignalFrame missing 'size' column")
+    size = df[sf.size_column]
+    if (size <= 0).any():
+        raise FunctionalValidationError("size column contains non-positive values")
+
+    # First-bar zero (cheap one-bar-shift sanity).
+    if int(sig.iloc[0]) != 0:
+        raise FunctionalValidationError(
+            f"first signal must be 0 (one-bar-shift sanity); got {int(sig.iloc[0])}"
+        )

@@ -6,3 +6,7 @@ from pathlib import Path
 _ROOT = Path(__file__).resolve().parent.parent
 if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
+
+
+def pytest_configure(config):
+    config.addinivalue_line("markers", "slow: tests that import the real backtester or run real subprocesses")
