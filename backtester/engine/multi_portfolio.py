@@ -173,9 +173,13 @@ class MultiSymbolPortfolioSimulator:
                     bars_in_phase[s] += 1
 
             # Step 6: extend recent_pnl with this bar's portfolio PnL delta.
-            position_value_now = sum(
-                positions[s].qty * float(data[s]["close"].iloc[i]) for s in symbols
-            )
+            # IPO-late symbols may have NaN close; skip them (0 * NaN = NaN in Python).
+            position_value_now = 0.0
+            for s in symbols:
+                close_now = float(data[s]["close"].iloc[i])
+                if pd.isna(close_now):
+                    continue
+                position_value_now += positions[s].qty * close_now
             current_equity = cash + position_value_now
             pnl_delta = current_equity - prev_equity
             recent_pnl_list.append(pnl_delta)
@@ -214,17 +218,20 @@ class MultiSymbolPortfolioSimulator:
 
             # Step 10: schedule orders for bar i+1.
             if i + 1 < len(index):
-                portfolio_equity_now = cash + sum(
-                    positions[s].qty * float(data[s]["close"].iloc[i]) for s in symbols
-                )
-                deployed_total = sum(
-                    abs(positions[s].qty) * float(data[s]["close"].iloc[i]) for s in symbols
-                )
+                # Compute portfolio equity and deployed dollars, skipping NaN-close symbols
+                # (IPO-late symbols on pre-IPO bars).
+                portfolio_equity_now = cash
+                deployed_total = 0.0
                 deployed_per_sector: dict[str, float] = {}
                 for s in symbols:
+                    close_i = float(data[s]["close"].iloc[i])
+                    if pd.isna(close_i):
+                        continue
+                    portfolio_equity_now += positions[s].qty * close_i
+                    deployed_total += abs(positions[s].qty) * close_i
                     sec = sectors[s]
                     deployed_per_sector[sec] = deployed_per_sector.get(sec, 0.0) + (
-                        abs(positions[s].qty) * float(data[s]["close"].iloc[i])
+                        abs(positions[s].qty) * close_i
                     )
                 current_risk_dollars = 0.0
                 for s in symbols:
@@ -258,6 +265,9 @@ class MultiSymbolPortfolioSimulator:
                     target = float(signals[s]["signal"].iloc[i])
                     capped = max(-1.0, min(1.0, target))
                     close_px = float(data[s]["close"].iloc[i])
+                    if pd.isna(close_px) or close_px <= 0:
+                        # Symbol not yet available (pre-IPO bar) or invalid price; skip.
+                        continue
                     # Apply position_cap_pct via vol-targeted or percent-equity sizing.
                     intent_dollars = self._vol_targeted_dollars(
                         target=capped, symbol=s, close=close_px,
