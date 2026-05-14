@@ -50,3 +50,30 @@ def validate_run_config(rc: RunConfig) -> None:
             v = getattr(rc.wfo, k)
             if v is None or v <= 0:
                 raise ConfigError(f"wfo.{k} must be a positive integer when wfo.enabled")
+
+    # v0.4.0 tranche-stop validation
+    _validate_tranche_stop(rc)
+
+
+def _validate_tranche_stop(rc: RunConfig) -> None:
+    """Validate tranche-stop (hard/runner) mutual exclusion and bounds."""
+    ex = rc.execution
+    has_v030 = ex.trailing_stop_pct is not None or ex.trailing_stop_atr_mult is not None
+    has_hard = ex.hard_stop_atr_mult is not None
+    has_runner = ex.runner_atr_mult is not None
+
+    if has_hard != has_runner:
+        raise ConfigError(
+            "execution: hard_stop_atr_mult and runner_atr_mult are both-or-neither"
+        )
+    if has_hard and has_v030:
+        raise ConfigError(
+            "execution: v0.3.0 trailing_stop_* keys and v0.4.0 hard/runner keys are mutually exclusive"
+        )
+    if has_hard:
+        if ex.hard_stop_atr_mult <= 0:
+            raise ConfigError("execution.hard_stop_atr_mult must be > 0")
+        if ex.runner_atr_mult <= 0:
+            raise ConfigError("execution.runner_atr_mult must be > 0")
+        if ex.tranche_stop_atr_period < 2:
+            raise ConfigError("execution.tranche_stop_atr_period must be >= 2")
