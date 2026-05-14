@@ -96,3 +96,28 @@ def test_fill_dataclass_fields():
              side=OrderSide.BUY, qty=10, price=100.0, commission=1.0)
     assert f.notional == 1000.0
     assert f.cash_delta == -(1000.0 + 1.0)
+
+
+def test_fill_reason_defaults_to_signal():
+    fill = Fill(
+        timestamp=pd.Timestamp("2024-01-02"),
+        symbol="SPY",
+        side=OrderSide.BUY,
+        qty=10,
+        price=100.0,
+        commission=1.0,
+    )
+    assert fill.reason == "signal"
+
+
+def test_fill_reason_override():
+    fill = Fill(
+        timestamp=pd.Timestamp("2024-01-02"),
+        symbol="SPY",
+        side=OrderSide.SELL,
+        qty=10,
+        price=100.0,
+        commission=1.0,
+        reason="trailing_stop",
+    )
+    assert fill.reason == "trailing_stop"

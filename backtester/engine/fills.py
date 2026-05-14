@@ -17,6 +17,7 @@ class Fill:
     qty: float
     price: float
     commission: float
+    reason: str = "signal"
 
     @property
     def notional(self) -> float:
