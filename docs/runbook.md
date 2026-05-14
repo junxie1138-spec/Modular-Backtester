@@ -47,3 +47,27 @@ output/runs/<timestamp>_<run_name>/
 ```
 pytest -q
 ```
+
+## Limitations (v0.2.0)
+
+Short-position support (`execution.allow_short: true`) intentionally omits
+several real-broker features that should be added as follow-up phases:
+
+- **No borrow cost / hard-to-borrow modeling.** Realized PnL on a short
+  does not accrue a daily borrow fee. See the `TODO(short-positions)`
+  marker in `backtester/engine/position.py`.
+- **No margin call simulation.** The simulator assumes unlimited margin
+  headroom. A short losing more than the account equity simply produces
+  a negative equity series.
+- **No leverage cap beyond `portfolio.size <= 1.0`.** When shorts are
+  enabled, an instantaneous long → short flip momentarily produces ~2×
+  gross exposure (the SELL closes the long and opens the short in one
+  fill). If you want a hard gross-exposure cap, reduce `portfolio.size`
+  (e.g., `0.5` ensures at most 1× gross around a flip).
+- **No short interest / locate / hard-to-borrow availability checks.**
+  Every symbol is assumed shortable on every bar.
+- **No per-symbol short bans.** There is no mechanism to disable
+  shorting on a specific ticker.
+
+If your strategy or backtest depends on any of these effects, treat the
+results as an upper bound on real-world performance.
