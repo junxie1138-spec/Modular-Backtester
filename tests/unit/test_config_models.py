@@ -158,3 +158,39 @@ def test_portfolio_config_sector_cap_pct_defaults_1():
     from backtester.config.models import PortfolioConfig
     cfg = PortfolioConfig()
     assert cfg.sector_cap_pct == 1.0
+
+
+def test_spy_ema_regime_config_defaults():
+    from backtester.config.models import SpyEmaRegimeConfig
+    cfg = SpyEmaRegimeConfig()
+    assert cfg.enabled is False
+    assert cfg.ema_lookback == 200
+    assert cfg.trip_pct == -0.02
+    assert cfg.resume_pct == 0.02
+
+
+def test_vix_regime_config_defaults():
+    from backtester.config.models import VixRegimeConfig
+    cfg = VixRegimeConfig()
+    assert cfg.enabled is False
+    assert cfg.trip_threshold == 30.0
+    assert cfg.trip_consec == 2
+    assert cfg.resume_threshold == 25.0
+    assert cfg.resume_consec == 3
+
+
+def test_circuit_breaker_config_defaults():
+    from backtester.config.models import CircuitBreakerConfig
+    cfg = CircuitBreakerConfig()
+    assert cfg.enabled is False
+    assert cfg.pnl_window_days == 20
+    assert cfg.trip_pct == -0.05
+    assert cfg.pause_days == 10
+
+
+def test_regimes_config_holds_three_subconfigs():
+    from backtester.config.models import RegimesConfig
+    cfg = RegimesConfig()
+    assert cfg.spy_ema.enabled is False
+    assert cfg.vix.enabled is False
+    assert cfg.circuit_breaker.enabled is False

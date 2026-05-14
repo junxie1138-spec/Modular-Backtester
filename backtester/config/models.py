@@ -47,6 +47,38 @@ class PortfolioConfig:
 
 
 @dataclass(slots=True)
+class SpyEmaRegimeConfig:
+    enabled: bool = False
+    ema_lookback: int = 200
+    trip_pct: float = -0.02
+    resume_pct: float = 0.02
+
+
+@dataclass(slots=True)
+class VixRegimeConfig:
+    enabled: bool = False
+    trip_threshold: float = 30.0
+    trip_consec: int = 2
+    resume_threshold: float = 25.0
+    resume_consec: int = 3
+
+
+@dataclass(slots=True)
+class CircuitBreakerConfig:
+    enabled: bool = False
+    pnl_window_days: int = 20
+    trip_pct: float = -0.05
+    pause_days: int = 10
+
+
+@dataclass(slots=True)
+class RegimesConfig:
+    spy_ema: SpyEmaRegimeConfig = field(default_factory=SpyEmaRegimeConfig)
+    vix: VixRegimeConfig = field(default_factory=VixRegimeConfig)
+    circuit_breaker: CircuitBreakerConfig = field(default_factory=CircuitBreakerConfig)
+
+
+@dataclass(slots=True)
 class OptimizationConfig:
     objective: str = "sharpe"
     param_space: Dict[str, List[Any]] = field(default_factory=dict)
