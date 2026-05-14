@@ -123,3 +123,64 @@ output_root: "{out.as_posix()}"
     sides = set(oos_trades["side"]) if len(oos_trades) else set()
     assert "buy" in sides, f"expected at least one BUY in oos_trades, got {sides}"
     assert "sell" in sides, f"expected at least one SELL in oos_trades, got {sides}"
+
+
+def test_run_wfo_cli_momentum_streak_emits_both_sides(tmp_path: Path):
+    """WFO smoke test: stitched OOS trades must contain both BUY and SELL
+    entries, proving the long/short momentum strategy ran end-to-end through
+    the WFO orchestrator with allow_short=true."""
+    raw = tmp_path / "data"
+    raw.mkdir()
+    # 900 bars is plenty for several WFO windows with train_bars=200.
+    make_ohlcv(n=900, seed=23).to_csv(raw / "SYN.csv", index_label="date")
+
+    out = tmp_path / "runs"
+    cfg = tmp_path / "wfo_momo.yaml"
+    cfg.write_text(f"""
+run_name: momentum_streak_wfo_smoke
+strategy: momentum_streak
+strategy_params:
+  entry_streak: 3
+  exit_streak: 2
+  vol_lookback: 20
+  vol_mult: 1.0
+  size: 1.0
+data:
+  symbols: ["SYN"]
+  timeframe: "1d"
+  start: "2020-01-02"
+  end: "2030-12-31"
+  source: "csv"
+  root: "{raw.as_posix()}"
+execution:
+  initial_cash: 10000
+  commission_bps: 0
+  slippage_bps: 0
+  allow_short: true
+portfolio:
+  size: 1.0
+optimization:
+  objective: sharpe
+  param_space:
+    entry_streak: [2, 3]
+    exit_streak:  [1, 2]
+    vol_lookback: [10, 20]
+    vol_mult:     [1.0]
+wfo:
+  enabled: true
+  train_bars: 200
+  test_bars: 50
+  step_bars: 50
+output_root: "{out.as_posix()}"
+""")
+    res = subprocess.run(
+        [sys.executable, "-m", "backtester.runners.run_wfo", "--config", str(cfg)],
+        capture_output=True, text=True,
+    )
+    assert res.returncode == 0, res.stderr
+
+    run_dir = next(out.iterdir())
+    oos_trades = pd.read_csv(run_dir / "oos_trades.csv")
+    sides = set(oos_trades["side"]) if len(oos_trades) else set()
+    assert "buy" in sides, f"expected at least one BUY in oos_trades, got {sides}"
+    assert "sell" in sides, f"expected at least one SELL in oos_trades, got {sides}"
