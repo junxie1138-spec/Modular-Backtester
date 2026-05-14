@@ -51,7 +51,8 @@ class PortfolioSimulator:
         cash = self.initial_cash
 
         fills: List[Fill] = []
-        pending: Optional[Order] = None
+        pending_signal: Optional[Order] = None
+        pending_stop: Optional[Order] = None
 
         equity_rows = []
         position_rows = []
@@ -59,15 +60,27 @@ class PortfolioSimulator:
         index = data.index
         for i, ts in enumerate(index):
             bar = data.iloc[i]
+            stop_filled = False
 
-            # 1. Execute pending order
-            if pending is not None:
-                fill = broker.submit(pending, bar)
+            # 1a. Execute pending stop order (Phase 3+: trailing stop).
+            if pending_stop is not None:
+                fill = broker.submit(pending_stop, bar)
                 if fill is not None:
                     fills.append(fill)
                     cash += fill.cash_delta
                     pos.apply_fill(fill)
-                pending = None  # one-shot semantics
+                    stop_filled = True
+                pending_stop = None
+
+            # 1b. Execute pending signal order (cancelled if stop fired same bar).
+            if pending_signal is not None:
+                if not stop_filled:
+                    fill = broker.submit(pending_signal, bar)
+                    if fill is not None:
+                        fills.append(fill)
+                        cash += fill.cash_delta
+                        pos.apply_fill(fill)
+                pending_signal = None
 
             # 2. Read this bar's signal
             sig = int(signals[sig_col].iloc[i]) if sig_col in signals.columns else 0
@@ -86,7 +99,6 @@ class PortfolioSimulator:
                 if prev_sign != target_sign:
                     close_px = float(bar["close"])
                     if target_sign == 0:
-                        # Close current position fully.
                         order_qty = abs(pos.qty)
                         side = OrderSide.BUY if prev_sign < 0 else OrderSide.SELL
                         order_type = OrderType.MARKET
@@ -103,10 +115,8 @@ class PortfolioSimulator:
                         if prev_sign == 0:
                             order_qty = new_leg_qty
                         else:
-                            # Flip: close old leg + open new leg in one fill.
                             order_qty = abs(pos.qty) + new_leg_qty
                         side = OrderSide.BUY if target_sign > 0 else OrderSide.SELL
-                        # LIMIT only when entering from flat.
                         if (
                             prev_sign == 0
                             and price_col
@@ -120,7 +130,7 @@ class PortfolioSimulator:
                             limit_price = None
 
                     if order_qty > 0:
-                        pending = Order(
+                        pending_signal = Order(
                             timestamp=next_bar_ts,
                             symbol=symbol,
                             side=side,
