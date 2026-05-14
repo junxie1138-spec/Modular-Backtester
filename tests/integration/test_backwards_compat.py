@@ -19,18 +19,19 @@ EXPECTED = {
 }
 
 
-def test_sma_cross_spy_unchanged_with_trailing_disabled(tmp_path: Path):
+def test_sma_cross_synth_spy_unchanged_with_trailing_disabled(tmp_path: Path):
     """Acceptance criterion 2: with trailing-stop fields absent (or None),
-    the bundled long-only SMA-Cross config produces the v0.2.0 numerics
-    exactly. n_trades is exact integer; floats compared to 1e-9 abs / 1e-12 rel."""
+    the bundled long-only SMA-Cross config produces the v0.3.0 golden numerics
+    exactly against the synthetic SPY fixture. n_trades is exact integer;
+    floats compared to 1e-9 abs / 1e-12 rel."""
     repo_root = Path(__file__).resolve().parents[2]
-    spy_root = (repo_root / "data" / "raw").as_posix()
+    spy_root = (repo_root / "data" / "synth").as_posix()
     out = tmp_path / "runs"
     out.mkdir()
 
-    cfg = tmp_path / "sma_cross_spy.yaml"
+    cfg = tmp_path / "sma_cross_synth_spy.yaml"
     cfg.write_text(f"""
-run_name: sma_cross_spy
+run_name: sma_cross_synth_spy
 strategy: sma_cross
 strategy_params:
   fast: 20
