@@ -222,6 +222,33 @@ Bundled sample CSVs (`SPY.csv`, `AAPL.csv`) are deterministic synthetic data pro
 
 ---
 
+## v0.4.0 — Multi-symbol, regime gates, tranche stops
+
+v0.3.0 introduced execution-layer trailing stops. v0.4.0 adds:
+
+- **Two-phase tranche stop** (`execution.hard_stop_atr_mult` +
+  `execution.runner_atr_mult`) for strategies that scale out — fixed hard
+  stop while the full position is held; close-basis runner trail with an
+  optional breakeven floor once tranche 1 fills.
+- **Three-gate regime policy** — SPY 200-EMA, VIX hysteresis, and a rolling
+  20-day strategy-PnL circuit breaker. Any tripping gate flattens the entire
+  book to cash; configurable hysteresis on each.
+- **Multi-symbol portfolio simulator** with shared cash, cross-symbol risk-
+  budget enforcement, sector caps, and volatility-targeted position sizing.
+  Strategies opt in via `uses_multi_symbol = True`.
+- **yfinance data loader** (`source: yfinance`) with cache-on-miss to local
+  CSVs, adjusted OHLC contract, and explicit invalidation on date-range
+  mismatch.
+- **Universe screening CLI** (`scripts/screen_universe.py`) using the
+  range/ATR ratio and a 200-day OLS-slope trend filter.
+- **`mean_reversion_atr`** — defense-first swing-trading strategy implementing
+  the full PRD spec.
+
+The single-symbol v0.3.0 path remains the default; existing strategies are
+unaffected.
+
+---
+
 ## Reproducibility
 
 - Configs are YAML and round-trip through `config_resolved.yaml`.
