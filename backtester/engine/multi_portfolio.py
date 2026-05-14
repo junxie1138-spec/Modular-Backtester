@@ -388,9 +388,13 @@ class MultiSymbolPortfolioSimulator:
                         pending_stop[s] = None
 
             # Step 11: mark to market.
-            position_value = sum(
-                positions[s].qty * float(data[s]["close"].iloc[i]) for s in symbols
-            )
+            # Step 11: mark-to-market. Skip NaN-close symbols (0 * NaN = NaN in Python).
+            position_value = 0.0
+            for s in symbols:
+                close_now = float(data[s]["close"].iloc[i])
+                if pd.isna(close_now):
+                    continue
+                position_value += positions[s].qty * close_now
             equity_history.append(cash + position_value)
 
         equity_curve = pd.Series(equity_history, index=index, name="equity")
