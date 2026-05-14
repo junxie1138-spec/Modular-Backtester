@@ -23,11 +23,12 @@ Requires Python 3.11+.
 ```bash
 git clone https://github.com/junxie1138-spec/Modular-Backtester.git
 cd Modular-Backtester
-pip install -e .[dev]
-python scripts/generate_sample_data.py   # creates bundled SPY/AAPL sample CSVs
+pip install -e .[dev]                    # core install + test runner
+pip install -e .[data]                   # adds yfinance for the v0.4.0 cache-on-miss loader
+python scripts/generate_sample_data.py   # writes synthetic SPY/AAPL to data/synth/
 ```
 
-This installs `pandas`, `numpy`, `pyyaml`, `pyarrow`, and `pytest`.
+Core install pulls `pandas`, `numpy`, `pyyaml`, `pyarrow`, and `pytest`. The `data` extras adds `yfinance` (only needed if you run `source: yfinance` configs or the universe-screening CLI).
 
 ---
 
@@ -160,7 +161,7 @@ data:
   timeframe: "1d"
   start: "2015-01-02"
   end: "2024-12-31"
-  source: "csv"            # csv | parquet
+  source: "csv"            # csv | parquet | yfinance (v0.4.0)
   root: "data/raw"
 
 execution:
@@ -199,7 +200,7 @@ The framework reads OHLCV from `data/raw/{SYMBOL}.csv` or `.parquet`. Required c
 
 Full schema: [`docs/data_contract.md`](docs/data_contract.md).
 
-Bundled sample CSVs (`SPY.csv`, `AAPL.csv`) are deterministic synthetic data produced by `scripts/generate_sample_data.py` — useful for testing the framework but not real market data.
+`data/raw/` ships with **real** 2015-2025 OHLCV for SPY, AAPL, `^VIX`, and the 15-name mean-reversion universe (TSLA, NVDA, AMD, COIN, GOOGL, MSTR, XPEV, NIO, PLTR, SMCI, SHOP, W, META, NFLX). The synthetic generator (`scripts/generate_sample_data.py`) now writes to `data/synth/` — used by the backwards-compat test to preserve v0.3.0 golden numerics. Real-data fetches happen via `source: yfinance` (cache-on-miss; the loader writes the full available history to a CSV on first fetch and reads from cache thereafter).
 
 ---
 
@@ -261,24 +262,29 @@ unaffected.
 
 ```
 backtester/                # framework (do not modify per-strategy)
-  config/                  # YAML loader + dataclass models + validation
+  config/                  # YAML loader + dataclass models + validation + universe loader
   core/                    # shared types, enums, exceptions, constants
-  data/                    # OHLCV loaders + validators
+  data/                    # OHLCV loaders (csv, parquet, yfinance) + validators
   strategies/              # BaseStrategy ABC, registry, authoring template
-  engine/                  # orders, fills, position, broker, portfolio, BacktestEngine
+  engine/                  # orders, fills, position, broker, portfolio, BacktestEngine,
+                           # trailing_stop, atr, tranche_stop, regime, risk_budget,
+                           # sector_cap, multi_portfolio, multi_backtest_engine
   analytics/               # metrics, drawdown, trades, exposure
-  optimize/                # parameter space, objectives, grid search
+  optimize/                # parameter space, objectives, grid search, lhs_sampler
   wfo/                     # splitter, runner, stitcher
   runners/                 # run_backtest, run_optimize, run_wfo, run_batch
   io/                      # artifact writer, logging, serialization
 
-strategies/                # user/AI-authored strategies (sma_cross, rsi_mean_reversion, breakout_20d, rsi_long_short, momentum_streak)
-configs/                   # YAML configs for runs (backtests/, optimize/, wfo/)
-data/raw/                  # OHLCV inputs
+strategies/                # user/AI-authored strategies (sma_cross, rsi_mean_reversion,
+                           # breakout_20d, rsi_long_short, momentum_streak, mean_reversion_atr)
+configs/                   # YAML configs for runs (backtests/, optimize/, wfo/, universe.yaml)
+data/raw/                  # real OHLCV fixtures (15-name universe + SPY + AAPL + ^VIX)
+data/synth/                # deterministic synthetic OHLCV (backwards-compat test fixture)
+data/sector_map.csv        # ticker → sector lookup for the universe loader
 output/runs/               # per-run artifact bundles (gitignored)
-docs/                      # contracts and runbook
+docs/                      # contracts, runbook, and design specs/plans under superpowers/
 tests/                     # unit + integration tests
-scripts/                   # sample data generator
+scripts/                   # sample data generator + screen_universe.py
 ```
 
 ---
@@ -298,13 +304,13 @@ scripts/                   # sample data generator
 python -m pytest -q
 ```
 
-The test suite is **172 tests** covering every public surface — types, exceptions, data loaders, validators, the engine (including signed-qty Position arithmetic and tri-state simulator transitions), analytics, all five sample strategies, the optimizer, WFO, and the four CLIs as end-to-end integration tests.
+The test suite is **338 passing + 5 xfail-by-default** strategy-performance gates (4 stress windows + held-out 2022-2025). It covers every public surface — types, exceptions, data loaders (CSV + yfinance), validators, the engine (signed-qty Position arithmetic, tri-state simulator transitions, trailing stops, tranche stops, regime gates, risk-budget + sector-cap enforcement, multi-symbol simulator), analytics, all six sample strategies, the optimizer (grid + discrete-LHS), WFO, and the four CLIs as end-to-end integration tests. The xfail markers can be flipped to hard asserts once the strategy is tuned to clear PRD performance thresholds — see [`docs/runbook.md`](docs/runbook.md) for the workflow.
 
 ---
 
 ## Status
 
-`v0.2.0` — Long/short execution. Adds short-position support end-to-end: signed-quantity `Position` arithmetic, tri-state portfolio simulator with combined-order flips through zero, a symmetric `rsi_long_short` sample strategy, and matching WFO + CLI integration coverage. Long-only configs are unchanged; `execution.allow_short` defaults to `false`. See [`docs/superpowers/plans/2026-05-14-short-positions.md`](docs/superpowers/plans/2026-05-14-short-positions.md) for the design.
+`v0.4.0` — Mean-reversion ATR + multi-symbol framework. Adds the multi-symbol portfolio simulator (shared cash, cross-symbol risk-budget and sector-cap enforcement, volatility-targeted sizing), two-phase tranche stop (HARD→RUNNER state machine with close-basis trail and breakeven floor), three-gate regime policy (SPY 200-EMA, VIX hysteresis, strategy circuit breaker), yfinance loader with cache-on-miss and adjusted-OHLC contract, universe-screening CLI (`scripts/screen_universe.py`), discrete-LHS optimizer mode, and the `mean_reversion_atr` strategy. The v0.3.0 single-symbol path is byte-identical and existing strategies are unaffected. See [`docs/superpowers/specs/2026-05-14-mean-reversion-atr-design.md`](docs/superpowers/specs/2026-05-14-mean-reversion-atr-design.md) for the design and [`docs/superpowers/plans/2026-05-14-mean-reversion-atr.md`](docs/superpowers/plans/2026-05-14-mean-reversion-atr.md) for the 48-task implementation plan.
 
 `v0.3.0` — Trailing stops. Adds an execution-layer trailing stop with
 two distance modes (percentage of peak/trough, or multiple of recent
@@ -314,6 +320,8 @@ trailing fields are unset. See
 [`docs/superpowers/plans/2026-05-14-trailing-stops.md`](docs/superpowers/plans/2026-05-14-trailing-stops.md)
 for the design.
 
+`v0.2.0` — Long/short execution. Adds short-position support end-to-end: signed-quantity `Position` arithmetic, tri-state portfolio simulator with combined-order flips through zero, a symmetric `rsi_long_short` sample strategy, and matching WFO + CLI integration coverage. Long-only configs are unchanged; `execution.allow_short` defaults to `false`. See [`docs/superpowers/plans/2026-05-14-short-positions.md`](docs/superpowers/plans/2026-05-14-short-positions.md) for the design.
+
 `v0.1.0` — MVP: backtest, optimize, and WFO workflows with three long-only sample strategies (`sma_cross`, `rsi_mean_reversion`, `breakout_20d`) over MARKET/LIMIT/STOP orders.
 
-Deferred to future versions: borrow-cost / hard-to-borrow modeling, margin-call simulation, per-symbol short bans, intraday timeframes, parallel grid search, portfolio-level constraints, HTML report generation, dynamic plugin discovery (currently strategies are explicit-registry only — by design, for predictability).
+Deferred to future versions: borrow-cost / hard-to-borrow modeling, margin-call simulation, per-symbol short bans, intraday timeframes, parallel grid search, multi-symbol WFO, per-symbol parameter overrides applied through the engine, LHS sampler wired into `GridSearchOptimizer.optimize()`, phased circuit-breaker re-entry, HTML report generation, dynamic plugin discovery (currently strategies are explicit-registry only — by design, for predictability).
