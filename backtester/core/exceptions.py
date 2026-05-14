@@ -19,3 +19,8 @@ class StrategyError(BacktesterError):
 
 class ExecutionError(BacktesterError):
     """Raised when the broker / portfolio simulator cannot proceed."""
+
+
+class ShortNotAllowedError(ExecutionError):
+    """Raised when a short order or short-opening fill is attempted while
+    `allow_short` is disabled (on either ExecutionConfig or Position)."""
