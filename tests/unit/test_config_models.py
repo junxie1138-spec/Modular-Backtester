@@ -52,3 +52,13 @@ def test_run_config_composition():
     )
     assert rc.optimization is None
     assert rc.wfo is None
+
+
+def test_execution_config_allow_short_defaults_false():
+    cfg = ExecutionConfig()
+    assert cfg.allow_short is False
+
+
+def test_execution_config_allow_short_override():
+    cfg = ExecutionConfig(allow_short=True)
+    assert cfg.allow_short is True

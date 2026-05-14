@@ -20,6 +20,7 @@ class ExecutionConfig:
     commission_bps: float = 1.0
     slippage_bps: float = 2.0
     allow_fractional: bool = False
+    allow_short: bool = False
 
 
 @dataclass(slots=True)
