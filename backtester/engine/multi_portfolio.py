@@ -284,6 +284,7 @@ class MultiSymbolPortfolioSimulator:
                             sec_decision = sector_enforcer.evaluate(
                                 sector=sectors[s], deployed_per_sector=running_deployed_per_sector,
                                 deployed_total=running_deployed_total, proposed_dollars=additional,
+                                portfolio_equity=portfolio_equity_now,
                             )
                             if not sec_decision.admitted:
                                 intent_dollars = existing_dollars * (1 if intent_dollars > 0 else -1)
@@ -359,16 +360,21 @@ class MultiSymbolPortfolioSimulator:
                         )
 
                     # Stop-order scheduling (preserved from Task 26).
-                    if s in ts_states and ts_states[s].phase is not TSPhase.DISARMED and target_qty != 0:
-                        sgn = 1 if target_qty > 0 else -1
+                    # Stop must size to the CURRENT position (the qty that exists on
+                    # bar i+1 when the stop fires), not the future target_qty. The
+                    # signal order on bar i+1 fires AFTER the stop, so the position
+                    # at stop-fire time equals positions[s].qty at end of bar i.
+                    current_qty = positions[s].qty
+                    if s in ts_states and ts_states[s].phase is not TSPhase.DISARMED and current_qty != 0:
+                        sgn = 1 if current_qty > 0 else -1
                         stop_px = ts_states[s].stop_price(sign=sgn, bar_idx=i + 1)
                         if stop_px is not None:
                             stop_side = OrderSide.SELL if sgn > 0 else OrderSide.BUY
                             pending_stop[s] = Order(
-                                symbol=s, side=stop_side, qty=abs(target_qty),
+                                symbol=s, side=stop_side, qty=abs(current_qty),
                                 order_type=OrderType.STOP, stop_price=stop_px, timestamp=next_ts,
                             )
-                    elif s in ts_states and target_qty == 0:
+                    elif s in ts_states and current_qty == 0:
                         pending_stop[s] = None
 
             # Step 11: mark to market.
