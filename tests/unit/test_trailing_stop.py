@@ -78,3 +78,33 @@ def test_disarm_clears_state():
     ts.disarm()
     assert ts.armed is False
     assert ts.stop_price(sign=+1, bar_idx=0) is None
+
+
+def test_enabled_when_atr_set():
+    from backtester.engine.trailing_stop import TrailingStopState
+    ts = TrailingStopState(atr_mult=2.0, atr_series=pd.Series([float("nan"), 2.0, 3.0]))
+    assert ts.enabled is True
+
+
+def test_atr_stop_price_long_uses_indexed_value():
+    from backtester.engine.trailing_stop import TrailingStopState
+    atr = pd.Series([float("nan"), 2.0, 3.0])
+    ts = TrailingStopState(atr_mult=2.0, atr_series=atr)
+    ts.reset(entry_price=100.0)
+    # peak_high = 100 (no update calls yet)
+    # bar_idx=0 → NaN ATR → None
+    assert ts.stop_price(sign=+1, bar_idx=0) is None
+    # bar_idx=1 → ATR=2.0 → stop = 100 - 2*2 = 96
+    assert ts.stop_price(sign=+1, bar_idx=1) == pytest.approx(96.0)
+    # bar_idx=2 → ATR=3.0 → stop = 100 - 2*3 = 94
+    assert ts.stop_price(sign=+1, bar_idx=2) == pytest.approx(94.0)
+
+
+def test_atr_stop_price_short_uses_indexed_value():
+    from backtester.engine.trailing_stop import TrailingStopState
+    atr = pd.Series([2.0, 3.0])
+    ts = TrailingStopState(atr_mult=1.5, atr_series=atr)
+    ts.reset(entry_price=100.0)
+    # trough_low = 100
+    # bar_idx=0 → ATR=2.0 → stop = 100 + 1.5*2 = 103
+    assert ts.stop_price(sign=-1, bar_idx=0) == pytest.approx(103.0)

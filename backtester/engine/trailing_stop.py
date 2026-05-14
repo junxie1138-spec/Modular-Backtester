@@ -50,5 +50,11 @@ class TrailingStopState:
             if sign > 0:
                 return self.peak_high * (1.0 - self.pct)
             return self.trough_low * (1.0 + self.pct)
-        # ATR mode handled in Task 6
-        return None
+        # ATR mode
+        assert self.atr_series is not None  # invariant: atr_mult set ⇒ atr_series set
+        atr_val = float(self.atr_series.iloc[bar_idx])
+        if pd.isna(atr_val):
+            return None
+        if sign > 0:
+            return self.peak_high - self.atr_mult * atr_val  # type: ignore[operator]
+        return self.trough_low + self.atr_mult * atr_val  # type: ignore[operator]
