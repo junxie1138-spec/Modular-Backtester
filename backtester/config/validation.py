@@ -27,6 +27,21 @@ def validate_run_config(rc: RunConfig) -> None:
     if rc.execution.commission_bps < 0 or rc.execution.slippage_bps < 0:
         raise ConfigError("execution commission_bps and slippage_bps must be >= 0")
 
+    # Trailing-stop validation.
+    pct = rc.execution.trailing_stop_pct
+    atr_mult = rc.execution.trailing_stop_atr_mult
+    atr_period = rc.execution.trailing_stop_atr_period
+    if pct is not None and atr_mult is not None:
+        raise ConfigError(
+            "execution.trailing_stop_pct and trailing_stop_atr_mult are mutually exclusive"
+        )
+    if pct is not None and not (0.0 < pct < 1.0):
+        raise ConfigError("execution.trailing_stop_pct must be in (0, 1)")
+    if atr_mult is not None and atr_mult <= 0.0:
+        raise ConfigError("execution.trailing_stop_atr_mult must be > 0")
+    if atr_period < 2:
+        raise ConfigError("execution.trailing_stop_atr_period must be >= 2")
+
     if rc.portfolio.size <= 0 or rc.portfolio.size > 1.0:
         raise ConfigError("portfolio.size must be in (0, 1] when sizing_mode is percent_equity")
 

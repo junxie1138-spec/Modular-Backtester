@@ -58,3 +58,35 @@ def test_wfo_requires_windows():
 def test_wfo_valid_when_windows_set():
     rc = _make(wfo=WFOConfig(enabled=True, train_bars=252, test_bars=63, step_bars=63))
     validate_run_config(rc)
+
+
+def test_trailing_stop_pct_and_atr_mutually_exclusive():
+    rc = _make()
+    rc.execution.trailing_stop_pct = 0.05
+    rc.execution.trailing_stop_atr_mult = 2.0
+    with pytest.raises(ConfigError, match="mutually exclusive"):
+        validate_run_config(rc)
+
+
+def test_trailing_stop_pct_out_of_range():
+    for bad in (0.0, 1.0, -0.1, 1.5):
+        rc = _make()
+        rc.execution.trailing_stop_pct = bad
+        with pytest.raises(ConfigError, match="trailing_stop_pct"):
+            validate_run_config(rc)
+
+
+def test_trailing_stop_atr_mult_must_be_positive():
+    for bad in (0.0, -1.0):
+        rc = _make()
+        rc.execution.trailing_stop_atr_mult = bad
+        with pytest.raises(ConfigError, match="trailing_stop_atr_mult"):
+            validate_run_config(rc)
+
+
+def test_trailing_stop_atr_period_too_small():
+    rc = _make()
+    rc.execution.trailing_stop_atr_mult = 2.0
+    rc.execution.trailing_stop_atr_period = 1
+    with pytest.raises(ConfigError, match="trailing_stop_atr_period"):
+        validate_run_config(rc)
