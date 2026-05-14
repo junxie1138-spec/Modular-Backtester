@@ -171,8 +171,8 @@ The factory lives at `<backtester_root>/factory/` (per spec §10 — developer's
 - Create: `factory/README.md`
 - Create: `factory/.gitignore`
 - Create: `factory/config/settings.toml`
-- Create: `factory/factory/__init__.py` (empty)
-- Create: `factory/factory/settings_loader.py`
+- Create: `factory/__init__.py` (empty)
+- Create: `factory/settings_loader.py`
 - Create: `factory/tests/__init__.py` (empty)
 - Create: `factory/tests/conftest.py`
 - Create: `factory/tests/test_settings_loader.py`
@@ -252,7 +252,7 @@ port             = 8787
 auto_refresh_sec = 10
 ```
 
-- [ ] **Step 5: Write `factory/factory/settings_loader.py`**
+- [ ] **Step 5: Write `factory/settings_loader.py`**
 
 ```python
 from __future__ import annotations
@@ -515,7 +515,7 @@ No backtester source files are modified.
 ## Task 1: Slots (`slots.py`)
 
 **Files:**
-- Create: `factory/factory/slots.py`
+- Create: `factory/slots.py`
 - Create: `factory/tests/test_slots.py`
 
 Implements §5.1: six slot lists; `pull()` returns one random choice from each. The slot lists ARE the diversity engine — they must match the spec's enumerations.
@@ -577,7 +577,7 @@ python -m pytest factory/tests/test_slots.py -q
 
 Expected: ModuleNotFoundError or AttributeError — slots module doesn't exist.
 
-- [ ] **Step 3: Write `factory/factory/slots.py`**
+- [ ] **Step 3: Write `factory/slots.py`**
 
 ```python
 from __future__ import annotations
@@ -650,7 +650,7 @@ Expected: 4 passed.
 - [ ] **Step 5: Commit**
 
 ```powershell
-git add factory/factory/slots.py factory/tests/test_slots.py
+git add factory/slots.py factory/tests/test_slots.py
 git commit -m @'
 feat(factory): slot definitions and weighted random pull (§5.1)
 
@@ -665,7 +665,7 @@ random.Random for deterministic tests.
 ## Task 2: Prompt builder (`prompt.py`)
 
 **Files:**
-- Create: `factory/factory/prompt.py`
+- Create: `factory/prompt.py`
 - Create: `factory/tests/test_prompt.py`
 
 Implements §5.2 + Appendix A verbatim. The template body is reproduced exactly from the spec, with `{{double_braces}}` placeholders filled by `build_prompt(...)`.
@@ -736,7 +736,7 @@ python -m pytest factory/tests/test_prompt.py -q
 
 Expected: ModuleNotFoundError.
 
-- [ ] **Step 3: Write `factory/factory/prompt.py`**
+- [ ] **Step 3: Write `factory/prompt.py`**
 
 ```python
 from __future__ import annotations
@@ -902,7 +902,7 @@ Expected: visible variety in family/primitive/twist columns. If any column is su
 - [ ] **Step 6: Commit**
 
 ```powershell
-git add factory/factory/prompt.py factory/tests/test_prompt.py
+git add factory/prompt.py factory/tests/test_prompt.py
 git commit -m @'
 feat(factory): prompt builder with Appendix A template (§5.2)
 
@@ -918,7 +918,7 @@ and the last 30 dedup-log entries.
 ## Task 3: Dedup log (`dedup.py`)
 
 **Files:**
-- Create: `factory/factory/dedup.py`
+- Create: `factory/dedup.py`
 - Create: `factory/tests/test_dedup.py`
 
 Implements §5.6 + §3.2. Append-only `data/dedup_log.txt`, one `one_line_summary` per line. The append happens AS SOON AS a parseable `one_line_summary` exists — BEFORE validation, BEFORE backtester stages. This is the load-bearing timing rule.
@@ -982,7 +982,7 @@ python -m pytest factory/tests/test_dedup.py -q
 
 Expected: ModuleNotFoundError.
 
-- [ ] **Step 3: Write `factory/factory/dedup.py`**
+- [ ] **Step 3: Write `factory/dedup.py`**
 
 ```python
 from __future__ import annotations
@@ -1031,7 +1031,7 @@ Expected: 6 passed.
 - [ ] **Step 5: Commit**
 
 ```powershell
-git add factory/factory/dedup.py factory/tests/test_dedup.py
+git add factory/dedup.py factory/tests/test_dedup.py
 git commit -m @'
 feat(factory): dedup log append + tail read (§5.6, §3.2)
 
@@ -1046,7 +1046,7 @@ last n entries oldest-first (the order build_prompt expects).
 ## Task 4: Generate — claude -p subprocess + double-unwrap parser (`generate.py`)
 
 **Files:**
-- Create: `factory/factory/generate.py`
+- Create: `factory/generate.py`
 - Create: `factory/tests/fixtures/claude_output_clean.json`
 - Create: `factory/tests/fixtures/claude_output_fenced.json`
 - Create: `factory/tests/fixtures/claude_output_prose_wrapped.json`
@@ -1177,7 +1177,7 @@ python -m pytest factory/tests/test_generate.py -q
 
 Expected: ModuleNotFoundError.
 
-- [ ] **Step 4: Write `factory/factory/generate.py`**
+- [ ] **Step 4: Write `factory/generate.py`**
 
 ```python
 from __future__ import annotations
@@ -1367,7 +1367,7 @@ Expected: prints a cost ~$0.02-0.05, a strategy_id starting with `gen_`, and a o
 - [ ] **Step 7: Commit**
 
 ```powershell
-git add factory/factory/generate.py factory/tests/test_generate.py factory/tests/fixtures/claude_output_*.json
+git add factory/generate.py factory/tests/test_generate.py factory/tests/fixtures/claude_output_*.json
 git commit -m @'
 feat(factory): claude -p subprocess + defensive double-unwrap parser (§5.3)
 
@@ -1383,7 +1383,7 @@ mode (non-zero exit, timeout, malformed envelope, malformed inner, missing keys)
 ## Task 5: Validate Tier 1 — static checks (`validate.py` part 1)
 
 **Files:**
-- Create: `factory/factory/validate.py` (Tier 1 only this task)
+- Create: `factory/validate.py` (Tier 1 only this task)
 - Create: `factory/tests/fixtures/valid_strategy.py`
 - Create: `factory/tests/fixtures/invalid_no_shift.py`
 - Create: `factory/tests/fixtures/invalid_bad_imports.py`
@@ -1592,7 +1592,7 @@ python -m pytest factory/tests/test_validate_static.py -q
 
 Expected: ModuleNotFoundError or AttributeError.
 
-- [ ] **Step 6: Write `factory/factory/validate.py` (Tier 1 only)**
+- [ ] **Step 6: Write `factory/validate.py` (Tier 1 only)**
 
 ```python
 from __future__ import annotations
@@ -1782,7 +1782,7 @@ Expected: 7 passed.
 - [ ] **Step 8: Commit**
 
 ```powershell
-git add factory/factory/validate.py factory/tests/test_validate_static.py factory/tests/fixtures/valid_strategy.py factory/tests/fixtures/invalid_*.py factory/tests/fixtures/valid_config.yaml factory/tests/fixtures/invalid_config_wrong_strategy.yaml
+git add factory/validate.py factory/tests/test_validate_static.py factory/tests/fixtures/valid_strategy.py factory/tests/fixtures/invalid_*.py factory/tests/fixtures/valid_config.yaml factory/tests/fixtures/invalid_config_wrong_strategy.yaml
 git commit -m @'
 feat(factory): Tier 1 static validation (§5.4)
 
@@ -1799,15 +1799,15 @@ attributes (uses_multi_symbol, uses_per_bar) are explicitly forbidden.
 ## Task 6: Validate Tier 2 — functional smoke test (`validate.py` part 2 + `synth_ohlcv.py`)
 
 **Files:**
-- Create: `factory/factory/synth_ohlcv.py`
-- Modify: `factory/factory/validate.py` (add `validate_functional`)
+- Create: `factory/synth_ohlcv.py`
+- Modify: `factory/validate.py` (add `validate_functional`)
 - Create: `factory/tests/fixtures/invalid_signal_dtype.py`
 - Create: `factory/tests/fixtures/invalid_signal_short.py`
 - Create: `factory/tests/test_validate_functional.py`
 
 Implements §5.4 Tier 2. Writes the strategy to a temp file, loads it via `importlib.util.spec_from_file_location` (so we DON'T pollute the real registry), instantiates it, runs `indicators` + `generate_signals` against a 200-bar synthetic OHLCV frame, and asserts SignalFrame shape, dtype, range, size positivity, and the first-bar-zero one-bar-shift sanity check. The slow tag lets `-m "not slow"` skip these locally during fast iteration.
 
-- [ ] **Step 1: Write `factory/factory/synth_ohlcv.py`**
+- [ ] **Step 1: Write `factory/synth_ohlcv.py`**
 
 ```python
 from __future__ import annotations
@@ -1948,7 +1948,7 @@ python -m pytest factory/tests/test_validate_functional.py -q -m slow
 
 Expected: `validate_functional` doesn't exist.
 
-- [ ] **Step 5: Append `validate_functional` to `factory/factory/validate.py`**
+- [ ] **Step 5: Append `validate_functional` to `factory/validate.py`**
 
 ```python
 import importlib.util
@@ -2104,7 +2104,7 @@ Expected: 4 passed.
 - [ ] **Step 7: Commit**
 
 ```powershell
-git add factory/factory/synth_ohlcv.py factory/factory/validate.py factory/tests/test_validate_functional.py factory/tests/fixtures/invalid_signal_dtype.py factory/tests/fixtures/invalid_signal_short.py factory/conftest.py
+git add factory/synth_ohlcv.py factory/validate.py factory/tests/test_validate_functional.py factory/tests/fixtures/invalid_signal_dtype.py factory/tests/fixtures/invalid_signal_short.py factory/conftest.py
 git commit -m @'
 feat(factory): Tier 2 functional validation (§5.4)
 
@@ -2121,7 +2121,7 @@ signal dtype, value set, positive size, first-bar zero. Marked @slow.
 ## Task 7: Filesystem — strategy/config writers + idempotent registry append (`filesystem.py`)
 
 **Files:**
-- Create: `factory/factory/filesystem.py`
+- Create: `factory/filesystem.py`
 - Create: `factory/tests/test_filesystem.py`
 
 Implements §5.5. Writes are absolute and final; the registry append is the single touch into the backtester source tree. Idempotency check: scan the registry file for the alias `_<strategy_id>` before appending.
@@ -2220,7 +2220,7 @@ python -m pytest factory/tests/test_filesystem.py -q
 
 Expected: ModuleNotFoundError.
 
-- [ ] **Step 3: Write `factory/factory/filesystem.py`**
+- [ ] **Step 3: Write `factory/filesystem.py`**
 
 ```python
 from __future__ import annotations
@@ -2313,7 +2313,7 @@ Expected: 6 passed.
 - [ ] **Step 5: Commit**
 
 ```powershell
-git add factory/factory/filesystem.py factory/tests/test_filesystem.py
+git add factory/filesystem.py factory/tests/test_filesystem.py
 git commit -m @'
 feat(factory): strategy/config writers + idempotent registry append (§5.5)
 
@@ -2329,7 +2329,7 @@ collisions across many generated strategies, and detects the alias on re-runs.
 ## Task 8: Stages — bundle finder + summary parsers (`stages.py` part 1)
 
 **Files:**
-- Create: `factory/factory/stages.py` (parsers only; subprocesses in Task 9)
+- Create: `factory/stages.py` (parsers only; subprocesses in Task 9)
 - Create: `factory/tests/fixtures/sample_backtest_summary.json`
 - Create: `factory/tests/fixtures/sample_optimize_summary.json`
 - Create: `factory/tests/fixtures/sample_wfo_summary.json`
@@ -2496,7 +2496,7 @@ python -m pytest factory/tests/test_stages_parsers.py -q
 
 Expected: ModuleNotFoundError.
 
-- [ ] **Step 4: Write `factory/factory/stages.py` (parsers + bundle finder)**
+- [ ] **Step 4: Write `factory/stages.py` (parsers + bundle finder)**
 
 ```python
 from __future__ import annotations
@@ -2592,7 +2592,7 @@ Expected: 6 passed.
 - [ ] **Step 6: Commit**
 
 ```powershell
-git add factory/factory/stages.py factory/tests/test_stages_parsers.py factory/tests/fixtures/sample_*_summary.json
+git add factory/stages.py factory/tests/test_stages_parsers.py factory/tests/fixtures/sample_*_summary.json
 git commit -m @'
 feat(factory): summary.json parsers + bundle finder (§5.7, reconciliation R1+R2)
 
@@ -2610,7 +2610,7 @@ factory stages.py suffix convention from R2).
 ## Task 9: Stages — three subprocess wrappers (`stages.py` part 2)
 
 **Files:**
-- Modify: `factory/factory/stages.py` (append `run_<stage>` and `run_all_stages`)
+- Modify: `factory/stages.py` (append `run_<stage>` and `run_all_stages`)
 - Create: `factory/tests/test_stages_subprocess.py`
 
 This is where reconciliation finding R2 lands operationally. Each stage gets a transient stage-specific config (rewritten `run_name`) so bundles don't collide. The subprocess invocation is the same for all three stages — `python -m backtester.runners.run_<X> --config <tmp_yaml>`.
@@ -2810,7 +2810,7 @@ python -m pytest factory/tests/test_stages_subprocess.py -q
 
 Expected: ImportError on `build_stage_config` / `run_backtest_stage` / etc.
 
-- [ ] **Step 3: Append to `factory/factory/stages.py`**
+- [ ] **Step 3: Append to `factory/stages.py`**
 
 ```python
 import json
@@ -2971,7 +2971,7 @@ Expected: three StageResult.parsed dicts printed, each with the expected keys (s
 - [ ] **Step 6: Commit**
 
 ```powershell
-git add factory/factory/stages.py factory/tests/test_stages_subprocess.py
+git add factory/stages.py factory/tests/test_stages_subprocess.py
 git commit -m @'
 feat(factory): three subprocess stages with collision-safe run_names (§5.7, R2)
 
@@ -2988,7 +2988,7 @@ malformed JSON) all surface as StageError with stderr tail.
 ## Task 10: Results store (`results.py`)
 
 **Files:**
-- Create: `factory/factory/results.py`
+- Create: `factory/results.py`
 - Create: `factory/tests/test_results.py`
 
 Implements §5.8 + §6 (reconciled). Append-only JSONL. One record per cycle. The dashboard's single data source.
@@ -3126,7 +3126,7 @@ python -m pytest factory/tests/test_results.py -q
 
 Expected: ModuleNotFoundError.
 
-- [ ] **Step 3: Write `factory/factory/results.py`**
+- [ ] **Step 3: Write `factory/results.py`**
 
 ```python
 from __future__ import annotations
@@ -3241,7 +3241,7 @@ Expected: 7 passed.
 - [ ] **Step 5: Commit**
 
 ```powershell
-git add factory/factory/results.py factory/tests/test_results.py
+git add factory/results.py factory/tests/test_results.py
 git commit -m @'
 feat(factory): results record schema + JSONL store (§5.8, §6 reconciled)
 
@@ -3257,7 +3257,7 @@ compact line; read_records tolerates blanks and surfaces corruption.
 ## Task 11: Telegram notifier (`notify.py`)
 
 **Files:**
-- Create: `factory/factory/notify.py`
+- Create: `factory/notify.py`
 - Create: `factory/tests/test_notify.py`
 
 Implements §5.9. Threshold gate keyed on `settings.alerts.alert_threshold_metric` (default `wfo.oos_sharpe`). The message body explicitly labels the alert as a **shortlist signal**, not a verdict (per spec §9 landmine 1 — multiple-comparisons risk). Telegram errors don't crash the loop.
@@ -3389,7 +3389,7 @@ python -m pytest factory/tests/test_notify.py -q
 
 Expected: ModuleNotFoundError.
 
-- [ ] **Step 3: Write `factory/factory/notify.py`**
+- [ ] **Step 3: Write `factory/notify.py`**
 
 ```python
 from __future__ import annotations
@@ -3520,7 +3520,7 @@ Expected: 7 passed.
 - [ ] **Step 5: Commit**
 
 ```powershell
-git add factory/factory/notify.py factory/tests/test_notify.py
+git add factory/notify.py factory/tests/test_notify.py
 git commit -m @'
 feat(factory): telegram notifier with shortlist-signal labeling (§5.9, §9 landmine 1)
 
@@ -3537,7 +3537,7 @@ failures (URLError/timeout) are swallowed -- the loop continues.
 ## Task 12: Cycle assembly (`cycle.py`)
 
 **Files:**
-- Create: `factory/factory/cycle.py`
+- Create: `factory/cycle.py`
 - Create: `factory/tests/test_cycle.py`
 
 Implements the 17 steps of §3 in one `run_cycle(settings, rng)` function — the single most timing-sensitive piece of code in the factory. The load-bearing rules from §3.1 and §3.2:
@@ -3745,7 +3745,7 @@ python -m pytest factory/tests/test_cycle.py -q
 
 Expected: ModuleNotFoundError.
 
-- [ ] **Step 3: Write `factory/factory/cycle.py`**
+- [ ] **Step 3: Write `factory/cycle.py`**
 
 ```python
 from __future__ import annotations
@@ -3970,7 +3970,7 @@ Expected: 4 passed.
 - [ ] **Step 5: Commit**
 
 ```powershell
-git add factory/factory/cycle.py factory/tests/test_cycle.py
+git add factory/cycle.py factory/tests/test_cycle.py
 git commit -m @'
 feat(factory): one-cycle orchestration with strict failure/dedup timing (§3)
 
@@ -3988,7 +3988,7 @@ Cycle never raises; every expected failure path produces a failed record.
 ## Task 13: Loop (`loop.py`) — continuous mode, signal handling, log rotation
 
 **Files:**
-- Create: `factory/factory/loop.py`
+- Create: `factory/loop.py`
 - Create: `factory/tests/test_loop.py`
 
 Implements §5.10. Continuous `while True` with graceful SIGINT/SIGTERM. Rotating file handler on `factory/logs/factory.log` (10MB × 5 backups). Bounded `max_cycles` for tests.
@@ -4065,7 +4065,7 @@ python -m pytest factory/tests/test_loop.py -q
 
 Expected: ImportError.
 
-- [ ] **Step 3: Write `factory/factory/loop.py`**
+- [ ] **Step 3: Write `factory/loop.py`**
 
 ```python
 from __future__ import annotations
@@ -4211,7 +4211,7 @@ Expected: 3 passed.
 - [ ] **Step 5: Commit**
 
 ```powershell
-git add factory/factory/loop.py factory/tests/test_loop.py
+git add factory/loop.py factory/tests/test_loop.py
 git commit -m @'
 feat(factory): continuous loop with signal handling + log rotation (§5.10)
 
