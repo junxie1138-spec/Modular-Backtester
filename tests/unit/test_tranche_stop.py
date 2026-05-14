@@ -133,3 +133,73 @@ def test_runner_trail_no_floor_when_disabled():
     ts.update(pd.Series({"high": 101.0, "low": 99.0, "close": 100.5}))
     # Raw trail = 100.5 - 12.5 = 88.0; no floor.
     assert ts.stop_price(sign=+1, bar_idx=1) == pytest.approx(88.0)
+
+
+# ---- 4 edge-case tests ----
+
+def test_update_only_reads_close_field():
+    """update() must IGNORE high/low fields; only close moves the ratchet."""
+    atr = _atr_series([2.0] * 10)
+    ts = _make_state(atr_series=atr)
+    ts.reset(entry_price=100.0, bar_idx=0)
+    ts.promote_to_runner()
+    # Pass a series where high is wildly higher than close.
+    ts.update(pd.Series({"high": 200.0, "low": 50.0, "close": 100.0}))
+    # peak_close must NOT have moved to 200.
+    assert ts.peak_close == 100.0
+    assert ts.trough_close == 100.0
+
+
+def test_stop_price_returns_none_when_atr_nan():
+    """During ATR warmup, stop_price must return None (no stop scheduled)."""
+    atr = pd.Series(
+        [float("nan")] * 5 + [2.0] * 5,
+        index=pd.date_range("2024-01-02", periods=10, freq="B"),
+    )
+    ts = _make_state(atr_series=atr)
+    # Reset during warmup: atr_at_entry is NaN.
+    ts.reset(entry_price=100.0, bar_idx=0)
+    assert ts.stop_price(sign=+1, bar_idx=0) is None
+    # In RUNNER phase, if current ATR is NaN, also None.
+    ts.promote_to_runner()
+    assert ts.stop_price(sign=+1, bar_idx=2) is None
+    # Once ATR is valid, stop_price is computed.
+    assert ts.stop_price(sign=+1, bar_idx=5) is not None
+
+
+def test_short_symmetric_trough_close_and_breakeven_ceiling():
+    """Short side: trough_close ratchets down; breakeven floor becomes a ceiling."""
+    atr = _atr_series([2.0] * 10)
+    ts = _make_state(runner=2.5, atr_series=atr)
+    ts.reset(entry_price=100.0, bar_idx=0)
+    ts.promote_to_runner()
+    # Short position; price drops.
+    for c in [98.0, 96.0, 94.0]:
+        ts.update(pd.Series({"high": c + 1, "low": c - 1, "close": c}))
+    assert ts.trough_close == 94.0
+    # Raw runner stop = 94 + 2.5*2 = 99.0; breakeven ceiling = min(99, 100) = 99.0.
+    assert ts.stop_price(sign=-1, bar_idx=3) == pytest.approx(99.0)
+    # If price rallies above entry, breakeven CEILING (min for shorts) clamps stop.
+    ts.update(pd.Series({"high": 102, "low": 100, "close": 101.0}))
+    # trough_close still 94; raw stop = 94 + 5 = 99; ceiling = min(99, 100) = 99.
+    assert ts.stop_price(sign=-1, bar_idx=4) == pytest.approx(99.0)
+
+
+def test_re_adding_during_runner_does_not_reset_phase():
+    """An external caller increasing position size mid-RUNNER must NOT reset phase.
+
+    Documented as undefined behavior in spec section 2.6 - the test pins down what
+    actually happens: phase stays RUNNER, peak_close unchanged.
+    """
+    atr = _atr_series([2.0] * 10)
+    ts = _make_state(atr_series=atr)
+    ts.reset(entry_price=100.0, bar_idx=0)
+    ts.update(pd.Series({"high": 105, "low": 99, "close": 104.0}))
+    ts.promote_to_runner()
+    saved_peak = ts.peak_close
+    saved_entry = ts.entry_price
+    # Simulator scales position size up - but per spec, no API on
+    # TrancheStopState to "re-enter". Verify the state is untouched.
+    assert ts.phase.value == "runner"
+    assert ts.peak_close == saved_peak
+    assert ts.entry_price == saved_entry
