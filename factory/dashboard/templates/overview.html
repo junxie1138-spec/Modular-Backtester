@@ -5,7 +5,9 @@
   <title>Strategy Factory — overview</title>
   <link rel="stylesheet" href="/static/style.css">
 </head>
-<body>
+<body data-refresh-sec="{{ auto_refresh_sec }}"
+      data-threshold-metric="{{ summary.threshold_metric }}"
+      data-threshold-value="{{ summary.threshold_value }}">
   <h1>Strategy Factory — overview</h1>
   <div class="banner">
     All "good" flags and Telegram alerts in this dashboard are
