@@ -194,3 +194,19 @@ def test_regimes_config_holds_three_subconfigs():
     assert cfg.spy_ema.enabled is False
     assert cfg.vix.enabled is False
     assert cfg.circuit_breaker.enabled is False
+
+
+def test_run_config_universe_path_defaults_none():
+    from backtester.config.models import RunConfig
+    import dataclasses
+    fields = {f.name: f for f in dataclasses.fields(RunConfig)}
+    assert "universe_path" in fields
+    assert fields["universe_path"].default is None
+
+
+def test_run_config_regimes_defaults_none():
+    from backtester.config.models import RunConfig
+    import dataclasses
+    fields = {f.name: f for f in dataclasses.fields(RunConfig)}
+    assert "regimes" in fields
+    assert fields["regimes"].default is None

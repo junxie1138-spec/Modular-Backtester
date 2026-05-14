@@ -104,3 +104,6 @@ class RunConfig:
     wfo: Optional[WFOConfig] = None
     output_root: str = "output/runs"
     seed: int = 0
+    # v0.4.0 additions to RunConfig:
+    universe_path: Optional[str] = None
+    regimes: Optional[RegimesConfig] = None
