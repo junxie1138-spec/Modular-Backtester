@@ -49,3 +49,29 @@ def test_validate_rejects_nan(ohlcv_small):
     bad.iloc[3, 0] = np.nan
     with pytest.raises(DataError, match="NaN"):
         validate_ohlcv(bad)
+
+
+def _make_index_style_frame(rows: int = 20) -> pd.DataFrame:
+    idx = pd.date_range("2024-01-01", periods=rows, freq="B")
+    return pd.DataFrame(
+        {
+            "open": [100.0] * rows,
+            "high": [101.0] * rows,
+            "low": [99.0] * rows,
+            "close": [100.5] * rows,
+            "volume": [0.0] * rows,  # index-style: no volume
+        },
+        index=idx,
+    )
+
+
+def test_validator_default_rejects_negative_volume():
+    df = _make_index_style_frame()
+    df.iloc[5, df.columns.get_loc("volume")] = -1.0  # negative volume should fail
+    with pytest.raises(DataError):
+        validate_ohlcv(df)
+
+
+def test_validator_strict_volume_false_allows_zero_volume():
+    df = _make_index_style_frame()
+    validate_ohlcv(df, strict_volume=False)  # must not raise with zero volume

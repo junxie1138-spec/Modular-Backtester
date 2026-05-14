@@ -15,7 +15,7 @@ from tests.fixtures.synthetic import make_ohlcv
 
 
 def main() -> None:
-    out = REPO_ROOT / "data" / "raw"
+    out = REPO_ROOT / "data" / "synth"
     out.mkdir(parents=True, exist_ok=True)
 
     spy = make_ohlcv(n=3000, seed=1, start="2013-01-02", start_price=140.0)

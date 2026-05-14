@@ -1,0 +1,256 @@
+import pandas as pd
+import pytest
+
+
+def _ohlcv(closes, start="2024-01-02"):
+    idx = pd.date_range(start, periods=len(closes), freq="B")
+    return pd.DataFrame(
+        {
+            "open": closes, "high": [c + 0.5 for c in closes],
+            "low": [c - 0.5 for c in closes], "close": closes,
+            "volume": [1_000_000] * len(closes),
+        },
+        index=idx,
+    )
+
+
+def test_strategy_is_registered():
+    from backtester.strategies.registry import get_strategy_class
+    cls = get_strategy_class("mean_reversion_atr")
+    assert cls.strategy_id == "mean_reversion_atr"
+
+
+def test_strategy_uses_multi_symbol_and_per_bar():
+    from strategies.mean_reversion_atr import MeanReversionAtrStrategy
+    assert MeanReversionAtrStrategy.uses_multi_symbol is True
+    assert MeanReversionAtrStrategy.uses_per_bar is True
+
+
+def test_params_defaults_match_prd():
+    from strategies.mean_reversion_atr import MeanReversionAtrParams
+    p = MeanReversionAtrParams()
+    assert p.entry_atr_mult == 1.25
+    assert p.mean_lookback == 10
+    assert p.atr_lookback == 20
+    assert p.time_stop_days == 7
+    assert p.runner_time_stop_days == 12
+    assert p.runner_ceiling_atr_mult == 1.25
+    assert p.runtime_trend_threshold == 0.0025
+
+
+def test_indicators_emits_mean10_atr20_slope200():
+    from strategies.mean_reversion_atr import MeanReversionAtrStrategy, MeanReversionAtrParams
+    s = MeanReversionAtrStrategy()
+    data = _ohlcv([100.0 + 0.1 * i for i in range(250)])
+    ind = s.indicators(data, MeanReversionAtrParams())
+    assert "mean10" in ind.columns
+    assert "atr20" in ind.columns
+    assert "slope_log_200d" in ind.columns
+    assert pd.isna(ind["mean10"].iloc[0])
+    assert pd.isna(ind["atr20"].iloc[0])
+
+
+def test_warmup_bars_correct():
+    from strategies.mean_reversion_atr import MeanReversionAtrStrategy, MeanReversionAtrParams
+    s = MeanReversionAtrStrategy()
+    p = MeanReversionAtrParams()
+    assert s.warmup_bars(p) >= 200  # slope_log_200d is the deepest lookback
+
+
+def _run_strategy_signals(strategy, params, data, ctx_factory):
+    """Helper: drive signal_for_bar over a full timeline; ctx_factory(i)->ctx."""
+    indicators = strategy.indicators(data, params)
+    indicators_panel = {"AAA": indicators}
+    data_panel = {"AAA": data}
+    out = []
+    for i in range(len(data)):
+        ctx = ctx_factory(i)
+        target = strategy.signal_for_bar(
+            symbol="AAA", bar_idx=i, data_panel=data_panel,
+            indicators_panel=indicators_panel, ctx=ctx, params=params,
+        )
+        out.append(target)
+    return pd.Series(out, index=data.index)
+
+
+def _flat_ctx(i):
+    """Build a StrategyContext-shaped object signaling phase=DISARMED for AAA."""
+    from types import SimpleNamespace
+    from backtester.engine.tranche_stop import TSPhase
+    return SimpleNamespace(
+        position_phase={"AAA": TSPhase.DISARMED},
+        bars_in_phase={"AAA": 0},
+        regime=None,
+    )
+
+
+def test_entry_fires_at_125_atr_below_mean10():
+    """Long entry when close <= mean10 - 1.25 * atr20 AND phase is DISARMED."""
+    from strategies.mean_reversion_atr import MeanReversionAtrStrategy, MeanReversionAtrParams
+    s = MeanReversionAtrStrategy()
+    closes = [100.0] * 25 + [95.0] + [100.0] * 5  # dip at bar 25
+    data = _ohlcv(closes)
+    signals = _run_strategy_signals(s, MeanReversionAtrParams(), data, _flat_ctx)
+    assert signals.iloc[25] > 0
+
+
+def test_entry_suppressed_when_phase_not_disarmed():
+    from strategies.mean_reversion_atr import MeanReversionAtrStrategy, MeanReversionAtrParams
+    from types import SimpleNamespace
+    from backtester.engine.tranche_stop import TSPhase
+
+    def hard_ctx(i):
+        return SimpleNamespace(
+            position_phase={"AAA": TSPhase.HARD},
+            bars_in_phase={"AAA": 2},
+            regime=None,
+        )
+
+    s = MeanReversionAtrStrategy()
+    closes = [100.0] * 25 + [95.0] + [100.0] * 5
+    data = _ohlcv(closes)
+    signals = _run_strategy_signals(s, MeanReversionAtrParams(), data, hard_ctx)
+    # In HARD phase the strategy may emit 1.0 (hold) or 0.5 (tranche 1 trigger)
+    # or 0.0 (time/regime exit), but it must NOT emit a fresh +1.0 ENTRY
+    # transition from a no-position state. With phase=HARD throughout, the
+    # value at iloc[25] reflects ongoing-position semantics, not a fresh entry.
+    # The strict assertion below would fail if the strategy was treating HARD
+    # as DISARMED (i.e., taking a fresh entry on every bar where close <= ...).
+    val = signals.iloc[25]
+    # Acceptable HARD-phase values: 0.0 (exit), 0.5 (tranche 1 if close >= mean10),
+    # or 1.0 (hold full). All non-fresh-entry. We assert the value is in that set.
+    assert val in (0.0, 0.5, 1.0), f"unexpected HARD-phase value: {val}"
+    # Additionally: with phase=HARD and bars_in_phase=2 (well under time_stop=7),
+    # the dip at bar 25 (close=95, mean10 ~ 99.5) is BELOW mean10 -> not tranche 1.
+    # So the expected hold value is 1.0.
+    assert val == 1.0, f"expected HARD hold to return 1.0, got {val}"
+
+
+def test_entry_suppressed_when_trend_active():
+    from strategies.mean_reversion_atr import MeanReversionAtrStrategy, MeanReversionAtrParams
+    s = MeanReversionAtrStrategy()
+    closes = [100.0 + 0.5 * i for i in range(250)]
+    closes[245] = closes[245] - 5.0  # dip at bar 245 inside a strong uptrend
+    data = _ohlcv(closes)
+    signals = _run_strategy_signals(s, MeanReversionAtrParams(), data, _flat_ctx)
+    assert signals.iloc[245] == 0.0
+
+
+def test_entry_suppressed_when_regime_book_flat():
+    from strategies.mean_reversion_atr import MeanReversionAtrStrategy, MeanReversionAtrParams
+    from types import SimpleNamespace
+    from backtester.engine.tranche_stop import TSPhase
+    from backtester.engine.regime import RegimeState
+
+    def book_flat_ctx(i):
+        return SimpleNamespace(
+            position_phase={"AAA": TSPhase.DISARMED},
+            bars_in_phase={"AAA": 0},
+            regime=RegimeState(
+                spy_ema_tripped=True, vix_tripped=False, circuit_breaker_tripped=False,
+            ),
+        )
+
+    s = MeanReversionAtrStrategy()
+    closes = [100.0] * 25 + [95.0] + [100.0] * 5
+    data = _ohlcv(closes)
+    signals = _run_strategy_signals(s, MeanReversionAtrParams(), data, book_flat_ctx)
+    assert signals.iloc[25] == 0.0
+
+
+def test_tranche_1_emits_half_target_at_mean_touch():
+    """HARD phase + close >= mean10 -> emit 0.5 (tranche 1 exit)."""
+    from strategies.mean_reversion_atr import MeanReversionAtrStrategy, MeanReversionAtrParams
+    from types import SimpleNamespace
+    from backtester.engine.tranche_stop import TSPhase
+
+    def hard_ctx(i):
+        return SimpleNamespace(
+            position_phase={"AAA": TSPhase.HARD},
+            bars_in_phase={"AAA": 2},
+            regime=None,
+        )
+
+    s = MeanReversionAtrStrategy()
+    closes = [100.0] * 20 + [101.0] * 10
+    data = _ohlcv(closes)
+    signals = _run_strategy_signals(s, MeanReversionAtrParams(), data, hard_ctx)
+    assert signals.iloc[25] == 0.5
+
+
+def test_hard_phase_time_stop_at_7_days():
+    from strategies.mean_reversion_atr import MeanReversionAtrStrategy, MeanReversionAtrParams
+    from types import SimpleNamespace
+    from backtester.engine.tranche_stop import TSPhase
+
+    def long_hard_ctx(i):
+        return SimpleNamespace(
+            position_phase={"AAA": TSPhase.HARD},
+            bars_in_phase={"AAA": 8},  # exceeds time_stop_days=7
+            regime=None,
+        )
+
+    s = MeanReversionAtrStrategy()
+    closes = [100.0] * 30
+    data = _ohlcv(closes)
+    signals = _run_strategy_signals(s, MeanReversionAtrParams(), data, long_hard_ctx)
+    assert signals.iloc[25] == 0.0
+
+
+def test_runner_phase_time_stop_at_12_days():
+    from strategies.mean_reversion_atr import MeanReversionAtrStrategy, MeanReversionAtrParams
+    from types import SimpleNamespace
+    from backtester.engine.tranche_stop import TSPhase
+
+    def long_runner_ctx(i):
+        return SimpleNamespace(
+            position_phase={"AAA": TSPhase.RUNNER},
+            bars_in_phase={"AAA": 13},
+            regime=None,
+        )
+
+    s = MeanReversionAtrStrategy()
+    closes = [100.0] * 30
+    data = _ohlcv(closes)
+    signals = _run_strategy_signals(s, MeanReversionAtrParams(), data, long_runner_ctx)
+    assert signals.iloc[25] == 0.0
+
+
+def test_runner_hard_ceiling_at_mean_plus_125_atr():
+    from strategies.mean_reversion_atr import MeanReversionAtrStrategy, MeanReversionAtrParams
+    from types import SimpleNamespace
+    from backtester.engine.tranche_stop import TSPhase
+
+    def runner_ctx(i):
+        return SimpleNamespace(
+            position_phase={"AAA": TSPhase.RUNNER},
+            bars_in_phase={"AAA": 5},
+            regime=None,
+        )
+
+    s = MeanReversionAtrStrategy()
+    closes = [100.0] * 25 + [115.0, 115.0, 115.0, 115.0, 115.0]
+    data = _ohlcv(closes)
+    signals = _run_strategy_signals(s, MeanReversionAtrParams(), data, runner_ctx)
+    assert signals.iloc[25] == 0.0
+
+
+def test_strategy_does_not_close_position_on_runtime_trend_gate():
+    """If a position is open and trend gate activates, position is HELD, not closed."""
+    from strategies.mean_reversion_atr import MeanReversionAtrStrategy, MeanReversionAtrParams
+    from types import SimpleNamespace
+    from backtester.engine.tranche_stop import TSPhase
+
+    def runner_ctx(i):
+        return SimpleNamespace(
+            position_phase={"AAA": TSPhase.RUNNER},
+            bars_in_phase={"AAA": 2},
+            regime=None,
+        )
+
+    s = MeanReversionAtrStrategy()
+    closes = [100.0 + 0.5 * i for i in range(250)]
+    data = _ohlcv(closes)
+    signals = _run_strategy_signals(s, MeanReversionAtrParams(), data, runner_ctx)
+    # Trend gate is active (uptrend); but phase is RUNNER. Strategy holds, not exit.
+    assert signals.iloc[245] != 0.0

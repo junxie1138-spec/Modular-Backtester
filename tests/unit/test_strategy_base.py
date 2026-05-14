@@ -79,3 +79,13 @@ def test_indicators_and_signals_callable():
     sf = s.generate_signals(data, ind, ctx, p)
     assert isinstance(sf, SignalFrame)
     assert "signal" in sf.data.columns
+
+
+def test_base_strategy_uses_multi_symbol_default_false():
+    from backtester.strategies.base import BaseStrategy
+    assert BaseStrategy.uses_multi_symbol is False
+
+
+def test_base_strategy_uses_per_bar_default_false():
+    from backtester.strategies.base import BaseStrategy
+    assert BaseStrategy.uses_per_bar is False

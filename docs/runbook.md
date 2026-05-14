@@ -107,3 +107,54 @@ that should be added as follow-up phases:
 - **No interaction with borrow-cost accounting** (which is itself a
   documented v0.2.0 limitation). A short stopped out by a rally still
   pays no borrow during the holding period.
+
+## v0.4.0 limitations
+
+The v0.4.0 framework lands the multi-symbol simulator, tranche-stop machinery,
+regime gates, risk/sector caps, and yfinance loader. The following items are
+deliberately deferred:
+
+- **Multi-symbol WFO** is deferred to v0.4.1. `run_wfo` against a multi-symbol
+  strategy raises with an explicit deferral message. To inspect window-level
+  metrics in v0.4.0, run the full `run_batch` and slice the resulting equity
+  curve manually.
+- **Per-symbol parameter overrides** declared in `universe.yaml` are loaded
+  into `ResolvedSymbolConfig.effective_params` but not yet applied per-symbol
+  in the multi-symbol engine — a single global `params` object is used for
+  all symbols. This is a known v0.4.0 limitation; fix lands in v0.4.1.
+- **Phased circuit-breaker re-entry.** v0.4.0 uses the PRD literal: full size
+  on day 11. If WFO ratchet-down clusters emerge, phased 50%→100% re-entry
+  becomes a v0.4.1 follow-up.
+- **Continuous-bound LHS sampling.** v0.4.0's LHS sampler operates over index
+  positions in discrete candidate lists. Strategies needing truly continuous
+  parameters require a separate sampler.
+- **LHS wiring into `GridSearchOptimizer`** is not yet complete. The sampler
+  module (`backtester/optimize/lhs_sampler.py`) is usable directly but
+  `GridSearchOptimizer.optimize()` still enumerates the full Cartesian grid
+  unconditionally.
+- **Borrow cost / margin call simulation.** Same as v0.2.0 and v0.3.0.
+  `mean_reversion_atr` is long-only, so this doesn't bite directly, but any
+  future short strategy inherits the limitation.
+- **Sector membership changes over time.** `data/sector_map.csv` is a static
+  snapshot. Tickers that changed sectors during 2015-2025 are mapped to their
+  current sector for the whole window.
+
+## v0.4.0 performance-gate flip workflow
+
+Stress-window integration tests (`tests/integration/test_stress_windows.py`)
+and the held-out continuous test (`tests/integration/test_held_out_2022_2025.py`)
+are marked `@pytest.mark.xfail(strict=False)` by default. Each test ALWAYS:
+
+1. Runs the backtest end-to-end (structural correctness).
+2. Parses metrics from `batch_summary.json`.
+3. Writes metrics to `metrics.json` in the test's tmp_path for inspection.
+
+The PRD's performance thresholds (DD < 9%, return > 15%) are wrapped by the
+xfail marker — they exist in source, but CI does not fail when they're not
+met. To convert a target into a hard gate, REMOVE the `@pytest.mark.xfail`
+decorator on that specific test. This separates framework regressions (genuine
+bugs) from strategy-tuning gaps (a config retune, not a fix).
+
+The same machinery applies to any future test that asserts a strategy
+performance number: wrap in xfail until the strategy is tuned to clear the
+bar consistently.

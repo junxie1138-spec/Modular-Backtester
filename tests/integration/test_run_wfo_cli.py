@@ -184,3 +184,33 @@ output_root: "{out.as_posix()}"
     sides = set(oos_trades["side"]) if len(oos_trades) else set()
     assert "buy" in sides, f"expected at least one BUY in oos_trades, got {sides}"
     assert "sell" in sides, f"expected at least one SELL in oos_trades, got {sides}"
+
+
+def test_run_wfo_multi_symbol_explicit_deferral(tmp_path):
+    """v0.4.0 multi-symbol WFO is deferred; runner emits a clear message."""
+    import subprocess
+    import sys
+    cfg = tmp_path / "wfo_multi.yaml"
+    cfg.write_text(
+        "run_name: vtest\n"
+        "strategy: mean_reversion_atr\n"
+        "universe_path: " + str((tmp_path / "universe.yaml").resolve()) + "\n"
+        "strategy_params: {entry_atr_mult: 1.25, mean_lookback: 10}\n"
+        "data:\n"
+        "  source: csv\n  root: data/raw\n"
+        "  start: '2024-01-02'\n  end: '2024-06-30'\n"
+        "  timeframe: 1d\n  aux_symbols: [SPY, '^VIX']\n"
+        "execution: {initial_cash: 100000}\n"
+        "portfolio: {sizing_mode: vol_targeted, vol_target: 0.12}\n"
+        "wfo: {enabled: true, train_bars: 60, test_bars: 30, step_bars: 30}\n"
+        "optimization: {objective: sharpe, param_space: {entry_atr_mult: [1.0, 1.25]}}\n"
+        "output_root: " + str(tmp_path) + "\n"
+    )
+    # Create a minimal universe.yaml referenced above.
+    (tmp_path / "universe.yaml").write_text("universe:\n  TSLA: {sector: Auto}\n")
+    result = subprocess.run(
+        [sys.executable, "-m", "backtester.runners.run_wfo", "--config", str(cfg)],
+        capture_output=True, text=True,
+    )
+    assert result.returncode != 0
+    assert "v0.4.1" in result.stdout + result.stderr

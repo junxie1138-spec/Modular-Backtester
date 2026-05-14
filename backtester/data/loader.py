@@ -54,6 +54,9 @@ def load_symbol(
     root: Union[str, Path],
     start: Optional[str] = None,
     end: Optional[str] = None,
+    *,
+    auto_adjust: bool = True,
+    require_volume: bool = True,
 ) -> pd.DataFrame:
     root = Path(root)
     src = source.lower()
@@ -61,4 +64,12 @@ def load_symbol(
         return CSVDataLoader(root).load(symbol, start, end)
     if src == "parquet":
         return ParquetDataLoader(root).load(symbol, start, end)
-    raise DataError(f"unknown source: {source!r} (allowed: csv, parquet)")
+    if src == "yfinance":
+        from backtester.data.yfinance_loader import load_yfinance_cached
+        if start is None or end is None:
+            raise DataError("yfinance loader requires explicit start and end dates")
+        return load_yfinance_cached(
+            symbol=symbol, root=str(root), start=start, end=end,
+            auto_adjust=auto_adjust, require_volume=require_volume,
+        )
+    raise DataError(f"unknown source: {source!r} (allowed: csv, parquet, yfinance)")

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "modular-stock-backtester"
-version = "0.3.0"
+version = "0.4.0"
 description = "Modular Python backtesting framework with WFO support"
 requires-python = ">=3.11"
 dependencies = [
@@ -16,6 +16,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest>=7.4", "pytest-cov>=4.1"]
+data = ["yfinance>=0.2.40"]
 
 [project.scripts]
 bt-run = "backtester.runners.run_backtest:main"
