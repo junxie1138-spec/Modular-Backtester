@@ -67,6 +67,14 @@ def generate_signals(self, data, indicators, ctx, params) -> SignalFrame: ...
   LIMIT is honored only when entering from a flat position (flat → long
   or flat → short). Flips through zero (long → short, short → long) and
   exits to flat are always MARKET.
+- Trailing stops are **execution-layer**, not strategy-layer. Configure
+  via `execution.trailing_stop_pct` or `execution.trailing_stop_atr_mult`
+  in the run YAML. Strategies have no `stop_column` and cannot emit
+  per-trade stop levels in v0.3.0. The trailing stop trails the running
+  peak (long) or trough (short) since entry and fires as a STOP order on
+  the bar after the peak/trough is breached by the configured distance.
+  Stop-out exits take precedence over the strategy signal on the same
+  bar; the next bar's signal is read normally.
 - A strategy that emits only `{0, 1}` continues to work unchanged and
   does not require `allow_short`.
 - A strategy that emits `-1` while `execution.allow_short` is `false`
