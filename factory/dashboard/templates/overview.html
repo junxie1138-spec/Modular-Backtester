@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Strategy Factory — overview</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <h1>Strategy Factory — overview</h1>
+  <div class="banner">
+    All "good" flags and Telegram alerts in this dashboard are
+    <strong>shortlist signals, not verdicts</strong>. WFO mitigates but does not
+    eliminate multiple-comparisons / overfitting risk; a held-out gate
+    (different symbol or fully unseen period) is required before treating
+    any row as a real candidate.
+  </div>
+  <div class="counters" id="counters">
+    <span>Total cycles: <strong id="c-total">{{ summary.total_cycles }}</strong></span>
+    <span>Completes: <strong id="c-complete">{{ summary.completes }}</strong></span>
+    <span>Failures: <strong id="c-failures">{{ summary.total_cycles - summary.completes }}</strong>
+      ({% for stage, n in summary.failures_by_stage.items() %}{{ stage }}={{ n }}{% if not loop.last %}, {% endif %}{% endfor %})</span>
+    <span>Above threshold ({{ summary.threshold_metric }} &gt; {{ summary.threshold_value }}):
+      <strong id="c-above">{{ summary.above_threshold }}</strong></span>
+    <span>Cumulative spend: <strong id="c-spend">${{ "%.2f"|format(summary.cumulative_spend_usd) }}</strong></span>
+  </div>
+  <table id="records">
+    <thead>
+      <tr>
+        <th data-sort="timestamp">Timestamp</th>
+        <th data-sort="strategy_id">Strategy ID</th>
+        <th>Idea</th>
+        <th data-sort="status">Status</th>
+        <th data-sort="backtest_sharpe">BT Sharpe</th>
+        <th data-sort="oos_sharpe">OOS Sharpe</th>
+        <th data-sort="oos_total_return">OOS Return</th>
+        <th data-sort="oos_max_drawdown">OOS DD</th>
+        <th>Good?</th>
+        <th>Alerted?</th>
+      </tr>
+    </thead>
+    <tbody id="records-body">
+      {% for r in records %}
+      <tr class="{% if r.status == 'failed' %}failed{% elif r.is_good %}good{% endif %}"
+          data-strategy-id="{{ r.strategy_id or '' }}">
+        <td>{{ r.timestamp }}</td>
+        <td>{{ r.strategy_id or '(no id)' }}</td>
+        <td>{{ r.idea.one_line_summary if r.idea and r.idea.one_line_summary is defined else '(no idea)' }}</td>
+        <td>{% if r.status == 'failed' %}<span class="failed-stage">failed: {{ r.failed_stage }}</span>{% else %}{{ r.status }}{% endif %}</td>
+        <td>{{ "%.3f"|format(r.backtest.sharpe) if r.backtest else '' }}</td>
+        <td>{{ "%.3f"|format(r.wfo.oos_sharpe) if r.wfo else '' }}</td>
+        <td>{{ "%.2f%%"|format(r.wfo.oos_total_return * 100) if r.wfo else '' }}</td>
+        <td>{{ "%.2f%%"|format(r.wfo.oos_max_drawdown * 100) if r.wfo else '' }}</td>
+        <td>{{ '*' if r.is_good else '' }}</td>
+        <td>{{ '*' if r.alerted else '' }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <script src="/static/overview.js" defer></script>
+</body>
+</html>
