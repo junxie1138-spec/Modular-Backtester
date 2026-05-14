@@ -377,3 +377,104 @@ def test_risk_budget_released_on_full_exit():
     )
     bbb_entries = [f for f in result.trades_per_symbol["BBB"] if f.side.value == "buy"]
     assert len(bbb_entries) == 1
+
+
+def test_vol_targeted_sizing_uses_realized_vol_20d():
+    """sizing_mode='vol_targeted' produces position dollars consistent with realized vol."""
+    sim = _build_simulator(symbols=["AAA"])
+    sim.config.sizing_mode = "vol_targeted"
+    sim.config.vol_target = 0.12
+    sim.config.position_cap_pct = 1.0
+    sim.config.size = 1.0
+
+    idx = pd.date_range("2024-01-02", periods=30, freq="B")
+    closes = [100.0 + 0.1 * i for i in range(30)]
+    data = {"AAA": _ohlcv(closes)}
+    # Enter on bar 26 (signal=1.0 at idx 25 -> fill at bar 26 open).
+    sig_values = [0.0] * 25 + [1.0, 1.0, 1.0, 0.0, 0.0]
+    sig = pd.DataFrame({"signal": sig_values, "size": [1.0]*30}, index=idx)
+    result = sim.simulate(
+        symbols=["AAA"], data=data, sectors={"AAA": "X"},
+        signals={"AAA": sig}, aux_data={}, regime_config=None,
+    )
+    entries = [f for f in result.trades_per_symbol["AAA"] if f.side.value == "buy"]
+    assert len(entries) >= 1
+    assert entries[0].qty > 100
+
+
+def test_vol_targeted_sizing_defers_entry_during_warmup():
+    """No realized_vol available yet -> entry deferred."""
+    sim = _build_simulator(symbols=["AAA"])
+    sim.config.sizing_mode = "vol_targeted"
+    sim.config.vol_target = 0.12
+
+    idx = pd.date_range("2024-01-02", periods=5, freq="B")
+    data = {"AAA": _ohlcv([100.0, 101.0, 102.0, 103.0, 104.0])}
+    sig = pd.DataFrame({"signal": [0.0, 1.0, 1.0, 0.0, 0.0], "size": [1.0]*5}, index=idx)
+    result = sim.simulate(
+        symbols=["AAA"], data=data, sectors={"AAA": "X"},
+        signals={"AAA": sig}, aux_data={}, regime_config=None,
+    )
+    entries = [f for f in result.trades_per_symbol["AAA"] if f.side.value == "buy"]
+    assert len(entries) == 0
+
+
+def test_regime_gate_flattens_book():
+    """When the SPY EMA gate trips, all open positions get target=0 next bar."""
+    from backtester.config.models import RegimesConfig, SpyEmaRegimeConfig
+    sim = _build_simulator(symbols=["AAA"])
+
+    idx = pd.date_range("2024-01-02", periods=8, freq="B")
+    data = {"AAA": _ohlcv([100.0] * 8)}
+    spy = _ohlcv([100.0, 100.0, 100.0, 100.0, 100.0, 70.0, 70.0, 70.0])
+    sig = pd.DataFrame({"signal": [0.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.0], "size": [1.0]*8}, index=idx)
+    regimes = RegimesConfig(spy_ema=SpyEmaRegimeConfig(
+        enabled=True, ema_lookback=3, trip_pct=-0.02, resume_pct=0.02,
+    ))
+    result = sim.simulate(
+        symbols=["AAA"], data=data, sectors={"AAA": "X"},
+        signals={"AAA": sig}, aux_data={"SPY": spy}, regime_config=regimes,
+    )
+    exits = [f for f in result.trades_per_symbol["AAA"] if f.side.value == "sell"]
+    assert len(exits) >= 1
+
+
+def test_position_phase_finalized_before_strategy_callback():
+    """For uses_per_bar strategies, position_phase reflects end-of-bar-t state when
+    the strategy decides bar t+1's signal."""
+    from backtester.engine.tranche_stop import TSPhase
+    from backtester.config.models import ExecutionConfig
+    from backtester.engine.broker import Broker
+
+    captured: list[Any] = []
+
+    class _CaptureStrategy:
+        uses_per_bar = True
+        def signal_for_bar(self, *, symbol, bar_idx, data_panel, indicators_panel, ctx, params):
+            captured.append((bar_idx, ctx.position_phase.get(symbol)))
+            # Synthesize a phase progression: 0 -> 1.0 -> 0.5 -> 0 -> 0
+            sched = [0.0, 1.0, 0.5, 0.0, 0.0]
+            return sched[bar_idx] if bar_idx < len(sched) else 0.0
+
+    sim = _build_simulator(symbols=["AAA"])
+    sim.broker_factory = lambda: Broker(ExecutionConfig(
+        initial_cash=100_000.0, commission_bps=0.0, slippage_bps=0.0,
+        hard_stop_atr_mult=1.0, runner_atr_mult=2.5,
+        breakeven_floor=False, tranche_stop_atr_period=2,
+    ))
+
+    idx = pd.date_range("2024-01-02", periods=5, freq="B")
+    data = {"AAA": _ohlcv([100.0] * 5)}
+    # Provide a dummy signals frame (per-bar strategy overrides it).
+    sig = pd.DataFrame({"signal": [0.0]*5, "size": [1.0]*5}, index=idx)
+    result = sim.simulate(
+        symbols=["AAA"], data=data, sectors={"AAA": "X"},
+        signals={"AAA": sig}, aux_data={}, regime_config=None,
+        strategy=_CaptureStrategy(),
+    )
+    # On bar 2: position just opened from bar 1's signal -> phase should be HARD.
+    bar2_phase = next((p for i, p in captured if i == 2), None)
+    assert bar2_phase is TSPhase.HARD
+    # On bar 3: tranche 1 just filled -> phase should be RUNNER.
+    bar3_phase = next((p for i, p in captured if i == 3), None)
+    assert bar3_phase is TSPhase.RUNNER

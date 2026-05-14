@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from types import SimpleNamespace
 from typing import Any, Callable, Optional
 
+import numpy as np
 import pandas as pd
 
 from backtester.core.enums import OrderSide, OrderType
@@ -11,6 +13,7 @@ from backtester.engine.broker import Broker
 from backtester.engine.fills import Fill
 from backtester.engine.orders import Order
 from backtester.engine.position import Position
+from backtester.engine.regime import RegimePolicy
 from backtester.engine.risk_budget import RiskBudgetEnforcer
 from backtester.engine.sector_cap import SectorCapEnforcer
 from backtester.engine.tranche_stop import TrancheStopState, TSPhase
@@ -34,6 +37,30 @@ class MultiSymbolPortfolioSimulator:
     initial_cash: float
     broker_factory: Callable[[], Broker]
 
+    def _vol_targeted_dollars(
+        self,
+        *,
+        target: float,
+        symbol: str,
+        close: float,
+        portfolio_equity: float,
+        data_panel: dict[str, pd.DataFrame],
+        bar_idx: int,
+    ) -> float:
+        if abs(target) < 1e-12:
+            return 0.0
+        if self.config.sizing_mode != "vol_targeted":
+            return target * portfolio_equity * self.config.size
+        closes = data_panel[symbol]["close"].iloc[: bar_idx + 1]
+        if len(closes) < 21:
+            return 0.0  # warmup defer
+        realized_vol = closes.pct_change().rolling(20).std().iloc[-1] * np.sqrt(252)
+        if pd.isna(realized_vol) or realized_vol <= 0:
+            return 0.0
+        target_pct = self.config.vol_target / realized_vol
+        target_pct = max(-self.config.position_cap_pct, min(self.config.position_cap_pct, target_pct))
+        return target * portfolio_equity * target_pct
+
     def simulate(
         self,
         *,
@@ -43,6 +70,7 @@ class MultiSymbolPortfolioSimulator:
         signals: dict[str, pd.DataFrame],
         aux_data: dict[str, pd.DataFrame],
         regime_config: Optional[Any] = None,
+        strategy: Optional[Any] = None,
     ) -> MultiSymbolResult:
         """Run the multi-symbol backtest."""
         index = data[symbols[0]].index
@@ -70,6 +98,14 @@ class MultiSymbolPortfolioSimulator:
         # Shared cash + equity.
         cash = self.initial_cash
         equity_history: list[float] = []
+
+        # Regime policy setup.
+        regime_policy = (
+            RegimePolicy.from_config(regime_config) if regime_config is not None
+            else RegimePolicy.from_disabled()
+        )
+        recent_pnl_list: list[float] = []
+        prev_equity = self.initial_cash
 
         for i in range(len(index)):
             ts = index[i]
@@ -125,6 +161,45 @@ class MultiSymbolPortfolioSimulator:
                 if s in ts_states:
                     ts_states[s].update(data[s].iloc[i])
 
+            # Step 6: extend recent_pnl with this bar's portfolio PnL delta.
+            position_value_now = sum(
+                positions[s].qty * float(data[s]["close"].iloc[i]) for s in symbols
+            )
+            current_equity = cash + position_value_now
+            pnl_delta = current_equity - prev_equity
+            recent_pnl_list.append(pnl_delta)
+            prev_equity = current_equity
+
+            # Step 7: regime gate update.
+            recent_pnl_series = pd.Series(
+                recent_pnl_list, index=index[: len(recent_pnl_list)],
+            )
+            regime_policy.update(
+                bar_idx=i, aux_data=aux_data,
+                recent_pnl=recent_pnl_series, initial_cash=self.initial_cash,
+            )
+            regime_state = regime_policy.state(bar_idx=i)
+
+            # Step 8: per-bar strategy callback (overrides pre-computed signals for THIS bar).
+            if strategy is not None and getattr(strategy, "uses_per_bar", False):
+                ctx = SimpleNamespace(
+                    position_phase={
+                        s: ts_states[s].phase if s in ts_states else None for s in symbols
+                    },
+                    bars_in_phase={s: 0 for s in symbols},
+                    recent_pnl=recent_pnl_series,
+                    regime=regime_state,
+                )
+                for s in symbols:
+                    target_val = strategy.signal_for_bar(
+                        symbol=s, bar_idx=i, data_panel=data,
+                        indicators_panel={}, ctx=ctx, params=None,
+                    )
+                    # Overwrite the pre-computed signals frame for this bar.
+                    if not signals[s].index.is_unique:
+                        signals[s] = signals[s].copy()
+                    signals[s].loc[index[i], "signal"] = float(target_val)
+
             # Step 10: schedule orders for bar i+1.
             if i + 1 < len(index):
                 portfolio_equity_now = cash + sum(
@@ -154,6 +229,13 @@ class MultiSymbolPortfolioSimulator:
                 sector_enforcer = SectorCapEnforcer(cap_pct=self.config.sector_cap_pct)
                 cash_reserve_limit = portfolio_equity_now * (1.0 - self.config.cash_reserve_pct)
 
+                # If regime is flat, override all targets to zero.
+                if regime_state.book_flat:
+                    for s in symbols:
+                        if not signals[s].index.is_unique:
+                            signals[s] = signals[s].copy()
+                        signals[s].loc[index[i], "signal"] = 0.0
+
                 next_ts = index[i + 1]
                 # Mutable totals updated as each symbol is approved, so later symbols see
                 # the cumulative deployment of earlier symbols in the same scheduling pass.
@@ -164,8 +246,11 @@ class MultiSymbolPortfolioSimulator:
                     target = float(signals[s]["signal"].iloc[i])
                     capped = max(-1.0, min(1.0, target))
                     close_px = float(data[s]["close"].iloc[i])
-                    # Apply position_cap_pct.
-                    intent_dollars = capped * portfolio_equity_now * self.config.size
+                    # Apply position_cap_pct via vol-targeted or percent-equity sizing.
+                    intent_dollars = self._vol_targeted_dollars(
+                        target=capped, symbol=s, close=close_px,
+                        portfolio_equity=portfolio_equity_now, data_panel=data, bar_idx=i,
+                    )
                     cap_dollars = portfolio_equity_now * self.config.position_cap_pct
                     if intent_dollars > cap_dollars:
                         intent_dollars = cap_dollars
@@ -178,8 +263,8 @@ class MultiSymbolPortfolioSimulator:
                     # Apply cash reserve, sector cap, and risk budget ONLY for additional deployment.
                     if proposed_dollars > existing_dollars:
                         additional = proposed_dollars - existing_dollars
-                        # Cash reserve: block if new total deployment would meet or exceed limit.
-                        if running_deployed_total + additional >= cash_reserve_limit:
+                        # Cash reserve: block if new total deployment would exceed limit.
+                        if running_deployed_total + additional > cash_reserve_limit:
                             intent_dollars = existing_dollars * (1 if intent_dollars > 0 else -1)
                             proposed_dollars = existing_dollars
                         else:
@@ -200,7 +285,12 @@ class MultiSymbolPortfolioSimulator:
                                         est_stop_dist = ex.hard_stop_atr_mult * float(atr_now)
                                         if close_px > 0:
                                             est_shares = additional / close_px
-                                            proposed_risk = est_shares * est_stop_dist
+                                            # Use max of stop-distance risk and a 6%-of-additional
+                                            # floor so that tiny ATR doesn't bypass budget caps.
+                                            proposed_risk = max(
+                                                est_shares * est_stop_dist,
+                                                additional * 0.06,
+                                            )
                                             risk_decision = risk_enforcer.evaluate(
                                                 portfolio_equity=portfolio_equity_now,
                                                 current_risk_dollars=running_risk_dollars,
@@ -212,22 +302,20 @@ class MultiSymbolPortfolioSimulator:
                                             else:
                                                 running_risk_dollars += proposed_risk
                                     else:
-                                        # ATR is zero/NaN — use a flat 1% of position as proxy risk.
-                                        if close_px > 0:
-                                            est_shares = additional / close_px
-                                            proposed_risk = est_shares * close_px * 0.01
-                                            risk_decision = risk_enforcer.evaluate(
-                                                portfolio_equity=portfolio_equity_now,
-                                                current_risk_dollars=running_risk_dollars,
-                                                proposed_risk_dollars=proposed_risk,
-                                            )
-                                            if not risk_decision.admitted:
-                                                intent_dollars = existing_dollars * (1 if intent_dollars > 0 else -1)
-                                                proposed_dollars = existing_dollars
-                                            else:
-                                                running_risk_dollars += proposed_risk
+                                        # ATR is zero/NaN — use 6% of additional as proxy risk.
+                                        proposed_risk = additional * 0.06
+                                        risk_decision = risk_enforcer.evaluate(
+                                            portfolio_equity=portfolio_equity_now,
+                                            current_risk_dollars=running_risk_dollars,
+                                            proposed_risk_dollars=proposed_risk,
+                                        )
+                                        if not risk_decision.admitted:
+                                            intent_dollars = existing_dollars * (1 if intent_dollars > 0 else -1)
+                                            proposed_dollars = existing_dollars
+                                        else:
+                                            running_risk_dollars += proposed_risk
                                 else:
-                                    # No ts_states: use position dollars * 1% as proxy risk.
+                                    # No ts_states: use 1% of additional as proxy risk.
                                     proposed_risk = additional * 0.01
                                     risk_decision = risk_enforcer.evaluate(
                                         portfolio_equity=portfolio_equity_now,
