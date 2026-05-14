@@ -1,0 +1,4 @@
+universe:
+  TSLA: {sector: Auto, overrides: {entry_atr_mult: 1.5}}
+  NVDA: {sector: Semis}
+  AMD:  {sector: Semis}

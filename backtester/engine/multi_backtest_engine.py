@@ -45,4 +45,5 @@ class MultiSymbolBacktestEngine:
             symbols=symbols, data=data, sectors=sectors, signals=signals,
             aux_data=aux_data, regime_config=regime_config,
             strategy=strategy if getattr(strategy, "uses_per_bar", False) else None,
+            strategy_params=params,
         )

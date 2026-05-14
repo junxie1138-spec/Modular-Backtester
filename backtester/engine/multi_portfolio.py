@@ -71,6 +71,7 @@ class MultiSymbolPortfolioSimulator:
         aux_data: dict[str, pd.DataFrame],
         regime_config: Optional[Any] = None,
         strategy: Optional[Any] = None,
+        strategy_params: Optional[Any] = None,
     ) -> MultiSymbolResult:
         """Run the multi-symbol backtest."""
         index = data[symbols[0]].index
@@ -193,7 +194,7 @@ class MultiSymbolPortfolioSimulator:
                 for s in symbols:
                     target_val = strategy.signal_for_bar(
                         symbol=s, bar_idx=i, data_panel=data,
-                        indicators_panel={}, ctx=ctx, params=None,
+                        indicators_panel={}, ctx=ctx, params=strategy_params,
                     )
                     # Overwrite the pre-computed signals frame for this bar.
                     if not signals[s].index.is_unique:
