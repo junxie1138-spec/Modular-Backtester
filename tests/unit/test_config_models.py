@@ -62,3 +62,21 @@ def test_execution_config_allow_short_defaults_false():
 def test_execution_config_allow_short_override():
     cfg = ExecutionConfig(allow_short=True)
     assert cfg.allow_short is True
+
+
+def test_execution_config_trailing_stop_pct_defaults_none():
+    from backtester.config.models import ExecutionConfig
+    cfg = ExecutionConfig()
+    assert cfg.trailing_stop_pct is None
+
+
+def test_execution_config_trailing_stop_atr_mult_defaults_none():
+    from backtester.config.models import ExecutionConfig
+    cfg = ExecutionConfig()
+    assert cfg.trailing_stop_atr_mult is None
+
+
+def test_execution_config_trailing_stop_atr_period_defaults_14():
+    from backtester.config.models import ExecutionConfig
+    cfg = ExecutionConfig()
+    assert cfg.trailing_stop_atr_period == 14

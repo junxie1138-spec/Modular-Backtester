@@ -21,6 +21,9 @@ class ExecutionConfig:
     slippage_bps: float = 2.0
     allow_fractional: bool = False
     allow_short: bool = False
+    trailing_stop_pct: Optional[float] = None
+    trailing_stop_atr_mult: Optional[float] = None
+    trailing_stop_atr_period: int = 14
 
 
 @dataclass(slots=True)
