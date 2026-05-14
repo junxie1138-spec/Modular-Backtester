@@ -144,3 +144,101 @@ def test_entry_suppressed_when_regime_book_flat():
     data = _ohlcv(closes)
     signals = _run_strategy_signals(s, MeanReversionAtrParams(), data, book_flat_ctx)
     assert signals.iloc[25] == 0.0
+
+
+def test_tranche_1_emits_half_target_at_mean_touch():
+    """HARD phase + close >= mean10 -> emit 0.5 (tranche 1 exit)."""
+    from strategies.mean_reversion_atr import MeanReversionAtrStrategy, MeanReversionAtrParams
+    from types import SimpleNamespace
+    from backtester.engine.tranche_stop import TSPhase
+
+    def hard_ctx(i):
+        return SimpleNamespace(
+            position_phase={"AAA": TSPhase.HARD},
+            bars_in_phase={"AAA": 2},
+            regime=None,
+        )
+
+    s = MeanReversionAtrStrategy()
+    closes = [100.0] * 20 + [101.0] * 10
+    data = _ohlcv(closes)
+    signals = _run_strategy_signals(s, MeanReversionAtrParams(), data, hard_ctx)
+    assert signals.iloc[25] == 0.5
+
+
+def test_hard_phase_time_stop_at_7_days():
+    from strategies.mean_reversion_atr import MeanReversionAtrStrategy, MeanReversionAtrParams
+    from types import SimpleNamespace
+    from backtester.engine.tranche_stop import TSPhase
+
+    def long_hard_ctx(i):
+        return SimpleNamespace(
+            position_phase={"AAA": TSPhase.HARD},
+            bars_in_phase={"AAA": 8},  # exceeds time_stop_days=7
+            regime=None,
+        )
+
+    s = MeanReversionAtrStrategy()
+    closes = [100.0] * 30
+    data = _ohlcv(closes)
+    signals = _run_strategy_signals(s, MeanReversionAtrParams(), data, long_hard_ctx)
+    assert signals.iloc[25] == 0.0
+
+
+def test_runner_phase_time_stop_at_12_days():
+    from strategies.mean_reversion_atr import MeanReversionAtrStrategy, MeanReversionAtrParams
+    from types import SimpleNamespace
+    from backtester.engine.tranche_stop import TSPhase
+
+    def long_runner_ctx(i):
+        return SimpleNamespace(
+            position_phase={"AAA": TSPhase.RUNNER},
+            bars_in_phase={"AAA": 13},
+            regime=None,
+        )
+
+    s = MeanReversionAtrStrategy()
+    closes = [100.0] * 30
+    data = _ohlcv(closes)
+    signals = _run_strategy_signals(s, MeanReversionAtrParams(), data, long_runner_ctx)
+    assert signals.iloc[25] == 0.0
+
+
+def test_runner_hard_ceiling_at_mean_plus_125_atr():
+    from strategies.mean_reversion_atr import MeanReversionAtrStrategy, MeanReversionAtrParams
+    from types import SimpleNamespace
+    from backtester.engine.tranche_stop import TSPhase
+
+    def runner_ctx(i):
+        return SimpleNamespace(
+            position_phase={"AAA": TSPhase.RUNNER},
+            bars_in_phase={"AAA": 5},
+            regime=None,
+        )
+
+    s = MeanReversionAtrStrategy()
+    closes = [100.0] * 25 + [115.0, 115.0, 115.0, 115.0, 115.0]
+    data = _ohlcv(closes)
+    signals = _run_strategy_signals(s, MeanReversionAtrParams(), data, runner_ctx)
+    assert signals.iloc[25] == 0.0
+
+
+def test_strategy_does_not_close_position_on_runtime_trend_gate():
+    """If a position is open and trend gate activates, position is HELD, not closed."""
+    from strategies.mean_reversion_atr import MeanReversionAtrStrategy, MeanReversionAtrParams
+    from types import SimpleNamespace
+    from backtester.engine.tranche_stop import TSPhase
+
+    def runner_ctx(i):
+        return SimpleNamespace(
+            position_phase={"AAA": TSPhase.RUNNER},
+            bars_in_phase={"AAA": 2},
+            regime=None,
+        )
+
+    s = MeanReversionAtrStrategy()
+    closes = [100.0 + 0.5 * i for i in range(250)]
+    data = _ohlcv(closes)
+    signals = _run_strategy_signals(s, MeanReversionAtrParams(), data, runner_ctx)
+    # Trend gate is active (uptrend); but phase is RUNNER. Strategy holds, not exit.
+    assert signals.iloc[245] != 0.0

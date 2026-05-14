@@ -89,15 +89,38 @@ class MeanReversionAtrStrategy(BaseStrategy[MeanReversionAtrParams]):
             return 0.0  # warmup
 
         phase = ctx.position_phase.get(symbol)
+        bars_in_phase = ctx.bars_in_phase.get(symbol, 0)
         regime = getattr(ctx, "regime", None)
         book_flat = (regime is not None and getattr(regime, "book_flat", False))
 
-        # Entry gate (DISARMED + not book_flat + not trend_active + dip below threshold).
-        if phase is TSPhase.DISARMED and not book_flat:
-            trend_active = bool(indicators["trend_active"].iloc[bar_idx])
-            if not trend_active and close <= mean10 - params.entry_atr_mult * atr20:
-                return 1.0
+        # Regime flat overrides everything.
+        if book_flat:
+            return 0.0
 
+        trend_active = bool(indicators["trend_active"].iloc[bar_idx])
+
+        # HARD-phase exits:
+        if phase is TSPhase.HARD:
+            if bars_in_phase >= params.time_stop_days:
+                return 0.0
+            if close >= mean10:
+                return 0.5
+            return 0.5  # Hold at runner target; execution layer manages hard stop.
+
+        # RUNNER-phase exits:
+        if phase is TSPhase.RUNNER:
+            if bars_in_phase >= params.runner_time_stop_days:
+                return 0.0
+            # Ceiling is suppressed when trend is active — do not exit a
+            # trending runner on the mean+ATR ceiling (spec §6.6: existing
+            # positions are not closed by the runtime trend gate).
+            if not trend_active and close >= mean10 + params.runner_ceiling_atr_mult * atr20:
+                return 0.0
+            return 0.5
+
+        # DISARMED: entry gate.
+        if not trend_active and close <= mean10 - params.entry_atr_mult * atr20:
+            return 1.0
         return 0.0
 
     def generate_signals(self, data, indicators, ctx, params):
