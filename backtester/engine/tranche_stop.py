@@ -83,5 +83,31 @@ class TrancheStopState:
             self.trough_close = c
 
     def stop_price(self, *, sign: int, bar_idx: int) -> Optional[float]:
-        """Stop level for the next bar's STOP order. Implemented in Task 19."""
-        raise NotImplementedError("Implemented in Task 19")
+        """Stop level for the next bar's STOP order.
+
+        HARD phase: fixed at entry_price +/- hard_stop_atr_mult * atr_at_entry.
+            ATR is snapshotted at entry - does NOT change with current bars.
+        RUNNER phase: trail at peak_close/trough_close +/- runner_atr_mult * atr_now,
+            optionally floored (long) or ceilinged (short) at entry_price.
+        """
+        if self.phase is TSPhase.DISARMED or sign == 0:
+            return None
+
+        if self.phase is TSPhase.HARD:
+            if pd.isna(self.atr_at_entry):
+                return None
+            offset = self.hard_stop_atr_mult * self.atr_at_entry
+            # Fixed at entry; does NOT trail.
+            return self.entry_price - offset if sign > 0 else self.entry_price + offset
+
+        # RUNNER
+        if self.atr_series is None:
+            return None
+        atr_now = float(self.atr_series.iloc[bar_idx])
+        if pd.isna(atr_now):
+            return None
+        offset = self.runner_atr_mult * atr_now
+        raw = (self.peak_close - offset) if sign > 0 else (self.trough_close + offset)
+        if self.breakeven_floor:
+            return max(raw, self.entry_price) if sign > 0 else min(raw, self.entry_price)
+        return raw
