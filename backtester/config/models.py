@@ -12,6 +12,9 @@ class DataConfig:
     end: str
     source: str = "csv"
     root: str = "data/raw"
+    # v0.4.0 additions:
+    auto_adjust: bool = True
+    aux_symbols: List[str] = field(default_factory=list)
 
 
 @dataclass(slots=True)

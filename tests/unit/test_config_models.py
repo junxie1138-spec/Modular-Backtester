@@ -80,3 +80,21 @@ def test_execution_config_trailing_stop_atr_period_defaults_14():
     from backtester.config.models import ExecutionConfig
     cfg = ExecutionConfig()
     assert cfg.trailing_stop_atr_period == 14
+
+
+def test_data_config_auto_adjust_defaults_true():
+    from backtester.config.models import DataConfig
+    cfg = DataConfig(symbols=["SPY"], timeframe="1d", start="2024-01-01", end="2024-12-31")
+    assert cfg.auto_adjust is True
+
+
+def test_data_config_aux_symbols_defaults_empty():
+    from backtester.config.models import DataConfig
+    cfg = DataConfig(symbols=["SPY"], timeframe="1d", start="2024-01-01", end="2024-12-31")
+    assert cfg.aux_symbols == []
+
+
+def test_data_config_accepts_yfinance_source():
+    from backtester.config.models import DataConfig
+    cfg = DataConfig(symbols=["SPY"], timeframe="1d", start="2024-01-01", end="2024-12-31", source="yfinance")
+    assert cfg.source == "yfinance"
