@@ -74,7 +74,7 @@ def test_validation_failure_writes_dedup_but_no_files(
     assert not (s.paths.configs_dir / "gen_local_1715800000.yaml").exists()
 
 
-def test_complete_cycle_writes_files_registry_record(
+def test_complete_cycle_writes_files_and_record(
     tmp_settings_file: Path, tmp_path: Path,
 ) -> None:
     _seed_backtester_tree(tmp_path)

@@ -99,9 +99,8 @@ def test_validation_failure_keeps_dedup_no_files(
     assert rec["status"] == "failed" and rec["failed_stage"] == "validation"
     # Dedup entry IS kept (§3.2).
     assert read_tail(s.paths.dedup_dir, n=10) == ["broken strategy"]
-    # No files / no registry line.
+    # No files.
     assert not (s.paths.strategies_dir / "gen_xx.py").exists()
-    assert "gen_xx" not in s.paths.registry_file.read_text(encoding="utf-8")
 
 
 def _run_with_stage_failure(s, strategy_id, failed_stage):

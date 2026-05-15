@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from pathlib import Path
+from unittest import mock
 
 import pandas as pd
 import pytest
@@ -56,10 +58,6 @@ def test_register_strategy_helper(monkeypatch):
     assert R["fake_test_only"] is _FakeStrategy
 
 
-from pathlib import Path
-from unittest import mock
-
-
 def test_curated_strategies_registered_on_import() -> None:
     """Importing the registry registers the curated hand-written strategies."""
     import backtester.strategies.registry as reg
@@ -100,3 +98,4 @@ def test_discover_skips_broken_generated_module(caplog) -> None:
         broken.unlink(missing_ok=True)
     assert "strategies.gen_zzz_brokenfixture" not in imported
     assert "gen_zzz_brokenfixture.py" in caplog.text
+    assert len(imported) > 0   # valid gen_*.py modules still registered
