@@ -51,3 +51,4 @@ Volume-confirmed short-horizon momentum thrust, traded long/short with surge-and
 1778888858	Enter long when consecutive sub-median-range bars build a compression streak past a threshold; rolling-high ATR trailing exit
 1778889051	Long SPY at the turn of the overnight-gap tide: second-derivative zero-cross of the cumulative-gap index while velocity is still negative
 1778889187	Trade fresh distance-from-MA z-score breakouts only while a recent-extension count queue stays under capacity (uncrowded momentum), regime-gated by 200-day MA, fixed-bar exit
+1778889379	Trade live gaps only when the weekday's climatological gap mean agrees in direction; rolling-high ATR trailing exit
