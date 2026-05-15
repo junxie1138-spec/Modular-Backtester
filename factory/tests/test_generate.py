@@ -27,13 +27,13 @@ def test_parses_clean_output() -> None:
 
 
 def test_strips_markdown_fences() -> None:
-    parsed, cost, usage = parse_claude_output(_load("claude_output_fenced.json"))
+    parsed, cost, _ = parse_claude_output(_load("claude_output_fenced.json"))
     assert parsed["strategy_id"] == "gen_2"
     assert cost == pytest.approx(0.041)
 
 
 def test_locates_json_inside_prose() -> None:
-    parsed, cost, usage = parse_claude_output(_load("claude_output_prose_wrapped.json"))
+    parsed, cost, _ = parse_claude_output(_load("claude_output_prose_wrapped.json"))
     assert parsed["strategy_id"] == "gen_3"
     assert cost == pytest.approx(0.029)
 
@@ -84,7 +84,7 @@ def test_parses_when_extra_text_follows_envelope() -> None:
         "total_cost_usd": 0.022,
     })
     stdout = valid_envelope + "\nINFO: shutting down session\n"
-    parsed, cost, usage = parse_claude_output(stdout)
+    parsed, cost, _ = parse_claude_output(stdout)
     assert parsed["strategy_id"] == "gen_5"
     assert cost == pytest.approx(0.022)
 
