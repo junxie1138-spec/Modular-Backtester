@@ -35,3 +35,4 @@ Volume-confirmed short-horizon momentum thrust, traded long/short with surge-and
 1778886708	Buy SPY when a down-close streak's daily losses are progressively decelerating (selling shockwave dissipating), in a 200-MA bull regime
 1778886865	Long when price-trend and OBV-trend regression t-statistics both signal a significant uptrend; hysteresis exit on mirror bearish flip
 1778886987	Day-of-month volatility seasonal profile: enter seasonal-return direction when realized vol is compressed below its calendar norm
+1778887102	Stop-and-reverse on drawdown depth crossing its own moving average, gated by signal-to-noise hysteresis
