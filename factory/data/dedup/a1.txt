@@ -28,3 +28,4 @@ Volume-confirmed short-horizon momentum thrust, traded long/short with surge-and
 1778885635	Enter when a price-above-MA streak AND an MA-slope-rising streak both exceed thresholds; breakeven-then-trail ATR exit
 1778885754	Volatility-percentile regime flips a price rolling-rank entry between breakout-momentum and dip mean-reversion, long-only, ATR trailing stop
 1778885952	Gap in the opposite direction of a fresh windowed-drawdown extreme confirms a 1-2 day reversal, fixed ATR vol-stop
+1778886075	Enter long after a streak of consecutive new 20-bar-high closes; exit on fixed ATR-from-entry volatility stop
