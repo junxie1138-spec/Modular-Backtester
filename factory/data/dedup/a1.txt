@@ -39,3 +39,4 @@ Volume-confirmed short-horizon momentum thrust, traded long/short with surge-and
 1778887232	Turn-of-month coiled-spring: enter long when high-low range is compressed and price depressed inside the calendar month-edge window.
 1778887417	Enter long only when a recent true-range compression coil AND a fresh z-score reclaim of the MA both agree
 1778887564	Keltner upper-band breakout confirmed by cumulative ATR-normalized thrust that also scales position size; breakeven-then-trail exit
+1778887675	Enter long when the rolling high-water envelope is advancing AND a fresh window high prints on above-average volume
