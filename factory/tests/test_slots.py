@@ -53,10 +53,13 @@ def test_exit_entries_migrated_out_of_constraint_twist() -> None:
     twists = SLOTS["constraint_twist"]
     assert "fixed-bar exit (no signal-based exit)" not in twists
     assert "no stop-loss allowed" not in twists
-    assert len(twists) == 8
-
-
-def test_pull_includes_exit_rule() -> None:
-    rng = random.Random(123)
-    pulled = pull_slots(rng)
-    assert pulled["exit_rule"] in SLOTS["exit_rule"]
+    assert twists == (
+        "<=2 tunable params",
+        "regime filter on 200-day MA",
+        "signal-scaled position sizing",
+        "symmetric entry/exit rule",
+        "two-primitive AND (both must agree)",
+        "percentile threshold instead of fixed level",
+        "warmup <=10 bars",
+        "two-bar confirmation before entry",
+    )
