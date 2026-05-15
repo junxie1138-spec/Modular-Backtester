@@ -1,0 +1,27 @@
+run_name: gen_jay_1778883872
+strategy: gen_jay_1778883872
+strategy_params: {rank_window: 60, rank_low: 0.20, rank_high: 0.80, contagion_low: 0.40, contagion_high: 0.60}
+data:
+  symbols: ["SPY"]
+  timeframe: "1d"
+  start: "2015-01-02"
+  end: "2024-12-31"
+  source: "csv"
+  root: "data/raw"
+execution:
+  initial_cash: 100000
+  commission_bps: 2
+  slippage_bps: 5
+  allow_fractional: false
+  allow_short: true
+portfolio:
+  sizing_mode: "percent_equity"
+  size: 0.95
+optimization:
+  objective: sharpe
+  param_space: {rank_window: [40, 60, 80], rank_low: [0.15, 0.20, 0.25], rank_high: [0.75, 0.80, 0.85]}
+wfo:
+  enabled: true
+  train_bars: 756
+  test_bars: 252
+  step_bars: 252

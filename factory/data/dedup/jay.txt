@@ -3,3 +3,4 @@
 1778882454	Drawdown-depth reversal shockwave with trend-strength filter and profit-target/time-stop exit
 1778882720	Plastic vs elastic regime switch flips streak-count signal between momentum and reversal entries
 1778883863	Down-gap fade gated by gap-spike refractory window with ATR rolling-high trailing stop
+1778883961	Epidemic-peak contagion ratio plus rolling price rank fades momentum exhaustion
