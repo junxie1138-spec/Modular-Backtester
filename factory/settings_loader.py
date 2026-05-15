@@ -1,8 +1,13 @@
 from __future__ import annotations
 
+import re
 import tomllib
 from dataclasses import dataclass
 from pathlib import Path
+
+
+# node_id is used in filenames and git-safe paths, so it is constrained.
+_NODE_ID_RE = re.compile(r"^[a-z0-9][a-z0-9-]*$")
 
 
 @dataclass(slots=True, frozen=True)
@@ -70,7 +75,16 @@ class ScreeningCfg:
 
 
 @dataclass(slots=True, frozen=True)
+class SyncCfg:
+    enabled: bool
+    branch: str
+    remote: str
+    push_retries: int
+
+
+@dataclass(slots=True, frozen=True)
 class Settings:
+    node_id: str
     paths: Paths
     generation: GenerationCfg
     stages: StagesCfg
@@ -79,6 +93,7 @@ class Settings:
     dashboard: DashboardCfg
     promotion: PromotionCfg
     screening: ScreeningCfg
+    sync: SyncCfg
 
 
 def load_settings(path: Path) -> Settings:
@@ -94,6 +109,13 @@ def load_settings(path: Path) -> Settings:
                 raw[section] = {**raw[section], **overrides}
             else:
                 raw[section] = overrides
+    node_id = str(raw.get("node_id", "local"))
+    if not _NODE_ID_RE.match(node_id):
+        raise ValueError(
+            f"invalid node_id {node_id!r}: must match ^[a-z0-9][a-z0-9-]*$ "
+            f"(lowercase letters, digits and hyphens; not starting with a hyphen). "
+            f"Set it in factory/config/settings.local.toml."
+        )
     p = raw["paths"]
     root = Path(p["backtester_root"]).resolve()
 
@@ -118,7 +140,9 @@ def load_settings(path: Path) -> Settings:
     d = raw["dashboard"]
     pr = raw.get("promotion", {}) or {}
     sc = raw.get("screening", {}) or {}
+    sy = raw.get("sync", {}) or {}
     return Settings(
+        node_id=node_id,
         paths=paths,
         generation=GenerationCfg(
             claude_cmd=g["claude_cmd"],
@@ -153,5 +177,11 @@ def load_settings(path: Path) -> Settings:
         screening=ScreeningCfg(
             enabled=bool(sc.get("enabled", False)),
             min_optimize_score=float(sc.get("min_optimize_score", 1.3)),
+        ),
+        sync=SyncCfg(
+            enabled=bool(sy.get("enabled", False)),
+            branch=str(sy.get("branch", "factory-pool")),
+            remote=str(sy.get("remote", "origin")),
+            push_retries=int(sy.get("push_retries", 5)),
         ),
     )

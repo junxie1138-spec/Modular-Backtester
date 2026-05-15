@@ -1,3 +1,5 @@
+node_id = "local"   # per-machine; override in settings.local.toml (e.g. "desk", "vps1")
+
 [paths]
 backtester_root  = "."
 strategies_dir   = "strategies"
@@ -45,3 +47,9 @@ trigger_threshold = 1.0
 [screening]
 enabled            = true
 min_optimize_score = 1.3
+
+[sync]
+enabled      = false          # master switch for distributed multi-machine sync
+branch       = "factory-pool" # shared pool branch
+remote       = "origin"
+push_retries = 5
