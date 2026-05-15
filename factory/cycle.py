@@ -77,7 +77,7 @@ def run_cycle(settings: Settings, *, rng: random.Random) -> CycleOutcome:
     paths = s.paths
     slots = pull_slots(rng)
     ts = _iso_now()
-    base_strategy_id = f"gen_{_now_unix_int()}"
+    base_strategy_id = f"gen_{s.node_id}_{_now_unix_int()}"
     # Step 1-3: slots + dedup tail + prompt.
     dedup_tail = read_tail(paths.dedup_log, n=30)
     strategy_id = pick_unused_strategy_id(base_strategy_id, strategies_dir=paths.strategies_dir)

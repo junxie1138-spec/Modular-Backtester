@@ -69,11 +69,11 @@ def test_validation_failure_writes_dedup_but_no_files(
     tail = read_tail(s.paths.dedup_log, n=10)
     assert tail == ["test compression strategy"]
     # No strategy file or config was written (validation failed before write).
-    assert not (s.paths.strategies_dir / "gen_1715800000.py").exists()
-    assert not (s.paths.configs_dir / "gen_1715800000.yaml").exists()
+    assert not (s.paths.strategies_dir / "gen_local_1715800000.py").exists()
+    assert not (s.paths.configs_dir / "gen_local_1715800000.yaml").exists()
     # Registry is untouched.
     reg_text = s.paths.registry_file.read_text(encoding="utf-8")
-    assert "gen_1715800000" not in reg_text
+    assert "gen_local_1715800000" not in reg_text
 
 
 def test_complete_cycle_writes_files_registry_record(
@@ -86,12 +86,12 @@ def test_complete_cycle_writes_files_registry_record(
     valid_src = (Path(__file__).parent / "fixtures" / "valid_strategy.py").read_text(encoding="utf-8")
     valid_cfg = (Path(__file__).parent / "fixtures" / "valid_config.yaml").read_text(encoding="utf-8")
     # Rewrite ids to match the cycle-injected id.
-    valid_src = valid_src.replace('strategy_id = "gen_test_valid"', 'strategy_id = "gen_1715800000"')
-    valid_cfg = valid_cfg.replace("gen_test_valid", "gen_1715800000")
+    valid_src = valid_src.replace('strategy_id = "gen_test_valid"', 'strategy_id = "gen_local_1715800000"')
+    valid_cfg = valid_cfg.replace("gen_test_valid", "gen_local_1715800000")
 
     from factory.generate import GenerationResult
     fake = GenerationResult(parsed={
-        "strategy_id": "gen_1715800000",
+        "strategy_id": "gen_local_1715800000",
         "one_line_summary": "valid test idea",
         "hypothesis": "h", "novelty_justification": "n", "failure_mode": "f",
         "allow_short": False,
@@ -128,10 +128,10 @@ def test_complete_cycle_writes_files_registry_record(
     assert outcome.status == "complete"
     assert outcome.failed_stage is None
     # Strategy + config written.
-    assert (s.paths.strategies_dir / "gen_1715800000.py").exists()
-    assert (s.paths.configs_dir / "gen_1715800000.yaml").exists()
+    assert (s.paths.strategies_dir / "gen_local_1715800000.py").exists()
+    assert (s.paths.configs_dir / "gen_local_1715800000.yaml").exists()
     # Registry has the entry.
-    assert "_gen_1715800000" in s.paths.registry_file.read_text(encoding="utf-8")
+    assert "_gen_local_1715800000" in s.paths.registry_file.read_text(encoding="utf-8")
     # Record written with wfo block.
     from factory.results import read_records
     rec = read_records(s.paths.results_store)[0]
@@ -149,13 +149,13 @@ def test_stage_failure_writes_failed_record_keeps_dedup_and_files(
 
     valid_src = (Path(__file__).parent / "fixtures" / "valid_strategy.py").read_text(encoding="utf-8")
     valid_cfg = (Path(__file__).parent / "fixtures" / "valid_config.yaml").read_text(encoding="utf-8")
-    valid_src = valid_src.replace('strategy_id = "gen_test_valid"', 'strategy_id = "gen_1715800000"')
-    valid_cfg = valid_cfg.replace("gen_test_valid", "gen_1715800000")
+    valid_src = valid_src.replace('strategy_id = "gen_test_valid"', 'strategy_id = "gen_local_1715800000"')
+    valid_cfg = valid_cfg.replace("gen_test_valid", "gen_local_1715800000")
 
     from factory.generate import GenerationResult
     from factory.stages import StageError
     fake = GenerationResult(parsed={
-        "strategy_id": "gen_1715800000",
+        "strategy_id": "gen_local_1715800000",
         "one_line_summary": "another test idea",
         "hypothesis": "h", "novelty_justification": "n", "failure_mode": "f",
         "allow_short": False,
@@ -176,8 +176,8 @@ def test_stage_failure_writes_failed_record_keeps_dedup_and_files(
     from factory.dedup import read_tail
     assert read_tail(s.paths.dedup_log, n=10) == ["another test idea"]
     # Files + registry ARE present (per §9 landmine 2: orphan accepted).
-    assert (s.paths.strategies_dir / "gen_1715800000.py").exists()
-    assert "_gen_1715800000" in s.paths.registry_file.read_text(encoding="utf-8")
+    assert (s.paths.strategies_dir / "gen_local_1715800000.py").exists()
+    assert "_gen_local_1715800000" in s.paths.registry_file.read_text(encoding="utf-8")
 
 
 def test_screened_out_skips_wfo_and_promotion(
@@ -188,12 +188,12 @@ def test_screened_out_skips_wfo_and_promotion(
 
     valid_src = (Path(__file__).parent / "fixtures" / "valid_strategy.py").read_text(encoding="utf-8")
     valid_cfg = (Path(__file__).parent / "fixtures" / "valid_config.yaml").read_text(encoding="utf-8")
-    valid_src = valid_src.replace('strategy_id = "gen_test_valid"', 'strategy_id = "gen_1715800000"')
-    valid_cfg = valid_cfg.replace("gen_test_valid", "gen_1715800000")
+    valid_src = valid_src.replace('strategy_id = "gen_test_valid"', 'strategy_id = "gen_local_1715800000"')
+    valid_cfg = valid_cfg.replace("gen_test_valid", "gen_local_1715800000")
 
     from factory.generate import GenerationResult
     fake = GenerationResult(parsed={
-        "strategy_id": "gen_1715800000",
+        "strategy_id": "gen_local_1715800000",
         "one_line_summary": "screened test idea",
         "hypothesis": "h", "novelty_justification": "n", "failure_mode": "f",
         "allow_short": False,
@@ -229,3 +229,18 @@ def test_screened_out_skips_wfo_and_promotion(
     assert outcome.record["wfo"] is None
     assert outcome.record["promotion"] is None
     assert "0.500" in outcome.record["screen_reason"]
+
+
+def test_cycle_strategy_id_includes_node_id(
+    tmp_settings_file: Path, tmp_path: Path,
+) -> None:
+    """The minted strategy id is gen_<node_id>_<unix-second>."""
+    _seed_backtester_tree(tmp_path)
+    s = load_settings(tmp_settings_file)
+    assert s.node_id == "local"   # fixture default
+    fake = _fake_claude_result("placeholder")  # placeholder body -> validation fails
+    with mock.patch("factory.cycle.call_claude", return_value=fake), \
+         mock.patch("factory.cycle._now_unix_int", return_value=1715800000):
+        outcome = run_cycle(s, rng=random.Random(0))
+    assert outcome.strategy_id == "gen_local_1715800000"
+    assert outcome.record["strategy_id"] == "gen_local_1715800000"
