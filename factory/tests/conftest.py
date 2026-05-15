@@ -15,7 +15,7 @@ def tmp_settings_file(tmp_path: Path) -> Path:
         configs_dir      = "configs/wfo"
         registry_file    = "backtester/strategies/registry.py"
         output_runs_dir  = "output/runs"
-        dedup_log        = "factory/data/dedup_log.txt"
+        dedup_dir        = "factory/data/dedup"
         results_dir      = "factory/data/results"
         factory_log      = "factory/logs/factory.log"
         tmp_dir          = "factory/data/_tmp"

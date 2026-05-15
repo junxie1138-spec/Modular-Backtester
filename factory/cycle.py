@@ -79,7 +79,7 @@ def run_cycle(settings: Settings, *, rng: random.Random) -> CycleOutcome:
     ts = _iso_now()
     base_strategy_id = f"gen_{s.node_id}_{_now_unix_int()}"
     # Step 1-3: slots + dedup tail + prompt.
-    dedup_tail = read_tail(paths.dedup_log, n=30)
+    dedup_tail = read_tail(paths.dedup_dir, n=30)
     strategy_id = pick_unused_strategy_id(base_strategy_id, strategies_dir=paths.strategies_dir)
     prompt = build_prompt(strategy_id=strategy_id, slots=slots, dedup_tail=dedup_tail)
     log.info("cycle start id=%s slots=%s", strategy_id, slots)
@@ -113,7 +113,7 @@ def run_cycle(settings: Settings, *, rng: random.Random) -> CycleOutcome:
     }
 
     # Step 6: dedup-log append (BEFORE validation, BEFORE stages — §3.2).
-    append_summary(paths.dedup_log, parsed["one_line_summary"])
+    append_summary(paths.dedup_dir, parsed["one_line_summary"], node_id=s.node_id)
 
     # Step 7: validate (Tier 1 + Tier 2).
     try:

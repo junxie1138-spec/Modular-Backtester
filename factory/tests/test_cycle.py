@@ -42,7 +42,8 @@ def test_generation_failure_writes_failed_record_and_no_dedup_entry(
         outcome = run_cycle(s, rng=random.Random(0))
     assert outcome.status == "failed"
     assert outcome.failed_stage == "generation"
-    assert not s.paths.dedup_log.exists() or s.paths.dedup_log.read_text().strip() == ""
+    _dedup_shard = s.paths.dedup_dir / "local.txt"
+    assert not _dedup_shard.exists() or _dedup_shard.read_text(encoding="utf-8").strip() == ""
     # A failed record IS written.
     from factory.results import read_records
     records = read_records(s.paths.results_dir)
@@ -66,7 +67,7 @@ def test_validation_failure_writes_dedup_but_no_files(
     assert outcome.failed_stage == "validation"
     # Dedup log entry IS present.
     from factory.dedup import read_tail
-    tail = read_tail(s.paths.dedup_log, n=10)
+    tail = read_tail(s.paths.dedup_dir, n=10)
     assert tail == ["test compression strategy"]
     # No strategy file or config was written (validation failed before write).
     assert not (s.paths.strategies_dir / "gen_local_1715800000.py").exists()
@@ -174,7 +175,7 @@ def test_stage_failure_writes_failed_record_keeps_dedup_and_files(
     assert outcome.failed_stage == "backtest"
     # Dedup entry IS present.
     from factory.dedup import read_tail
-    assert read_tail(s.paths.dedup_log, n=10) == ["another test idea"]
+    assert read_tail(s.paths.dedup_dir, n=10) == ["another test idea"]
     # Files + registry ARE present (per §9 landmine 2: orphan accepted).
     assert (s.paths.strategies_dir / "gen_local_1715800000.py").exists()
     assert "_gen_local_1715800000" in s.paths.registry_file.read_text(encoding="utf-8")

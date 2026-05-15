@@ -17,7 +17,7 @@ class Paths:
     configs_dir: Path
     registry_file: Path
     output_runs_dir: Path
-    dedup_log: Path
+    dedup_dir: Path
     results_dir: Path
     factory_log: Path
     tmp_dir: Path
@@ -128,7 +128,7 @@ def load_settings(path: Path) -> Settings:
         configs_dir=_under_root(p["configs_dir"]),
         registry_file=_under_root(p["registry_file"]),
         output_runs_dir=_under_root(p["output_runs_dir"]),
-        dedup_log=_under_root(p["dedup_log"]),
+        dedup_dir=_under_root(p["dedup_dir"]),
         results_dir=_under_root(p["results_dir"]),
         factory_log=_under_root(p["factory_log"]),
         tmp_dir=_under_root(p["tmp_dir"]),
