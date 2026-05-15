@@ -159,3 +159,11 @@ def test_detail_view_shows_na_when_no_tokens(app_with_records) -> None:
     body = client.get("/strategy/gen_2").get_data(as_text=True)
     assert "Generation tokens" in body
     assert "n/a" in body
+
+
+def test_overview_shows_cumulative_tokens(app_with_records) -> None:
+    """The overview shows a Cumulative tokens counter (24660 from gen_1)."""
+    client, _ = app_with_records
+    body = client.get("/").get_data(as_text=True)
+    assert "Cumulative tokens" in body
+    assert "24660" in body

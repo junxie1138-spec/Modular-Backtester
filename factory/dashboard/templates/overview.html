@@ -26,6 +26,7 @@
     <span>Promoted: <strong id="c-promoted">{{ summary.promoted }}</strong> / {{ summary.promotion_attempted }} attempted</span>
     <span>Screened: <strong id="c-screened">{{ summary.screened }}</strong></span>
     <span>Cumulative spend: <strong id="c-spend">${{ "%.2f"|format(summary.cumulative_spend_usd) }}</strong></span>
+    <span>Cumulative tokens: <strong id="c-tokens">{{ summary.cumulative_tokens }}</strong></span>
   </div>
   <table id="records">
     <thead>
