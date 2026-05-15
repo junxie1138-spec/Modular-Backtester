@@ -1,7 +1,7 @@
 import random
 from collections import Counter
 
-from factory.slots import SLOT_NAMES, SLOTS, pull_slots
+from factory.slots import SLOT_NAMES, SLOTS, _INCOMPATIBLE, pull_slots
 
 
 def test_seven_slots_with_expected_names() -> None:
@@ -63,3 +63,19 @@ def test_exit_entries_migrated_out_of_constraint_twist() -> None:
         "warmup <=10 bars",
         "two-bar confirmation before entry",
     )
+
+
+def test_guard_never_yields_incompatible_pair() -> None:
+    rng = random.Random(2026)
+    for _ in range(3000):
+        slots = pull_slots(rng)
+        pair = (slots["constraint_twist"], slots["exit_rule"])
+        assert pair not in _INCOMPATIBLE, pair
+
+
+def test_guard_preserves_exit_rule_support() -> None:
+    # The guard re-picks only constraint_twist, so every exit_rule value
+    # must still be reachable. This asserts preserved support, not frequency.
+    rng = random.Random(99)
+    seen = {pull_slots(rng)["exit_rule"] for _ in range(3000)}
+    assert seen == set(SLOTS["exit_rule"])
