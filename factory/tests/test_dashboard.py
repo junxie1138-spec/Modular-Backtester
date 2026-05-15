@@ -4,9 +4,10 @@ from pathlib import Path
 import pytest
 
 
-def _write_records(store: Path, recs: list[dict]) -> None:
-    store.parent.mkdir(parents=True, exist_ok=True)
-    with store.open("w", encoding="utf-8") as f:
+def _write_records(results_dir: Path, recs: list[dict]) -> None:
+    results_dir.mkdir(parents=True, exist_ok=True)
+    shard = results_dir / "local.jsonl"
+    with shard.open("w", encoding="utf-8") as f:
         for r in recs:
             f.write(json.dumps(r) + "\n")
 
@@ -16,7 +17,7 @@ def app_with_records(tmp_settings_file: Path, tmp_path: Path):
     from factory.settings_loader import load_settings
     from factory.dashboard.server import create_app
     s = load_settings(tmp_settings_file)
-    _write_records(s.paths.results_store, [
+    _write_records(s.paths.results_dir, [
         {"strategy_id": "gen_1", "timestamp": "2026-05-15T09:00:00Z",
          "status": "complete", "failed_stage": None, "error": None,
          "slots": {"strategy_family": "momentum"},

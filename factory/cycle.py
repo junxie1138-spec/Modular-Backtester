@@ -10,8 +10,6 @@ from typing import Any, Optional
 
 from factory.dedup import append_summary, read_tail
 from factory.filesystem import (
-    RegistryAlreadyHasStrategy,
-    append_registry_entry,
     pick_unused_strategy_id,
     write_strategy_artifacts,
 )
@@ -77,9 +75,9 @@ def run_cycle(settings: Settings, *, rng: random.Random) -> CycleOutcome:
     paths = s.paths
     slots = pull_slots(rng)
     ts = _iso_now()
-    base_strategy_id = f"gen_{_now_unix_int()}"
+    base_strategy_id = f"gen_{s.node_id}_{_now_unix_int()}"
     # Step 1-3: slots + dedup tail + prompt.
-    dedup_tail = read_tail(paths.dedup_log, n=30)
+    dedup_tail = read_tail(paths.dedup_dir, n=30)
     strategy_id = pick_unused_strategy_id(base_strategy_id, strategies_dir=paths.strategies_dir)
     prompt = build_prompt(strategy_id=strategy_id, slots=slots, dedup_tail=dedup_tail)
     log.info("cycle start id=%s slots=%s", strategy_id, slots)
@@ -97,7 +95,7 @@ def run_cycle(settings: Settings, *, rng: random.Random) -> CycleOutcome:
             strategy_id=None, timestamp=ts, slots=slots, idea=None,
             generation_cost_usd=0.0, failed_stage="generation", error=str(exc),
         )
-        write_record(paths.results_store, rec)
+        write_record(paths.results_dir, rec, node_id=s.node_id)
         log.warning("cycle id=%s generation failed: %s", strategy_id, exc)
         return CycleOutcome(status="failed", failed_stage="generation",
                             strategy_id=None, record=rec)
@@ -113,7 +111,7 @@ def run_cycle(settings: Settings, *, rng: random.Random) -> CycleOutcome:
     }
 
     # Step 6: dedup-log append (BEFORE validation, BEFORE stages — §3.2).
-    append_summary(paths.dedup_log, parsed["one_line_summary"])
+    append_summary(paths.dedup_dir, parsed["one_line_summary"], node_id=s.node_id)
 
     # Step 7: validate (Tier 1 + Tier 2).
     try:
@@ -134,12 +132,12 @@ def run_cycle(settings: Settings, *, rng: random.Random) -> CycleOutcome:
             strategy_id=strategy_id, timestamp=ts, slots=slots, idea=idea,
             generation_cost_usd=cost, failed_stage="validation", error=str(exc),
         )
-        write_record(paths.results_store, rec)
+        write_record(paths.results_dir, rec, node_id=s.node_id)
         log.warning("cycle id=%s validation failed: %s", strategy_id, exc)
         return CycleOutcome(status="failed", failed_stage="validation",
                             strategy_id=strategy_id, record=rec)
 
-    # Step 8-10: write files + register.
+    # Step 8-9: write files. Registry is auto-discovery now (no per-strategy edit).
     write_strategy_artifacts(
         strategy_id=strategy_id,
         strategy_src=parsed["strategy_file"],
@@ -147,10 +145,6 @@ def run_cycle(settings: Settings, *, rng: random.Random) -> CycleOutcome:
         strategies_dir=paths.strategies_dir,
         configs_dir=paths.configs_dir,
     )
-    try:
-        append_registry_entry(strategy_id=strategy_id, registry_file=paths.registry_file)
-    except RegistryAlreadyHasStrategy:
-        log.info("registry already has %s; continuing", strategy_id)
 
     canonical_cfg = paths.configs_dir / f"{strategy_id}.yaml"
 
@@ -193,7 +187,7 @@ def run_cycle(settings: Settings, *, rng: random.Random) -> CycleOutcome:
                 backtest=bt.parsed if bt else None,
                 optimize=opt.parsed if opt else None,
             )
-            write_record(paths.results_store, rec)
+            write_record(paths.results_dir, rec, node_id=s.node_id)
             log.warning("cycle id=%s stage=%s failed: %s", strategy_id, stage_name, exc)
             return CycleOutcome(status="failed", failed_stage=stage_name,
                                 strategy_id=strategy_id, record=rec)
@@ -259,7 +253,7 @@ def run_cycle(settings: Settings, *, rng: random.Random) -> CycleOutcome:
     notify_result = maybe_send_alert(rec, _notify_cfg(s))
     rec["alerted"] = bool(notify_result.sent)
 
-    write_record(paths.results_store, rec)
+    write_record(paths.results_dir, rec, node_id=s.node_id)
     log.info("cycle id=%s complete oos_sharpe=%s screened=%s alerted=%s",
              strategy_id,
              wfo.parsed.get("oos_sharpe") if wfo is not None else "n/a",

@@ -22,8 +22,8 @@ strategies_dir   = "strategies"
 configs_dir      = "configs/wfo"
 registry_file    = "backtester/strategies/registry.py"
 output_runs_dir  = "output/runs"
-dedup_log        = "{(tmp_path / 'dedup.txt').as_posix()}"
-results_store    = "{(tmp_path / 'results.json').as_posix()}"
+dedup_dir        = "{(tmp_path / 'dedup').as_posix()}"
+results_dir      = "{(tmp_path / 'results').as_posix()}"
 factory_log      = "{(tmp_path / 'factory.log').as_posix()}"
 tmp_dir          = "{(tmp_path / '_tmp').as_posix()}"
 
@@ -84,20 +84,15 @@ auto_refresh_sec = 10
              mock.patch("factory.cycle.pick_unused_strategy_id", return_value=smoke_id):
             outcome = run_cycle(s, rng=random.Random(0))
     finally:
-        # Cleanup: remove the smoke strategy file and registry line so the
-        # backtester repo isn't permanently polluted.
+        # Cleanup: remove the smoke strategy + config so the backtester repo
+        # isn't permanently polluted. The registry is auto-discovery now and
+        # is never edited, so there is nothing to strip there.
         strat_file = repo / "strategies" / f"{smoke_id}.py"
         cfg_file = repo / "configs" / "wfo" / f"{smoke_id}.yaml"
         if strat_file.exists():
             strat_file.unlink()
         if cfg_file.exists():
             cfg_file.unlink()
-        reg = repo / "backtester" / "strategies" / "registry.py"
-        text = reg.read_text(encoding="utf-8")
-        cleaned = "\n".join(
-            line for line in text.splitlines() if smoke_id not in line
-        ) + "\n"
-        reg.write_text(cleaned, encoding="utf-8")
 
     assert outcome.status == "complete", outcome.record
     assert outcome.record["backtest"]["sharpe"] is not None

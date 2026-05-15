@@ -77,7 +77,7 @@ def create_app(*, settings: Settings) -> Flask:
 
     @app.get("/")
     def overview():
-        records = read_records(settings.paths.results_store)
+        records = read_records(settings.paths.results_dir)
         # Newest first for the table.
         records = list(reversed(records))
         enriched = _enrich(
@@ -99,12 +99,12 @@ def create_app(*, settings: Settings) -> Flask:
 
     @app.get("/api/records")
     def api_records():
-        records = read_records(settings.paths.results_store)
+        records = read_records(settings.paths.results_dir)
         return jsonify(records)
 
     @app.get("/api/summary")
     def api_summary():
-        records = read_records(settings.paths.results_store)
+        records = read_records(settings.paths.results_dir)
         return jsonify(_aggregate(
             records,
             threshold_metric=settings.alerts.alert_threshold_metric,
@@ -113,7 +113,7 @@ def create_app(*, settings: Settings) -> Flask:
 
     @app.get("/strategy/<sid>")
     def detail(sid: str):
-        records = read_records(settings.paths.results_store)
+        records = read_records(settings.paths.results_dir)
         match = next((r for r in records if r.get("strategy_id") == sid), None)
         if match is None:
             return ("not found", 404)

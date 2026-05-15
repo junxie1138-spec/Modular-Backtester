@@ -1,33 +1,55 @@
 from __future__ import annotations
 
+import time
 from pathlib import Path
 
 
-def append_summary(log_path: Path, summary: str) -> None:
-    """Append one one_line_summary to the dedup log.
+def append_summary(dedup_dir: Path, summary: str, *, node_id: str) -> None:
+    """Append one timestamped one_line_summary to this machine's dedup shard.
 
-    Newlines/carriage returns inside the summary are replaced with spaces so
-    one line == one entry. Empty/whitespace-only summaries are silently ignored.
+    The shard is `dedup_dir/<node_id>.txt`; each line is `<unix-int>\t<summary>`.
+    Newlines, carriage returns and tabs inside the summary are replaced with
+    spaces so one line == one entry and the tab stays a clean field delimiter.
+    Empty/whitespace-only summaries are silently ignored.
     Parent directories are created on demand.
     """
-    cleaned = " ".join(summary.replace("\r", "\n").split("\n")).strip()
+    cleaned = " ".join(summary.replace("\t", " ").replace("\r", "\n").split("\n")).strip()
     if not cleaned:
         return
-    log_path.parent.mkdir(parents=True, exist_ok=True)
-    with log_path.open("a", encoding="utf-8") as f:
-        f.write(cleaned + "\n")
+    shard = dedup_dir / f"{node_id}.txt"
+    dedup_dir.mkdir(parents=True, exist_ok=True)
+    ts = int(time.time())
+    with shard.open("a", encoding="utf-8") as f:
+        f.write(f"{ts}\t{cleaned}\n")
 
 
-def read_tail(log_path: Path, n: int) -> list[str]:
-    """Return the last n non-empty lines of the dedup log, oldest first.
+def read_tail(dedup_dir: Path, n: int) -> list[str]:
+    """Return the globally most-recent `n` summaries across all shards, oldest first.
 
-    Returns [] if the file does not exist.
+    Reads every `*.txt` shard in `dedup_dir`, parses each line as
+    `<timestamp>\t<summary>`, sorts all entries by timestamp ascending, and
+    returns the summaries of the last `n`.
+
+    Legacy tolerance: a line with no tab (a pre-migration entry) is treated as
+    timestamp 0, i.e. always oldest. Returns [] if the directory does not exist
+    or if n <= 0.
     """
-    if not log_path.exists():
+    if n <= 0 or not dedup_dir.exists():
         return []
-    lines = [
-        line.rstrip("\n")
-        for line in log_path.read_text(encoding="utf-8").splitlines()
-        if line.strip()
-    ]
-    return lines[-n:]
+    entries: list[tuple[int, str]] = []
+    for shard in sorted(dedup_dir.glob("*.txt")):
+        for line in shard.read_text(encoding="utf-8").splitlines():
+            if not line.strip():
+                continue
+            ts_str, sep, rest = line.partition("\t")
+            if sep:
+                try:
+                    ts = int(ts_str)
+                    summary = rest
+                except ValueError:
+                    ts, summary = 0, line
+            else:
+                ts, summary = 0, line
+            entries.append((ts, summary))
+    entries.sort(key=lambda e: e[0])
+    return [summary for _, summary in entries[-n:]]

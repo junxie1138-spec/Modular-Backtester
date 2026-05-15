@@ -4,22 +4,9 @@ import pytest
 
 from factory.filesystem import (
     FilesystemError,
-    RegistryAlreadyHasStrategy,
-    append_registry_entry,
     pick_unused_strategy_id,
     write_strategy_artifacts,
 )
-
-
-def _seed_registry(path: Path) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(
-        "from __future__ import annotations\n"
-        "from backtester.strategies.base import BaseStrategy\n"
-        "STRATEGY_REGISTRY = {}\n"
-        "def register_strategy(cls): STRATEGY_REGISTRY[cls.strategy_id] = cls; return cls\n",
-        encoding="utf-8",
-    )
 
 
 def test_write_strategy_and_config(tmp_path: Path) -> None:
@@ -48,39 +35,6 @@ def test_write_refuses_to_overwrite(tmp_path: Path) -> None:
             configs_dir=tmp_path / "configs" / "wfo",
         )
     assert "exists" in str(exc.value).lower()
-
-
-def test_append_registry_entry_adds_two_lines(tmp_path: Path) -> None:
-    reg = tmp_path / "backtester" / "strategies" / "registry.py"
-    _seed_registry(reg)
-    append_registry_entry(strategy_id="gen_42", registry_file=reg)
-    text = reg.read_text(encoding="utf-8")
-    assert "from strategies.gen_42 import GeneratedStrategy as _gen_42" in text
-    assert "register_strategy(_gen_42)" in text
-
-
-def test_append_registry_is_idempotent(tmp_path: Path) -> None:
-    reg = tmp_path / "backtester" / "strategies" / "registry.py"
-    _seed_registry(reg)
-    append_registry_entry(strategy_id="gen_42", registry_file=reg)
-    with pytest.raises(RegistryAlreadyHasStrategy):
-        append_registry_entry(strategy_id="gen_42", registry_file=reg)
-
-
-def test_append_registry_does_not_false_positive_on_prefix_match(tmp_path: Path) -> None:
-    """Regression: gen_42's alias _gen_42 must not be detected as already-present
-    when only the longer-suffix _gen_42_2 is registered.
-    """
-    reg = tmp_path / "backtester" / "strategies" / "registry.py"
-    _seed_registry(reg)
-    # Register the longer-suffixed strategy first.
-    append_registry_entry(strategy_id="gen_42_2", registry_file=reg)
-    # Now register the shorter base id; this must succeed.
-    append_registry_entry(strategy_id="gen_42", registry_file=reg)
-    text = reg.read_text(encoding="utf-8")
-    # Both aliases must be present.
-    assert "register_strategy(_gen_42_2)" in text
-    assert "register_strategy(_gen_42)" in text
 
 
 def test_pick_unused_strategy_id_returns_base_when_free(tmp_path: Path) -> None:

@@ -15,3 +15,6 @@ data/processed/*
 !data/processed/.gitkeep
 .env
 .DS_Store
+factory/data/_tmp/
+factory/logs/
+output/runs/

@@ -63,12 +63,13 @@ def test_generation_timeout_records_failed_stage_generation(
     with mock.patch("factory.cycle.call_claude",
                     side_effect=GenerationError("claude -p timed out after 120s")):
         run_cycle(s, rng=random.Random(0))
-    rec = read_records(s.paths.results_store)[0]
+    rec = read_records(s.paths.results_dir)[0]
     assert rec["status"] == "failed"
     assert rec["failed_stage"] == "generation"
     assert "timed out" in rec["error"]
     # No dedup entry and no strategy files.
-    assert not s.paths.dedup_log.exists() or s.paths.dedup_log.read_text().strip() == ""
+    _dedup_shard = s.paths.dedup_dir / "local.txt"
+    assert not _dedup_shard.exists() or _dedup_shard.read_text(encoding="utf-8").strip() == ""
     assert not list(s.paths.strategies_dir.glob("*.py"))
 
 
@@ -94,13 +95,12 @@ def test_validation_failure_keeps_dedup_no_files(
          mock.patch("factory.cycle._now_unix_int", return_value=42), \
          mock.patch("factory.cycle.pick_unused_strategy_id", return_value="gen_xx"):
         run_cycle(s, rng=random.Random(0))
-    rec = read_records(s.paths.results_store)[0]
+    rec = read_records(s.paths.results_dir)[0]
     assert rec["status"] == "failed" and rec["failed_stage"] == "validation"
     # Dedup entry IS kept (§3.2).
-    assert read_tail(s.paths.dedup_log, n=10) == ["broken strategy"]
-    # No files / no registry line.
+    assert read_tail(s.paths.dedup_dir, n=10) == ["broken strategy"]
+    # No files.
     assert not (s.paths.strategies_dir / "gen_xx.py").exists()
-    assert "gen_xx" not in s.paths.registry_file.read_text(encoding="utf-8")
 
 
 def _run_with_stage_failure(s, strategy_id, failed_stage):
@@ -156,12 +156,12 @@ def test_stage_failure_records_correct_failed_stage(
 
     _run_with_stage_failure(s, strategy_id, failed_stage)
 
-    rec = read_records(s.paths.results_store)[0]
+    rec = read_records(s.paths.results_dir)[0]
     assert rec["status"] == "failed"
     assert rec["failed_stage"] == failed_stage
     assert f"stage={failed_stage}" in rec["error"]
     # Dedup entry IS kept.
-    assert read_tail(s.paths.dedup_log, n=10) == [f"trigger {failed_stage} failure"]
-    # Files + registry kept (§9 landmine 2: orphan is accepted).
+    assert read_tail(s.paths.dedup_dir, n=10) == [f"trigger {failed_stage} failure"]
+    # The strategy file is kept (orphan accepted). The registry is not
+    # edited per-strategy any more (auto-discovery replaces it).
     assert (s.paths.strategies_dir / f"{strategy_id}.py").exists()
-    assert f"_{strategy_id}" in s.paths.registry_file.read_text(encoding="utf-8")
