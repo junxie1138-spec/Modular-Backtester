@@ -139,3 +139,23 @@ def test_api_summary_sums_cumulative_tokens(app_with_records) -> None:
     data = client.get("/api/summary").get_json()
     # gen_1: 3120 + 3540 + 0 + 18000 = 24660. The other two records: no tokens -> 0.
     assert data["cumulative_tokens"] == 24660
+
+
+def test_detail_view_shows_token_breakdown(app_with_records) -> None:
+    """gen_1 has generation_tokens -> the detail view shows input/output/cached.
+    cached = cache_creation + cache_read = 0 + 18000 = 18000.
+    """
+    client, _ = app_with_records
+    body = client.get("/strategy/gen_1").get_data(as_text=True)
+    assert "3120" in body          # input
+    assert "3540" in body          # output
+    assert "18000" in body         # cached = 0 + 18000
+    assert "cached" in body.lower()
+
+
+def test_detail_view_shows_na_when_no_tokens(app_with_records) -> None:
+    """gen_2 has no generation_tokens key -> the detail view shows n/a."""
+    client, _ = app_with_records
+    body = client.get("/strategy/gen_2").get_data(as_text=True)
+    assert "Generation tokens" in body
+    assert "n/a" in body
