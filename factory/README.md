@@ -141,7 +141,12 @@ push_retries = 5               # bounded retry on a non-fast-forward push
    enabled = true
    ```
 4. **Ensure git can push without a prompt** — the loop runs unattended. Use an SSH key or a cached credential helper for `origin`.
-5. **Start the loop:** `python -m factory.loop`.
+5. **Run the preflight check** to confirm the machine is actually ready:
+   ```bash
+   python -m factory.scripts.preflight
+   ```
+   It verifies Python version, factory dependencies, settings + `node_id`, writable data dirs, the `[sync]` config, the `claude` CLI (resolvable *and* authenticated, via a trivial live call), git ≥ 2.28, and that the `[sync]` remote is reachable with non-interactive credentials. It exits `0` only when no check fails — review any `WARN`/`FAIL` lines before continuing. Use `--skip-claude-probe` to skip the live (token-spending) `claude` call, or `--skip-remote` when offline.
+6. **Start the loop:** `python -m factory.loop`.
 
 On the **first** machine to start, the loop's one-time `bootstrap()` step creates the `factory-pool` branch off `master` and **publishes it to the remote** (the one intentional remote-mutating bootstrap action — the pool cannot work until the branch is visible). Every machine after that simply tracks the existing remote branch. `bootstrap()` is idempotent and also folds any pre-existing single-file `results.json` / `dedup_log.txt` into this machine's shards.
 
@@ -186,9 +191,12 @@ A pool can mix Windows and macOS machines. The repo ships a `.gitattributes` tha
 ## Operational scripts
 
 ```bash
+python -m factory.scripts.preflight                      # distributed-readiness check (run before joining a pool)
 python -m factory.scripts.endurance_check --cycles 100   # validate N unattended cycles
 python -m factory.scripts.telegram_smoke                 # verify Telegram credentials send
 ```
+
+`preflight` is the readiness gate for the distributed factory — run it on each machine before enabling `[sync]`. `endurance_check` runs real backtest/optimize/WFO cycles with a stubbed `claude -p`, exercising the heavy local pipeline. Neither touches the network destructively: `preflight`'s remote check is a read-only `git ls-remote`, and all sync *tests* use a throwaway local repo.
 
 Logs rotate under `factory/logs/factory.log` (10 MB × 5 backups) and also mirror to stderr for interactive runs.
 
