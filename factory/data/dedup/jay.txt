@@ -1,2 +1,3 @@
 1778882074	Two-bar confirmed volatility shockwave with rolling price rank direction filter
 1778882249	Seasonal down-gap spring-tension entry filtered by 200-MA regime with fixed-bar exit
+1778882454	Drawdown-depth reversal shockwave with trend-strength filter and profit-target/time-stop exit
