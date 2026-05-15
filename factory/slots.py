@@ -3,7 +3,7 @@ from __future__ import annotations
 import random
 from typing import Mapping
 
-# --- exit_rule slot values (named so SLOTS and the Task-2 guard stay in sync) -
+# exit_rule slot values, named so SLOTS and the guard logic stay in sync.
 _EXIT_TRAILING_HWM = (
     "rolling-high trailing stop (track the highest close since entry; exit "
     "when close falls k*ATR below that in-trade high-water mark; the stop "
