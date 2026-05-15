@@ -40,6 +40,16 @@
   </p>
   {% if record.error %}<p><strong>Error:</strong></p><pre>{{ record.error }}</pre>{% endif %}
   <p><strong>Generation cost:</strong> ${{ "%.4f" | format(record.generation_cost_usd) }}</p>
+  {% if record.generation_tokens %}
+    <p><strong>Generation tokens:</strong></p>
+    <ul>
+      <li><strong>input:</strong> {{ record.generation_tokens.input }}</li>
+      <li><strong>output:</strong> {{ record.generation_tokens.output }}</li>
+      <li><strong>cached:</strong> {{ record.generation_tokens.cache_creation + record.generation_tokens.cache_read }}</li>
+    </ul>
+  {% else %}
+    <p><strong>Generation tokens:</strong> n/a</p>
+  {% endif %}
 
   <h2>Stage 1 — Backtest</h2>
   {% if record.backtest %}

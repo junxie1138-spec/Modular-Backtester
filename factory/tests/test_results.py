@@ -136,3 +136,64 @@ def test_read_records_raises_on_malformed_line(tmp_path: Path) -> None:
     (d / "local.jsonl").write_text('{"a": 1}\nnot json\n', encoding="utf-8")
     with pytest.raises(ValueError, match="local.jsonl"):
         read_records(d)
+
+
+def test_build_record_carries_generation_tokens() -> None:
+    r = build_record(
+        strategy_id="gen_50",
+        timestamp="2026-05-16T09:00:00Z",
+        slots=_slots(),
+        idea=_idea(),
+        generation_cost_usd=0.05,
+        generation_tokens={"input": 3120, "output": 3540,
+                           "cache_creation": 0, "cache_read": 18000},
+        backtest=None, optimize=None, wfo=None,
+        alerted=False,
+    )
+    assert r["generation_tokens"] == {
+        "input": 3120, "output": 3540,
+        "cache_creation": 0, "cache_read": 18000,
+    }
+
+
+def test_build_record_generation_tokens_defaults_to_none() -> None:
+    r = build_record(
+        strategy_id="gen_51",
+        timestamp="2026-05-16T09:01:00Z",
+        slots=_slots(),
+        idea=_idea(),
+        generation_cost_usd=0.05,
+        backtest=None, optimize=None, wfo=None,
+        alerted=False,
+    )
+    assert r["generation_tokens"] is None
+
+
+def test_build_failed_record_carries_generation_tokens() -> None:
+    r = build_failed_record(
+        strategy_id="gen_52",
+        timestamp="2026-05-16T09:02:00Z",
+        slots=_slots(),
+        idea=_idea(),
+        generation_cost_usd=0.02,
+        generation_tokens={"input": 10, "output": 20,
+                           "cache_creation": 0, "cache_read": 0},
+        failed_stage="validation",
+        error="missing .shift(1)",
+    )
+    assert r["generation_tokens"] == {
+        "input": 10, "output": 20, "cache_creation": 0, "cache_read": 0,
+    }
+
+
+def test_build_failed_record_generation_tokens_defaults_to_none() -> None:
+    r = build_failed_record(
+        strategy_id=None,
+        timestamp="2026-05-16T09:03:00Z",
+        slots=_slots(),
+        idea=None,
+        generation_cost_usd=0.0,
+        failed_stage="generation",
+        error="claude -p timeout",
+    )
+    assert r["generation_tokens"] is None

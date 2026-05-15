@@ -130,7 +130,8 @@ def run_cycle(settings: Settings, *, rng: random.Random) -> CycleOutcome:
     except (StaticValidationError, FunctionalValidationError) as exc:
         rec = build_failed_record(
             strategy_id=strategy_id, timestamp=ts, slots=slots, idea=idea,
-            generation_cost_usd=cost, failed_stage="validation", error=str(exc),
+            generation_cost_usd=cost, generation_tokens=gen.usage,
+            failed_stage="validation", error=str(exc),
         )
         write_record(paths.results_dir, rec, node_id=s.node_id)
         log.warning("cycle id=%s validation failed: %s", strategy_id, exc)
@@ -183,7 +184,8 @@ def run_cycle(settings: Settings, *, rng: random.Random) -> CycleOutcome:
         except StageError as exc:
             rec = build_failed_record(
                 strategy_id=strategy_id, timestamp=ts, slots=slots, idea=idea,
-                generation_cost_usd=cost, failed_stage=stage_name, error=str(exc),
+                generation_cost_usd=cost, generation_tokens=gen.usage,
+                failed_stage=stage_name, error=str(exc),
                 backtest=bt.parsed if bt else None,
                 optimize=opt.parsed if opt else None,
             )
@@ -238,7 +240,7 @@ def run_cycle(settings: Settings, *, rng: random.Random) -> CycleOutcome:
     # Step 14-15: build complete record.
     rec = build_record(
         strategy_id=strategy_id, timestamp=ts, slots=slots, idea=idea,
-        generation_cost_usd=cost,
+        generation_cost_usd=cost, generation_tokens=gen.usage,
         backtest=bt.parsed, optimize=opt.parsed,
         wfo=wfo.parsed if wfo is not None else None,
         promotion=promotion_dict,

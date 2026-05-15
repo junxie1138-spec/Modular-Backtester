@@ -36,8 +36,17 @@ def _aggregate(records: list[dict], threshold_metric: str, threshold: float) -> 
     promotion_attempted = 0
     screened = 0
     cumulative_spend = 0.0
+    cumulative_tokens = 0
     for r in records:
         cumulative_spend += float(r.get("generation_cost_usd") or 0.0)
+        tok = r.get("generation_tokens")
+        if tok:
+            cumulative_tokens += (
+                int(tok.get("input") or 0)
+                + int(tok.get("output") or 0)
+                + int(tok.get("cache_creation") or 0)
+                + int(tok.get("cache_read") or 0)
+            )
         if r.get("status") == "failed":
             stage = r.get("failed_stage") or "unknown"
             failures_by_stage[stage] = failures_by_stage.get(stage, 0) + 1
@@ -61,6 +70,7 @@ def _aggregate(records: list[dict], threshold_metric: str, threshold: float) -> 
         "promoted": promoted,
         "screened": screened,
         "cumulative_spend_usd": cumulative_spend,
+        "cumulative_tokens": cumulative_tokens,
         "threshold_metric": threshold_metric,
         "threshold_value": threshold,
     }

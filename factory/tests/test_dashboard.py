@@ -23,6 +23,8 @@ def app_with_records(tmp_settings_file: Path, tmp_path: Path):
          "slots": {"strategy_family": "momentum"},
          "idea": {"one_line_summary": "first", "allow_short": False},
          "generation_cost_usd": 0.03,
+         "generation_tokens": {"input": 3120, "output": 3540,
+                               "cache_creation": 0, "cache_read": 18000},
          "backtest": {"sharpe": 0.5, "total_return": 0.1, "max_drawdown": -0.1,
                       "win_rate": 0.5, "n_trades": 10, "run_bundle_path": "p"},
          "optimize": {"best_params": {}, "objective": "sharpe", "best_score": 0.7, "run_bundle_path": "p"},
@@ -127,3 +129,41 @@ def test_overview_has_sortable_headers(app_with_records) -> None:
     body = client.get("/").get_data(as_text=True)
     assert 'data-sort="oos_sharpe"' in body
     assert 'data-sort="timestamp"' in body
+
+
+def test_api_summary_sums_cumulative_tokens(app_with_records) -> None:
+    """Cumulative tokens = input + output + cache_creation + cache_read,
+    summed over all records; records with no generation_tokens add 0.
+    """
+    client, _ = app_with_records
+    data = client.get("/api/summary").get_json()
+    # gen_1: 3120 + 3540 + 0 + 18000 = 24660. The other two records: no tokens -> 0.
+    assert data["cumulative_tokens"] == 24660
+
+
+def test_detail_view_shows_token_breakdown(app_with_records) -> None:
+    """gen_1 has generation_tokens -> the detail view shows input/output/cached.
+    cached = cache_creation + cache_read = 0 + 18000 = 18000.
+    """
+    client, _ = app_with_records
+    body = client.get("/strategy/gen_1").get_data(as_text=True)
+    assert "3120" in body          # input
+    assert "3540" in body          # output
+    assert "18000" in body         # cached = 0 + 18000
+    assert "cached" in body.lower()
+
+
+def test_detail_view_shows_na_when_no_tokens(app_with_records) -> None:
+    """gen_2 has no generation_tokens key -> the detail view shows n/a."""
+    client, _ = app_with_records
+    body = client.get("/strategy/gen_2").get_data(as_text=True)
+    assert "Generation tokens" in body
+    assert "n/a" in body
+
+
+def test_overview_shows_cumulative_tokens(app_with_records) -> None:
+    """The overview shows a Cumulative tokens counter (24660 from gen_1)."""
+    client, _ = app_with_records
+    body = client.get("/").get_data(as_text=True)
+    assert "Cumulative tokens" in body
+    assert "24660" in body
