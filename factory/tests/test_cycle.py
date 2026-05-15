@@ -95,7 +95,8 @@ def test_complete_cycle_writes_files_and_record(
         "allow_short": False,
         "strategy_file": valid_src,
         "config_file": valid_cfg,
-    }, cost_usd=0.04, raw_stdout="{}")
+    }, cost_usd=0.04, raw_stdout="{}",
+       usage={"input": 1200, "output": 800, "cache_creation": 0, "cache_read": 5000})
 
     # Stub stage results.
     from factory.stages import StageResult
@@ -135,6 +136,10 @@ def test_complete_cycle_writes_files_and_record(
     assert rec["wfo"]["oos_sharpe"] == 1.25
     # Test settings have no telegram creds, so alerted=False.
     assert rec["alerted"] is False
+    # gen.usage threads through to the record's generation_tokens field.
+    assert rec["generation_tokens"] == {
+        "input": 1200, "output": 800, "cache_creation": 0, "cache_read": 5000,
+    }
 
 
 def test_stage_failure_writes_failed_record_keeps_dedup_and_files(
