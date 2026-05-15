@@ -9,3 +9,4 @@ Volume-confirmed short-horizon momentum thrust, traded long/short with surge-and
 1778883229	SI-epidemic growth-phase regime gate on volume-confirmed up moves, ATR trailing-stop exit
 1778883347	Lotka-Volterra predator-prey oscillator driven by returns; long when prey momentum population dominates predator, size scaled by population gap
 1778883474	Volatility term-structure ratio flips logic between momentum (compressed vol) and mean reversion (expanded vol)
+1778883604	Long-only weekday-tide seasonality gated by rate-of-change acceleration, breakeven-then-trail exit
