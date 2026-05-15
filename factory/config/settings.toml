@@ -11,8 +11,8 @@ tmp_dir          = "factory/data/_tmp"
 
 [generation]
 claude_cmd             = "claude"
-claude_flags           = ["-p", "--bare", "--output-format", "json", "--allowedTools", "Read"]
-generation_timeout_sec = 120
+claude_flags           = ["-p", "--output-format", "json", "--allowedTools", "Read"]
+generation_timeout_sec = 3000
 
 [stages]
 stage_timeout_sec = 5400
@@ -20,8 +20,8 @@ stage_timeout_sec = 5400
 [alerts]
 alert_threshold_metric = "wfo.oos_sharpe"
 alert_threshold        = 1.0
-telegram_bot_token     = ""
-telegram_chat_id       = ""
+telegram_bot_token     = ""       # real value goes in config/settings.local.toml (gitignored)
+telegram_chat_id       = ""       # real value goes in config/settings.local.toml (gitignored)
 dashboard_base_url     = "http://127.0.0.1:8787"
 
 [loop]
@@ -33,3 +33,11 @@ max_cycles            = 0   # 0 = unlimited
 host             = "127.0.0.1"
 port             = 8787
 auto_refresh_sec = 10
+
+[promotion]
+enabled           = true
+tickers           = ["AAPL", "QQQ", "DIA"]
+data_source       = "yfinance"        # csv if all tickers in data/raw/; yfinance fetches on first run
+min_avg_sharpe    = 0.7
+trigger_metric    = "wfo.oos_sharpe"
+trigger_threshold = 1.0
