@@ -33,9 +33,32 @@ class GenerationResult:
     parsed: dict[str, Any]
     cost_usd: float
     raw_stdout: str
+    usage: dict[str, int] | None = None
 
 
 _FENCE_RE = re.compile(r"^\s*```(?:json)?\s*\n?(.*?)\n?```\s*$", re.DOTALL)
+
+# Maps each normalized token key -> the raw field name in the CLI envelope's
+# `usage` object. Verified against a live `claude -p --output-format json`
+# invocation (see the token-tracking plan, Task 1 Step 1).
+_USAGE_FIELD_MAP: tuple[tuple[str, str], ...] = (
+    ("input", "input_tokens"),
+    ("output", "output_tokens"),
+    ("cache_creation", "cache_creation_input_tokens"),
+    ("cache_read", "cache_read_input_tokens"),
+)
+
+
+def _extract_usage(envelope: dict[str, Any]) -> dict[str, int] | None:
+    """Normalize the CLI envelope's `usage` block into a flat token dict.
+
+    Returns None when the envelope carries no `usage` object at all. When
+    `usage` is present, every component absent from it is treated as 0.
+    """
+    raw = envelope.get("usage")
+    if not isinstance(raw, dict):
+        return None
+    return {norm: int(raw.get(cli) or 0) for norm, cli in _USAGE_FIELD_MAP}
 
 
 def _strip_fences(text: str) -> str:
@@ -103,10 +126,10 @@ def _find_envelope_with_result(stdout: str) -> dict[str, Any]:
     )
 
 
-def parse_claude_output(stdout: str) -> tuple[dict[str, Any], float]:
+def parse_claude_output(stdout: str) -> tuple[dict[str, Any], float, dict[str, int] | None]:
     """Defensive double-unwrap.
 
-    Returns (parsed_strategy_dict, total_cost_usd).
+    Returns (parsed_strategy_dict, total_cost_usd, usage_token_dict_or_None).
     Raises GenerationError on any parse failure or missing required key.
     """
     # Layer 1: CLI envelope. We scan for a {...} block with a 'result' field
@@ -116,6 +139,7 @@ def parse_claude_output(stdout: str) -> tuple[dict[str, Any], float]:
     envelope = _find_envelope_with_result(stdout)
     inner_text = envelope["result"]
     cost = float(envelope.get("total_cost_usd", 0.0) or 0.0)
+    usage = _extract_usage(envelope)
 
     # Layer 2: strip fences, locate outer JSON, parse.
     stripped = _strip_fences(inner_text)
@@ -134,7 +158,7 @@ def parse_claude_output(stdout: str) -> tuple[dict[str, Any], float]:
     if missing:
         raise GenerationError(f"inner JSON missing keys: {missing}")
 
-    return parsed, cost
+    return parsed, cost, usage
 
 
 def call_claude(
@@ -185,5 +209,5 @@ def call_claude(
             f"claude -p exited {proc.returncode}; stderr tail: {tail}"
         )
 
-    parsed, cost = parse_claude_output(proc.stdout)
-    return GenerationResult(parsed=parsed, cost_usd=cost, raw_stdout=proc.stdout)
+    parsed, cost, usage = parse_claude_output(proc.stdout)
+    return GenerationResult(parsed=parsed, cost_usd=cost, raw_stdout=proc.stdout, usage=usage)
