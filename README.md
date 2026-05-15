@@ -32,6 +32,30 @@ Core install pulls `pandas`, `numpy`, `pyyaml`, `pyarrow`, and `pytest`. The `da
 
 ---
 
+## Running on macOS
+
+The backtester and the Strategy Factory both run on macOS unchanged — all file handling uses `pathlib` with explicit UTF-8, and the factory shells out to `git` rather than to any OS-specific tooling. Install is the same as above, with three macOS notes:
+
+- **Python 3.11+.** macOS does not ship a recent enough Python. Install one with Homebrew (`brew install python@3.11`) or from python.org, then work inside a virtual environment:
+
+  ```bash
+  python3.11 -m venv .venv && source .venv/bin/activate
+  pip install -e '.[dev]'        # quote the extras
+  pip install -e '.[data]'
+  ```
+
+  Quote the extras: macOS's default shell is `zsh`, which expands `.[dev]` as a glob and fails an unquoted `pip install -e .[dev]` with `zsh: no matches found`.
+
+- **git 2.28+** is required for the distributed factory — `factory/sync.py` uses `git init -b`. The git bundled with current macOS / Xcode Command Line Tools is new enough; `brew install git` also works. Check with `git --version`.
+
+- **The `claude` CLI** is just `claude` on the `PATH` on macOS, so the factory's default `claude_cmd = "claude"` works as-is — the Windows `claude.CMD` wrinkle does not apply.
+
+Everything else is identical: `python -m pytest -q` runs the full suite, and the factory dashboard still serves on `http://127.0.0.1:8787`.
+
+**Mixed Windows + macOS factory pool.** When the distributed factory is enabled (`[sync] enabled = true`), it syncs generated strategies and per-machine result/dedup shards across machines through git. The repo ships a `.gitattributes` that pins those paths to LF line endings, so a pool that mixes Windows and macOS nodes stays conflict-free and `sync_pull` never sees spurious line-ending churn. No action is needed — just give each machine its own `node_id` in `factory/config/settings.local.toml`.
+
+---
+
 ## The three workflows
 
 Every run is driven by a YAML config and writes a deterministic artifact bundle under `output/runs/<timestamp>_<run_name>/`.

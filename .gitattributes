@@ -1,0 +1,9 @@
+# The distributed Strategy Factory (factory/sync.py) commits per-machine
+# shards and generated artifacts to the shared factory-pool branch and syncs
+# them across machines. Pin those paths to LF so a pool that mixes Windows
+# and macOS / Linux nodes does not churn line endings — otherwise a pulled
+# file can show up as modified and trip sync_pull's dirty-tree check.
+# See the "Running on macOS" section of README.md.
+factory/data/**          text eol=lf
+strategies/gen_*.py      text eol=lf
+configs/wfo/gen_*.yaml   text eol=lf
