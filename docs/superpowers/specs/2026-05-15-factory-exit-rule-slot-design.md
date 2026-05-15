@@ -120,7 +120,7 @@ def pull_slots(rng):
     return slots
 ```
 
-(The `E1`..`E6` names above stand in for the literal value strings from §1.2 — the implementation may reference them directly or via named constants.)
+**Implementation decision:** `slots.py` defines the 6 `exit_rule` strings as named module-level constants (e.g. `_EXIT_TRAILING_HWM`, `_EXIT_FIXED_BAR`, … corresponding to E1..E6). Both `SLOTS["exit_rule"]` and `_INCOMPATIBLE` reference those constants by name rather than repeating the literal strings, so the two stay in sync and `_INCOMPATIBLE` is readable. The `E1`..`E6` labels used throughout this spec map one-to-one onto those constants.
 
 ### 3.3 Documented soft rule (NOT enforced)
 
@@ -172,7 +172,7 @@ No changes to: `build_prompt` logic, `factory/generate.py`, the generated config
 2. `test_exit_entries_migrated_out_of_constraint_twist` — `"fixed-bar exit (no signal-based exit)"` and `"no stop-loss allowed"` are absent from `SLOTS["constraint_twist"]`; `len(SLOTS["constraint_twist"]) == 8`.
 3. `test_pull_includes_exit_rule` — `pull_slots` output has an `exit_rule` key with a value in `SLOTS["exit_rule"]`.
 4. `test_guard_never_yields_incompatible_pair` — over many seeded draws (e.g. 3000), assert no `(constraint_twist, exit_rule)` pair is in `_INCOMPATIBLE`.
-5. `test_guard_preserves_exit_rule_distribution` — over many seeded draws, all 6 `exit_rule` values appear (the guard re-picks `constraint_twist`, never `exit_rule`, so exit-rule coverage is unbiased).
+5. `test_guard_preserves_exit_rule_support` — over many seeded draws, all 6 `exit_rule` values appear. This proves the guard preserves *support* (every value stays reachable); it does not assert frequency stability, which is unnecessary since the guard re-picks only `constraint_twist` and so does not directly alter `exit_rule` draws.
 
 ### 6.2 `factory/tests/test_prompt.py`
 
@@ -199,6 +199,6 @@ No changes to: `build_prompt` logic, `factory/generate.py`, the generated config
 1. `factory/slots.py` exposes a 7-entry `SLOT_NAMES` with `"exit_rule"` between `"direction"` and `"constraint_twist"`; `SLOTS["exit_rule"]` has the 6 values from §1.2.
 2. `SLOTS["constraint_twist"]` no longer contains `"fixed-bar exit (no signal-based exit)"` or `"no stop-loss allowed"` and has exactly 8 values.
 3. `pull_slots` never returns a `(constraint_twist, exit_rule)` pair listed in `_INCOMPATIBLE` — verified across ≥3000 seeded draws.
-4. All 6 `exit_rule` values are reachable from `pull_slots` (the guard does not bias the exit-rule distribution).
+4. All 6 `exit_rule` values remain reachable from `pull_slots`. The guard re-picks only `constraint_twist`, so it does not directly alter `exit_rule` draws — the spec asserts preserved *support*, not frequency stability.
 5. `build_prompt` produces a prompt containing the drawn `exit_rule` value, with no leftover `{{exit_rule}}` placeholder.
 6. `python -m pytest factory/tests/test_slots.py factory/tests/test_prompt.py -q` passes with zero regressions, including the new tests in §6.
