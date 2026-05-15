@@ -83,6 +83,17 @@ class Settings:
 
 def load_settings(path: Path) -> Settings:
     raw = tomllib.loads(path.read_text(encoding="utf-8"))
+    # Merge an optional sibling settings.local.toml over the base. The local
+    # file is gitignored and holds secrets (Telegram token, API keys) so they
+    # never land in version control. Merge is shallow per top-level section.
+    local_path = path.parent / "settings.local.toml"
+    if local_path.exists():
+        local = tomllib.loads(local_path.read_text(encoding="utf-8"))
+        for section, overrides in local.items():
+            if isinstance(overrides, dict) and isinstance(raw.get(section), dict):
+                raw[section] = {**raw[section], **overrides}
+            else:
+                raw[section] = overrides
     p = raw["paths"]
     root = Path(p["backtester_root"]).resolve()
 
