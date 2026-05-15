@@ -47,3 +47,4 @@ Volume-confirmed short-horizon momentum thrust, traded long/short with surge-and
 1778888353	Enter on fresh crossing of momentum's rolling percentile threshold, but lock out spike-driven momentum; rolling-high ATR trailing exit
 1778888490	Leaky-bucket queue of suppressed-volatility deficit; trade trend direction when the queue overflows capacity, signal-scaled inverse-vol size
 1778888620	Cumulative overnight-gap flux normalized by gap-dispersion forms a Mach number that stop-and-reverses long/short
+1778888759	Trade 3-day return direction only when daily high-low range shows strong positive lag-1 autocorrelation (coherent regime).
