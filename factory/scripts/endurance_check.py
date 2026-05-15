@@ -3,9 +3,8 @@
 Runs N cycles against the real backtester subprocesses on the real CSV
 data. Generator output rotates through three pre-built strategy/config
 pairs (one valid, one validation-fail, one stage-fail) so we hit every
-record path. Verifies at the end that the results store contains N
-records, the registry has no duplicate lines, the dedup log has the
-right number of entries, and no orphan tmp files exist.
+record path. Verifies at the end that the results store contains N records and that
+every cycle locked in a strategy id.
 
 USAGE:
     python -m factory.scripts.endurance_check --cycles 10        # quick sanity
@@ -153,6 +152,10 @@ def main(argv: list[str] | None = None) -> int:
     # that locked in a strategy id appended one record carrying that id.
     with_ids = sum(1 for r in records if r.get("strategy_id"))
     print(f"records with a strategy_id: {with_ids}")
+    assert with_ids == len(records), (
+        f"every endurance cycle locks in a strategy id, but only {with_ids} "
+        f"of {len(records)} records carry one"
+    )
     print("ENDURANCE CHECK PASSED")
     return 0
 
