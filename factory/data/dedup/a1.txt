@@ -25,3 +25,4 @@ Volume-confirmed short-horizon momentum thrust, traded long/short with surge-and
 1778885259	Buy SPY after a percentile-exceeding high-low range shock closing near the high; vol-targeted size, breakeven-then-trail exit.
 1778885335	Volatility-targeted long entry on consecutive up-streak, symmetric mirror exit on equal-length down-streak
 1778885465	Fade range-expansion-shock bars by their intra-bar close location, symmetric long/short, signal-scaled size, fixed ATR vol-stop
+1778885635	Enter when a price-above-MA streak AND an MA-slope-rising streak both exceed thresholds; breakeven-then-trail ATR exit
