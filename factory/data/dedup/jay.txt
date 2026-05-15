@@ -5,3 +5,4 @@
 1778883863	Down-gap fade gated by gap-spike refractory window with ATR rolling-high trailing stop
 1778883961	Epidemic-peak contagion ratio plus rolling price rank fades momentum exhaustion
 1778884165	Sustained range-compression with bullish close SNR filter enters long for fixed-bar hold
+1778884486	Starved-predator exhaustion: range-compression streak AND directional streak both agree; fade with ATR trailing stop
