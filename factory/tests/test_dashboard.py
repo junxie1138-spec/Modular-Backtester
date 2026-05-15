@@ -23,6 +23,8 @@ def app_with_records(tmp_settings_file: Path, tmp_path: Path):
          "slots": {"strategy_family": "momentum"},
          "idea": {"one_line_summary": "first", "allow_short": False},
          "generation_cost_usd": 0.03,
+         "generation_tokens": {"input": 3120, "output": 3540,
+                               "cache_creation": 0, "cache_read": 18000},
          "backtest": {"sharpe": 0.5, "total_return": 0.1, "max_drawdown": -0.1,
                       "win_rate": 0.5, "n_trades": 10, "run_bundle_path": "p"},
          "optimize": {"best_params": {}, "objective": "sharpe", "best_score": 0.7, "run_bundle_path": "p"},
@@ -127,3 +129,13 @@ def test_overview_has_sortable_headers(app_with_records) -> None:
     body = client.get("/").get_data(as_text=True)
     assert 'data-sort="oos_sharpe"' in body
     assert 'data-sort="timestamp"' in body
+
+
+def test_api_summary_sums_cumulative_tokens(app_with_records) -> None:
+    """Cumulative tokens = input + output + cache_creation + cache_read,
+    summed over all records; records with no generation_tokens add 0.
+    """
+    client, _ = app_with_records
+    data = client.get("/api/summary").get_json()
+    # gen_1: 3120 + 3540 + 0 + 18000 = 24660. gen_2 and gen_3: no tokens -> 0.
+    assert data["cumulative_tokens"] == 24660
