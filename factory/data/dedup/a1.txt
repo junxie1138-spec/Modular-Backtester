@@ -14,3 +14,4 @@ Volume-confirmed short-horizon momentum thrust, traded long/short with surge-and
 1778883827	Long SPY on an up-gap only when the rolling lag-1 autocorrelation of gaps is positive; fixed-bar exit
 1778883975	Long-only drawdown recovery entered on the zero-crossing of momentum's second derivative (rate-of-change acceleration)
 1778884092	Volume-confirmed range-position stop-and-reverse: flip long/short when price crosses symmetric tide bands around mid-range
+1778884230	Standing-wave node detection: buy low return-path-efficiency regimes on a down day, profit-target/time-stop exit
