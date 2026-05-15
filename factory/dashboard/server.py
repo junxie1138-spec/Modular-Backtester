@@ -14,12 +14,16 @@ log = logging.getLogger(__name__)
 
 
 def _enrich(records: list[dict], threshold_metric: str, threshold: float) -> list[dict]:
-    """Add an `is_good` flag to each record (threshold metric clears threshold)."""
+    """Add `is_good` (WFO threshold cleared) and `is_promoted` (held-out
+    promotion passed) flags to each record.
+    """
     enriched = []
     for r in records:
         val = extract_metric(r, threshold_metric) if r.get("status") == "complete" else None
         is_good = bool(val is not None and val > threshold)
-        enriched.append({**r, "is_good": is_good})
+        promo = r.get("promotion") or {}
+        is_promoted = bool(promo.get("passed", False))
+        enriched.append({**r, "is_good": is_good, "is_promoted": is_promoted})
     return enriched
 
 
@@ -28,6 +32,8 @@ def _aggregate(records: list[dict], threshold_metric: str, threshold: float) -> 
     completes = sum(1 for r in records if r.get("status") == "complete")
     failures_by_stage: dict[str, int] = {}
     above_threshold = 0
+    promoted = 0
+    promotion_attempted = 0
     cumulative_spend = 0.0
     for r in records:
         cumulative_spend += float(r.get("generation_cost_usd") or 0.0)
@@ -38,11 +44,18 @@ def _aggregate(records: list[dict], threshold_metric: str, threshold: float) -> 
             val = extract_metric(r, threshold_metric)
             if val is not None and val > threshold:
                 above_threshold += 1
+            promo = r.get("promotion") or {}
+            if promo.get("ran"):
+                promotion_attempted += 1
+                if promo.get("passed"):
+                    promoted += 1
     return {
         "total_cycles": total,
         "completes": completes,
         "failures_by_stage": failures_by_stage,
         "above_threshold": above_threshold,
+        "promotion_attempted": promotion_attempted,
+        "promoted": promoted,
         "cumulative_spend_usd": cumulative_spend,
         "threshold_metric": threshold_metric,
         "threshold_value": threshold,

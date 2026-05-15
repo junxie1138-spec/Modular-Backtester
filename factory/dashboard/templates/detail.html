@@ -74,6 +74,41 @@
     </ul>
   {% else %}<p>(not reached)</p>{% endif %}
 
+  <h2>Stage 4 — Held-out Promotion</h2>
+  {% if record.promotion %}
+    <p><strong>Verdict:</strong>
+      {% if record.promotion.passed %}
+        <span style="color: #060; font-weight: bold;">PASSED</span>
+      {% else %}
+        <span style="color: #b00; font-weight: bold;">FAILED</span>
+      {% endif %}
+      &nbsp;(avg OOS Sharpe across tickers
+      <strong>{{ "%.3f" | format(record.promotion.avg_sharpe) if record.promotion.avg_sharpe is not none else 'n/a' }}</strong>
+      vs threshold {{ "%.2f" | format(record.promotion.min_avg_sharpe_threshold) }})
+    </p>
+    {% if record.promotion.error %}
+      <p><strong>Errors:</strong></p><pre>{{ record.promotion.error }}</pre>
+    {% endif %}
+    {% if record.promotion.per_ticker %}
+      <table>
+        <thead><tr><th>Ticker</th><th>OOS Sharpe</th><th>OOS Return</th><th>OOS DD</th><th>OOS Trades</th><th>Windows</th><th>Bundle</th></tr></thead>
+        <tbody>
+        {% for ticker, p in record.promotion.per_ticker.items() %}
+          <tr>
+            <td><strong>{{ ticker }}</strong></td>
+            <td>{{ "%.3f" | format(p.oos_sharpe) }}</td>
+            <td>{{ "%.2f%%" | format(p.oos_total_return * 100) }}</td>
+            <td>{{ "%.2f%%" | format(p.oos_max_drawdown * 100) }}</td>
+            <td>{{ p.oos_n_trades }}</td>
+            <td>{{ p.n_windows }}</td>
+            <td><code>{{ p.run_bundle_path }}</code></td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    {% endif %}
+  {% else %}<p>(not run &mdash; either promotion is disabled in settings or this cycle did not clear the WFO trigger threshold)</p>{% endif %}
+
   <p><strong>Alerted:</strong> {{ record.alerted }}</p>
 </body>
 </html>

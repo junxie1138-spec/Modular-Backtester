@@ -54,6 +54,16 @@ class DashboardCfg:
 
 
 @dataclass(slots=True, frozen=True)
+class PromotionCfg:
+    enabled: bool
+    tickers: tuple[str, ...]
+    data_source: str
+    min_avg_sharpe: float
+    trigger_metric: str
+    trigger_threshold: float
+
+
+@dataclass(slots=True, frozen=True)
 class Settings:
     paths: Paths
     generation: GenerationCfg
@@ -61,6 +71,7 @@ class Settings:
     alerts: AlertsCfg
     loop: LoopCfg
     dashboard: DashboardCfg
+    promotion: PromotionCfg
 
 
 def load_settings(path: Path) -> Settings:
@@ -87,6 +98,7 @@ def load_settings(path: Path) -> Settings:
     a = raw["alerts"]
     lp = raw["loop"]
     d = raw["dashboard"]
+    pr = raw.get("promotion", {}) or {}
     return Settings(
         paths=paths,
         generation=GenerationCfg(
@@ -110,5 +122,13 @@ def load_settings(path: Path) -> Settings:
         dashboard=DashboardCfg(
             host=d["host"], port=int(d["port"]),
             auto_refresh_sec=int(d["auto_refresh_sec"]),
+        ),
+        promotion=PromotionCfg(
+            enabled=bool(pr.get("enabled", False)),
+            tickers=tuple(pr.get("tickers", ())),
+            data_source=str(pr.get("data_source", "yfinance")),
+            min_avg_sharpe=float(pr.get("min_avg_sharpe", 0.7)),
+            trigger_metric=str(pr.get("trigger_metric", "wfo.oos_sharpe")),
+            trigger_threshold=float(pr.get("trigger_threshold", 1.0)),
         ),
     )
