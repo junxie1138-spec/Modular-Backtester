@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import logging
 import re
+import shutil
 import subprocess
 import sys
 from dataclasses import dataclass
@@ -121,11 +122,22 @@ def call_claude(
 
     Raises GenerationError on non-zero exit, timeout, or unparseable output.
     """
-    cmd = [claude_cmd, *claude_flags, prompt]
-    log.info("calling claude (cmd=%s flags=%s)", claude_cmd, claude_flags)
+    # Resolve the command on PATH. shutil.which handles Windows .cmd/.bat shims
+    # (npm installs claude as claude.CMD on Windows; bare "claude" is not an .exe
+    # so subprocess.run without shell=True fails to find it).
+    resolved = shutil.which(claude_cmd)
+    if resolved is None:
+        raise GenerationError(f"claude command not found on PATH: {claude_cmd}")
+    # We pipe the prompt via stdin rather than as a trailing positional arg.
+    # Reason: claude's `--allowedTools <tools...>` is variadic and greedily
+    # consumes whatever follows as additional tool names — including a trailing
+    # prompt argument. Stdin keeps the prompt out of argv entirely.
+    cmd = [resolved, *claude_flags]
+    log.info("calling claude (resolved=%s flags=%s)", resolved, claude_flags)
     try:
         proc = subprocess.run(
             cmd,
+            input=prompt,
             capture_output=True,
             text=True,
             timeout=timeout_sec,
@@ -136,6 +148,10 @@ def call_claude(
         raise GenerationError(f"claude -p timed out after {timeout_sec}s") from exc
     except FileNotFoundError as exc:
         raise GenerationError(f"claude command not found: {claude_cmd}") from exc
+    except OSError as exc:
+        # On Windows, attempting to invoke a .cmd directly without shell=True
+        # can raise OSError (e.g., "Invalid argument") for some shim flavors.
+        raise GenerationError(f"claude subprocess failed to start: {exc}") from exc
 
     if proc.returncode != 0:
         tail = (proc.stderr or "")[-500:]
