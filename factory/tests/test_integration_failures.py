@@ -63,7 +63,7 @@ def test_generation_timeout_records_failed_stage_generation(
     with mock.patch("factory.cycle.call_claude",
                     side_effect=GenerationError("claude -p timed out after 120s")):
         run_cycle(s, rng=random.Random(0))
-    rec = read_records(s.paths.results_store)[0]
+    rec = read_records(s.paths.results_dir)[0]
     assert rec["status"] == "failed"
     assert rec["failed_stage"] == "generation"
     assert "timed out" in rec["error"]
@@ -94,7 +94,7 @@ def test_validation_failure_keeps_dedup_no_files(
          mock.patch("factory.cycle._now_unix_int", return_value=42), \
          mock.patch("factory.cycle.pick_unused_strategy_id", return_value="gen_xx"):
         run_cycle(s, rng=random.Random(0))
-    rec = read_records(s.paths.results_store)[0]
+    rec = read_records(s.paths.results_dir)[0]
     assert rec["status"] == "failed" and rec["failed_stage"] == "validation"
     # Dedup entry IS kept (§3.2).
     assert read_tail(s.paths.dedup_log, n=10) == ["broken strategy"]
@@ -156,7 +156,7 @@ def test_stage_failure_records_correct_failed_stage(
 
     _run_with_stage_failure(s, strategy_id, failed_stage)
 
-    rec = read_records(s.paths.results_store)[0]
+    rec = read_records(s.paths.results_dir)[0]
     assert rec["status"] == "failed"
     assert rec["failed_stage"] == failed_stage
     assert f"stage={failed_stage}" in rec["error"]

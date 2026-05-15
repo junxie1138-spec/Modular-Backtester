@@ -26,7 +26,7 @@ def test_paths_resolve_under_root(tmp_settings_file: Path) -> None:
     s = load_settings(tmp_settings_file)
     root = s.paths.backtester_root
     assert s.paths.strategies_dir.is_relative_to(root)
-    assert s.paths.results_store.is_relative_to(root)
+    assert s.paths.results_dir.is_relative_to(root)
     assert s.paths.tmp_dir.is_relative_to(root)
 
 

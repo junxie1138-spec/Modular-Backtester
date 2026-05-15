@@ -94,27 +94,45 @@ def test_build_failed_record_for_generation_failure_has_no_idea() -> None:
     assert r["idea"] is None
 
 
+def test_write_record_creates_node_shard(tmp_path: Path) -> None:
+    d = tmp_path / "results"
+    write_record(d, {"a": 1, "strategy_id": "x"}, node_id="desk")
+    assert (d / "desk.jsonl").exists()
+
+
 def test_write_then_read_roundtrip(tmp_path: Path) -> None:
-    store = tmp_path / "results.json"
-    write_record(store, {"a": 1, "strategy_id": "x"})
-    write_record(store, {"a": 2, "strategy_id": "y"})
-    write_record(store, {"a": 3, "strategy_id": "z"})
-    records = read_records(store)
-    assert [r["a"] for r in records] == [1, 2, 3]
+    d = tmp_path / "results"
+    write_record(d, {"a": 1, "strategy_id": "x"}, node_id="local")
+    write_record(d, {"a": 2, "strategy_id": "y"}, node_id="local")
+    write_record(d, {"a": 3, "strategy_id": "z"}, node_id="local")
+    assert [r["a"] for r in read_records(d)] == [1, 2, 3]
 
 
-def test_read_records_handles_missing_file(tmp_path: Path) -> None:
-    assert read_records(tmp_path / "nothing.json") == []
+def test_read_records_unions_shards(tmp_path: Path) -> None:
+    d = tmp_path / "results"
+    write_record(d, {"a": 1, "timestamp": "2026-05-15T09:00:00Z"}, node_id="desk")
+    write_record(d, {"a": 2, "timestamp": "2026-05-15T08:00:00Z"}, node_id="laptop")
+    recs = read_records(d)
+    assert {r["a"] for r in recs} == {1, 2}
+    # Callers that need ordering sort by the record timestamp.
+    ordered = sorted(recs, key=lambda r: r["timestamp"])
+    assert [r["a"] for r in ordered] == [2, 1]
+
+
+def test_read_records_handles_missing_dir(tmp_path: Path) -> None:
+    assert read_records(tmp_path / "nothing") == []
 
 
 def test_read_records_skips_blank_lines(tmp_path: Path) -> None:
-    store = tmp_path / "results.json"
-    store.write_text('{"a": 1}\n\n   \n{"a": 2}\n', encoding="utf-8")
-    assert read_records(store) == [{"a": 1}, {"a": 2}]
+    d = tmp_path / "results"
+    d.mkdir()
+    (d / "local.jsonl").write_text('{"a": 1}\n\n   \n{"a": 2}\n', encoding="utf-8")
+    assert read_records(d) == [{"a": 1}, {"a": 2}]
 
 
 def test_read_records_raises_on_malformed_line(tmp_path: Path) -> None:
-    store = tmp_path / "results.json"
-    store.write_text('{"a": 1}\nnot json\n', encoding="utf-8")
+    d = tmp_path / "results"
+    d.mkdir()
+    (d / "local.jsonl").write_text('{"a": 1}\nnot json\n', encoding="utf-8")
     with pytest.raises(ValueError):
-        read_records(store)
+        read_records(d)

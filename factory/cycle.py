@@ -97,7 +97,7 @@ def run_cycle(settings: Settings, *, rng: random.Random) -> CycleOutcome:
             strategy_id=None, timestamp=ts, slots=slots, idea=None,
             generation_cost_usd=0.0, failed_stage="generation", error=str(exc),
         )
-        write_record(paths.results_store, rec)
+        write_record(paths.results_dir, rec, node_id=s.node_id)
         log.warning("cycle id=%s generation failed: %s", strategy_id, exc)
         return CycleOutcome(status="failed", failed_stage="generation",
                             strategy_id=None, record=rec)
@@ -134,7 +134,7 @@ def run_cycle(settings: Settings, *, rng: random.Random) -> CycleOutcome:
             strategy_id=strategy_id, timestamp=ts, slots=slots, idea=idea,
             generation_cost_usd=cost, failed_stage="validation", error=str(exc),
         )
-        write_record(paths.results_store, rec)
+        write_record(paths.results_dir, rec, node_id=s.node_id)
         log.warning("cycle id=%s validation failed: %s", strategy_id, exc)
         return CycleOutcome(status="failed", failed_stage="validation",
                             strategy_id=strategy_id, record=rec)
@@ -193,7 +193,7 @@ def run_cycle(settings: Settings, *, rng: random.Random) -> CycleOutcome:
                 backtest=bt.parsed if bt else None,
                 optimize=opt.parsed if opt else None,
             )
-            write_record(paths.results_store, rec)
+            write_record(paths.results_dir, rec, node_id=s.node_id)
             log.warning("cycle id=%s stage=%s failed: %s", strategy_id, stage_name, exc)
             return CycleOutcome(status="failed", failed_stage=stage_name,
                                 strategy_id=strategy_id, record=rec)
@@ -259,7 +259,7 @@ def run_cycle(settings: Settings, *, rng: random.Random) -> CycleOutcome:
     notify_result = maybe_send_alert(rec, _notify_cfg(s))
     rec["alerted"] = bool(notify_result.sent)
 
-    write_record(paths.results_store, rec)
+    write_record(paths.results_dir, rec, node_id=s.node_id)
     log.info("cycle id=%s complete oos_sharpe=%s screened=%s alerted=%s",
              strategy_id,
              wfo.parsed.get("oos_sharpe") if wfo is not None else "n/a",

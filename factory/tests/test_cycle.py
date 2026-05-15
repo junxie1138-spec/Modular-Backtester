@@ -45,7 +45,7 @@ def test_generation_failure_writes_failed_record_and_no_dedup_entry(
     assert not s.paths.dedup_log.exists() or s.paths.dedup_log.read_text().strip() == ""
     # A failed record IS written.
     from factory.results import read_records
-    records = read_records(s.paths.results_store)
+    records = read_records(s.paths.results_dir)
     assert len(records) == 1
     assert records[0]["status"] == "failed"
     assert records[0]["failed_stage"] == "generation"
@@ -134,7 +134,7 @@ def test_complete_cycle_writes_files_registry_record(
     assert "_gen_local_1715800000" in s.paths.registry_file.read_text(encoding="utf-8")
     # Record written with wfo block.
     from factory.results import read_records
-    rec = read_records(s.paths.results_store)[0]
+    rec = read_records(s.paths.results_dir)[0]
     assert rec["status"] == "complete"
     assert rec["wfo"]["oos_sharpe"] == 1.25
     # Test settings have no telegram creds, so alerted=False.

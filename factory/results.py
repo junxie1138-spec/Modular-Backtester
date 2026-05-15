@@ -88,27 +88,40 @@ def build_failed_record(
     }
 
 
-def write_record(store_path: Path, record: Record) -> None:
-    """Append one JSON object as a single line to the JSONL store."""
-    store_path.parent.mkdir(parents=True, exist_ok=True)
+def write_record(results_dir: Path, record: Record, *, node_id: str) -> None:
+    """Append one JSON object as a single line to this machine's shard.
+
+    The shard is `results_dir/<node_id>.jsonl`. Each machine is the sole
+    writer of its own shard, so shards never conflict on a git pull/push.
+    """
+    shard = results_dir / f"{node_id}.jsonl"
+    shard.parent.mkdir(parents=True, exist_ok=True)
     line = json.dumps(record, ensure_ascii=False, separators=(",", ":")) + "\n"
-    with store_path.open("a", encoding="utf-8") as f:
+    with shard.open("a", encoding="utf-8") as f:
         f.write(line)
 
 
-def read_records(store_path: Path) -> list[Record]:
-    """Read all records from the JSONL store. Skips blank lines.
+def read_records(results_dir: Path) -> list[Record]:
+    """Read every `*.jsonl` shard in `results_dir`, return the union of records.
 
-    Raises ValueError on any non-blank line that isn't valid JSON (corruption).
+    Shards are read in sorted filename order for determinism. Order across
+    shards is not otherwise meaningful; callers that need chronological order
+    sort by each record's `timestamp` field.
+
+    Returns [] if the directory does not exist. Skips blank lines. Raises
+    ValueError on any non-blank line that is not valid JSON (corruption).
     """
-    if not store_path.exists():
+    if not results_dir.exists():
         return []
     out: list[Record] = []
-    for i, raw in enumerate(store_path.read_text(encoding="utf-8").splitlines(), start=1):
-        if not raw.strip():
-            continue
-        try:
-            out.append(json.loads(raw))
-        except json.JSONDecodeError as exc:
-            raise ValueError(f"results store corruption at line {i}: {exc}") from exc
+    for shard in sorted(results_dir.glob("*.jsonl")):
+        for i, raw in enumerate(shard.read_text(encoding="utf-8").splitlines(), start=1):
+            if not raw.strip():
+                continue
+            try:
+                out.append(json.loads(raw))
+            except json.JSONDecodeError as exc:
+                raise ValueError(
+                    f"results store corruption in {shard.name} at line {i}: {exc}"
+                ) from exc
     return out
