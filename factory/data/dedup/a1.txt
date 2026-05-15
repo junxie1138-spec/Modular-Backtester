@@ -41,3 +41,4 @@ Volume-confirmed short-horizon momentum thrust, traded long/short with surge-and
 1778887564	Keltner upper-band breakout confirmed by cumulative ATR-normalized thrust that also scales position size; breakeven-then-trail exit
 1778887675	Enter long when the rolling high-water envelope is advancing AND a fresh window high prints on above-average volume
 1778887841	Buy SPY when drawdown depth exceeds its own weekday-conditioned expanding percentile; fixed ATR vol-stop, 1-2 day hold
+1778887976	Per-weekday rolling mean t-statistic of close-to-close returns gates a t-stat-sized long/short entry; profit-target/time-stop exit.
