@@ -22,3 +22,4 @@
 1778887766	Dual z-score shockwave: price AND volume displacement co-confirm breakout with ATR trailing stop
 1778887988	Long when z-score positive and z-score autocorrelation confirms standing-wave persistence
 1778888149	Cumulative-return percentile breakout confirmed by rolling-Sharpe SNR with ATR trailing stop and SNR-scaled sizing
+1778888749	Weekday-seasonal excess-return streak reversal with fixed ATR stop and streak-scaled sizing
