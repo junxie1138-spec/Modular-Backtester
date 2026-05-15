@@ -134,5 +134,5 @@ def test_read_records_raises_on_malformed_line(tmp_path: Path) -> None:
     d = tmp_path / "results"
     d.mkdir()
     (d / "local.jsonl").write_text('{"a": 1}\nnot json\n', encoding="utf-8")
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="local.jsonl"):
         read_records(d)

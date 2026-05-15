@@ -95,7 +95,7 @@ def write_record(results_dir: Path, record: Record, *, node_id: str) -> None:
     writer of its own shard, so shards never conflict on a git pull/push.
     """
     shard = results_dir / f"{node_id}.jsonl"
-    shard.parent.mkdir(parents=True, exist_ok=True)
+    results_dir.mkdir(parents=True, exist_ok=True)
     line = json.dumps(record, ensure_ascii=False, separators=(",", ":")) + "\n"
     with shard.open("a", encoding="utf-8") as f:
         f.write(line)
