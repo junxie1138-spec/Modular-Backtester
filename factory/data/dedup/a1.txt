@@ -15,3 +15,4 @@ Volume-confirmed short-horizon momentum thrust, traded long/short with surge-and
 1778883975	Long-only drawdown recovery entered on the zero-crossing of momentum's second derivative (rate-of-change acceleration)
 1778884092	Volume-confirmed range-position stop-and-reverse: flip long/short when price crosses symmetric tide bands around mid-range
 1778884230	Standing-wave node detection: buy low return-path-efficiency regimes on a down day, profit-target/time-stop exit
+1778884335	Tide-gauge trend strength: count volume-confirmed up days in a short window, enter on threshold crossing, fixed 16-bar hold
