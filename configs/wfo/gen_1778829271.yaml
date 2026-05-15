@@ -1,0 +1,38 @@
+run_name: gen_1778829271
+strategy: gen_1778829271
+strategy_params:
+  dd_lookback: 20
+  vol_window: 20
+  vol_rank_window: 252
+  regime_threshold: 0.5
+  min_dd: 0.02
+  saturation_dd: 0.10
+  size_floor: 0.20
+  size_cap: 1.00
+data:
+  symbols: ["SPY"]
+  timeframe: "1d"
+  start: "2015-01-02"
+  end: "2024-12-31"
+  source: "csv"
+  root: "data/raw"
+execution:
+  initial_cash: 100000
+  commission_bps: 2
+  slippage_bps: 5
+  allow_fractional: false
+  allow_short: true
+portfolio:
+  sizing_mode: "percent_equity"
+  size: 0.95
+optimization:
+  objective: sharpe
+  param_space:
+    regime_threshold: [0.4, 0.5, 0.6]
+    min_dd: [0.01, 0.02, 0.04]
+    saturation_dd: [0.06, 0.10, 0.15]
+wfo:
+  enabled: true
+  train_bars: 756
+  test_bars: 252
+  step_bars: 252

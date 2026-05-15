@@ -1,0 +1,7 @@
+Spring-tension mean reversion: long when normalized cumulative-return displacement is stretched and short-term velocity flips positive, fixed-bar exit
+Long-only drawdown-depth mean reversion with crash-spike refractory window and drawdown-proportional position sizing.
+Turn-of-month seasonality AND elastic-range MA z-score (avoid plastic crashes) — long-only, ~7 bar hold
+Day-of-month volatility-tide residual: short when realized vol crests above seasonal template, long when it troughs below.
+Drawdown-depth regime switch: long dip in elastic low-vol regime, short dip in plastic high-vol regime, dd-scaled size
+Volume-confirmed short-horizon momentum thrust, traded long/short with surge-and-thrust signal-scaled sizing
+1778882973	Epidemic-prevalence regime gates down-streak dip-buys confirmed by capitulation volume burst; profit-target/time-stop exit

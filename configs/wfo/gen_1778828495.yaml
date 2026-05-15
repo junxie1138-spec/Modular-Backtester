@@ -1,0 +1,34 @@
+run_name: gen_1778828495
+strategy: gen_1778828495
+strategy_params:
+  lookback: 20
+  velocity_window: 3
+  tension_threshold: 1.5
+  holding_bars: 18
+data:
+  symbols: ["SPY"]
+  timeframe: "1d"
+  start: "2015-01-02"
+  end: "2024-12-31"
+  source: "csv"
+  root: "data/raw"
+execution:
+  initial_cash: 100000
+  commission_bps: 2
+  slippage_bps: 5
+  allow_fractional: false
+  allow_short: false
+portfolio:
+  sizing_mode: "percent_equity"
+  size: 0.95
+optimization:
+  objective: sharpe
+  param_space:
+    lookback: [15, 20, 25]
+    tension_threshold: [1.0, 1.5, 2.0]
+    holding_bars: [13, 18, 21]
+wfo:
+  enabled: true
+  train_bars: 756
+  test_bars: 252
+  step_bars: 252
