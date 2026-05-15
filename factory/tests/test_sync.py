@@ -5,12 +5,16 @@ Each test scaffolds throwaway local git repos: a bare repo acts as the
 """
 from __future__ import annotations
 
+import random
 import subprocess
 import textwrap
 from pathlib import Path
+from unittest import mock
 
 import pytest
 
+from factory.cycle import CycleOutcome
+from factory.loop import run_loop
 from factory.settings_loader import load_settings
 from factory.sync import SyncError, bootstrap, sync_pull, sync_push, _fold_legacy_stores
 
@@ -257,15 +261,12 @@ def test_sync_pull_raises_on_unreachable_remote(tmp_path: Path) -> None:
         sync_pull(s)
 
 
-def test_run_loop_swallows_sync_failure(tmp_path: Path) -> None:
-    """With sync enabled but the remote unreachable, run_loop logs the sync
-    failures and still completes its cycles — sync failure never aborts the
-    loop."""
-    import random
-    from unittest import mock
-    from factory.cycle import CycleOutcome
-    from factory.loop import run_loop
-
+def test_run_loop_swallows_sync_failure(
+    tmp_path: Path, caplog: pytest.LogCaptureFixture,
+) -> None:
+    """With sync enabled but the remote unreachable, run_loop calls the sync
+    hooks, logs each failure, and still completes its cycles — sync failure
+    never aborts the loop."""
     repo = tmp_path / "node"
     repo.mkdir()
     _git(["init", "-b", "master"], repo)
@@ -279,7 +280,17 @@ def test_run_loop_swallows_sync_failure(tmp_path: Path) -> None:
 
     fake = CycleOutcome(status="failed", failed_stage="generation",
                         strategy_id=None, record={"status": "failed"})
-    with mock.patch("factory.loop.run_cycle", return_value=fake) as rc:
+    with mock.patch("factory.loop.run_cycle", return_value=fake) as rc, \
+         mock.patch("factory.loop.sync_push", wraps=sync_push) as sp, \
+         caplog.at_level("ERROR"):
         completed = run_loop(s, rng=random.Random(0), max_cycles_override=1)
+
+    # The cycle ran and the loop returned normally — no SyncError escaped.
     assert rc.call_count == 1
     assert completed == 1
+    # sync_push was wired into the loop and invoked once.
+    assert sp.call_count == 1
+    # bootstrap and sync_pull both hit the unreachable remote, raised
+    # SyncError, and were caught + logged by run_loop (not propagated).
+    assert "sync bootstrap failed" in caplog.text
+    assert "sync_pull failed" in caplog.text
