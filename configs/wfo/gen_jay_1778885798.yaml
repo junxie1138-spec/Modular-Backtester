@@ -1,0 +1,30 @@
+run_name: gen_jay_1778885798
+strategy: gen_jay_1778885798
+strategy_params: {range_window: 20, prey_count: 5, prey_threshold: 0.75, expansion_factor: 1.4, close_eff_entry: 0.6, close_eff_confirm: 0.55, atr_window: 14, atr_multiplier: 2.0}
+data:
+  symbols: ["SPY"]
+  timeframe: "1d"
+  start: "2015-01-02"
+  end: "2024-12-31"
+  source: "csv"
+  root: "data/raw"
+execution:
+  initial_cash: 100000
+  commission_bps: 2
+  slippage_bps: 5
+  allow_fractional: false
+  allow_short: false
+portfolio:
+  sizing_mode: "percent_equity"
+  size: 0.95
+optimization:
+  objective: sharpe
+  param_space:
+    prey_count: [3, 5, 8]
+    expansion_factor: [1.2, 1.4, 1.6]
+    atr_multiplier: [1.5, 2.0, 2.5]
+wfo:
+  enabled: true
+  train_bars: 756
+  test_bars: 252
+  step_bars: 252
