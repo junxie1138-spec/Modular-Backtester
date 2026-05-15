@@ -8,11 +8,12 @@ def append_summary(dedup_dir: Path, summary: str, *, node_id: str) -> None:
     """Append one timestamped one_line_summary to this machine's dedup shard.
 
     The shard is `dedup_dir/<node_id>.txt`; each line is `<unix-int>\t<summary>`.
-    Newlines/carriage returns inside the summary are replaced with spaces so
-    one line == one entry. Empty/whitespace-only summaries are silently ignored.
+    Newlines, carriage returns and tabs inside the summary are replaced with
+    spaces so one line == one entry and the tab stays a clean field delimiter.
+    Empty/whitespace-only summaries are silently ignored.
     Parent directories are created on demand.
     """
-    cleaned = " ".join(summary.replace("\r", "\n").split("\n")).strip()
+    cleaned = " ".join(summary.replace("\t", " ").replace("\r", "\n").split("\n")).strip()
     if not cleaned:
         return
     shard = dedup_dir / f"{node_id}.txt"

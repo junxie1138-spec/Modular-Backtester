@@ -65,3 +65,30 @@ def test_append_skips_empty_or_whitespace(tmp_path: Path) -> None:
     append_summary(d, "   ", node_id="local")
     append_summary(d, "real entry", node_id="local")
     assert read_tail(d, n=10) == ["real entry"]
+
+
+def test_read_tail_legacy_bad_ts_str_is_oldest(tmp_path: Path) -> None:
+    """A tab-bearing line whose first field is not an integer (corruption /
+    hand-edit) falls back to timestamp 0, like an untimestamped line."""
+    d = tmp_path / "dedup"
+    d.mkdir()
+    (d / "local.txt").write_text(
+        "not-an-int\tsome summary\n500\tnew idea\n", encoding="utf-8")
+    assert read_tail(d, n=10) == ["not-an-int\tsome summary", "new idea"]
+
+
+def test_read_tail_equal_timestamps_are_stable(tmp_path: Path) -> None:
+    """Entries with equal timestamps keep a deterministic order: sorted shard
+    filename order, then line order within a shard."""
+    d = tmp_path / "dedup"
+    d.mkdir()
+    (d / "a-node.txt").write_text("100\talpha\n", encoding="utf-8")
+    (d / "b-node.txt").write_text("100\tbeta\n", encoding="utf-8")
+    assert read_tail(d, n=10) == ["alpha", "beta"]
+
+
+def test_read_tail_non_positive_n_returns_empty(tmp_path: Path) -> None:
+    d = tmp_path / "dedup"
+    append_summary(d, "an idea", node_id="local")
+    assert read_tail(d, n=0) == []
+    assert read_tail(d, n=-5) == []
