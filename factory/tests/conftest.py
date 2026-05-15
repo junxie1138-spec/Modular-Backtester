@@ -44,6 +44,10 @@ def tmp_settings_file(tmp_path: Path) -> Path:
         host             = "127.0.0.1"
         port             = 8787
         auto_refresh_sec = 10
+
+        [screening]
+        enabled            = true
+        min_optimize_score = 1.3
         """
     ).strip()
     p = tmp_path / "settings.toml"

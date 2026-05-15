@@ -64,6 +64,12 @@ class PromotionCfg:
 
 
 @dataclass(slots=True, frozen=True)
+class ScreeningCfg:
+    enabled: bool
+    min_optimize_score: float
+
+
+@dataclass(slots=True, frozen=True)
 class Settings:
     paths: Paths
     generation: GenerationCfg
@@ -72,6 +78,7 @@ class Settings:
     loop: LoopCfg
     dashboard: DashboardCfg
     promotion: PromotionCfg
+    screening: ScreeningCfg
 
 
 def load_settings(path: Path) -> Settings:
@@ -110,6 +117,7 @@ def load_settings(path: Path) -> Settings:
     lp = raw["loop"]
     d = raw["dashboard"]
     pr = raw.get("promotion", {}) or {}
+    sc = raw.get("screening", {}) or {}
     return Settings(
         paths=paths,
         generation=GenerationCfg(
@@ -141,5 +149,9 @@ def load_settings(path: Path) -> Settings:
             min_avg_sharpe=float(pr.get("min_avg_sharpe", 0.7)),
             trigger_metric=str(pr.get("trigger_metric", "wfo.oos_sharpe")),
             trigger_threshold=float(pr.get("trigger_threshold", 1.0)),
+        ),
+        screening=ScreeningCfg(
+            enabled=bool(sc.get("enabled", False)),
+            min_optimize_score=float(sc.get("min_optimize_score", 1.3)),
         ),
     )

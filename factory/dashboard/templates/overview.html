@@ -24,6 +24,7 @@
     <span>Above threshold ({{ summary.threshold_metric }} &gt; {{ summary.threshold_value }}):
       <strong id="c-above">{{ summary.above_threshold }}</strong></span>
     <span>Promoted: <strong id="c-promoted">{{ summary.promoted }}</strong> / {{ summary.promotion_attempted }} attempted</span>
+    <span>Screened: <strong id="c-screened">{{ summary.screened }}</strong></span>
     <span>Cumulative spend: <strong id="c-spend">${{ "%.2f"|format(summary.cumulative_spend_usd) }}</strong></span>
   </div>
   <table id="records">
@@ -50,7 +51,7 @@
         <td>{{ r.timestamp }}</td>
         <td>{{ r.strategy_id or '(no id)' }}</td>
         <td>{{ r.idea.one_line_summary if r.idea and r.idea.one_line_summary is defined else '(no idea)' }}</td>
-        <td>{% if r.status == 'failed' %}<span class="failed-stage">failed: {{ r.failed_stage }}</span>{% else %}{{ r.status }}{% endif %}</td>
+        <td>{% if r.status == 'failed' %}<span class="failed-stage">failed: {{ r.failed_stage }}</span>{% elif r.screened_out %}complete (screened){% else %}{{ r.status }}{% endif %}</td>
         <td>{{ "%.3f"|format(r.backtest.sharpe) if r.backtest else '' }}</td>
         <td>{{ "%.3f"|format(r.wfo.oos_sharpe) if r.wfo else '' }}</td>
         <td>{{ "%.2f%%"|format(r.wfo.oos_total_return * 100) if r.wfo else '' }}</td>

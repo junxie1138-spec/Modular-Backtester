@@ -158,11 +158,25 @@ def run_cycle(settings: Settings, *, rng: random.Random) -> CycleOutcome:
     bt: Optional[StageResult] = None
     opt: Optional[StageResult] = None
     wfo: Optional[StageResult] = None
+    screened_out = False
+    screen_reason: Optional[str] = None
     for stage_name, runner in (
         ("backtest", run_backtest_stage),
         ("optimize", run_optimize_stage),
         ("wfo", run_wfo_stage),
     ):
+        if stage_name == "wfo" and s.screening.enabled:
+            assert opt is not None
+            best_score = opt.parsed.get("best_score")
+            if best_score is not None and best_score < s.screening.min_optimize_score:
+                screened_out = True
+                screen_reason = (
+                    f"optimize best_score {best_score:.3f} < floor "
+                    f"{s.screening.min_optimize_score:.3f}"
+                )
+                log.info("cycle id=%s screened out before WFO: %s",
+                         strategy_id, screen_reason)
+                break
         try:
             result = runner(
                 canonical_config=canonical_cfg,
@@ -190,7 +204,7 @@ def run_cycle(settings: Settings, *, rng: random.Random) -> CycleOutcome:
         else:
             wfo = result
 
-    assert bt is not None and opt is not None and wfo is not None
+    assert bt is not None and opt is not None
 
     # Step 13.5: held-out promotion (v0.3). Runs only if promotion is enabled
     # AND the WFO trigger metric clears the configured threshold. Failure
@@ -199,7 +213,7 @@ def run_cycle(settings: Settings, *, rng: random.Random) -> CycleOutcome:
     # of promotion outcome — the alert trigger is unchanged (still keyed on
     # the main WFO threshold).
     promotion_dict: Optional[dict[str, Any]] = None
-    if s.promotion.enabled:
+    if s.promotion.enabled and wfo is not None:
         provisional = {
             "backtest": bt.parsed, "optimize": opt.parsed, "wfo": wfo.parsed,
         }
@@ -231,8 +245,11 @@ def run_cycle(settings: Settings, *, rng: random.Random) -> CycleOutcome:
     rec = build_record(
         strategy_id=strategy_id, timestamp=ts, slots=slots, idea=idea,
         generation_cost_usd=cost,
-        backtest=bt.parsed, optimize=opt.parsed, wfo=wfo.parsed,
+        backtest=bt.parsed, optimize=opt.parsed,
+        wfo=wfo.parsed if wfo is not None else None,
         promotion=promotion_dict,
+        screened_out=screened_out,
+        screen_reason=screen_reason,
         alerted=False,  # patched below after maybe_send_alert
     )
 
@@ -243,7 +260,9 @@ def run_cycle(settings: Settings, *, rng: random.Random) -> CycleOutcome:
     rec["alerted"] = bool(notify_result.sent)
 
     write_record(paths.results_store, rec)
-    log.info("cycle id=%s complete oos_sharpe=%s alerted=%s",
-             strategy_id, wfo.parsed.get("oos_sharpe"), rec["alerted"])
+    log.info("cycle id=%s complete oos_sharpe=%s screened=%s alerted=%s",
+             strategy_id,
+             wfo.parsed.get("oos_sharpe") if wfo is not None else "n/a",
+             screened_out, rec["alerted"])
     return CycleOutcome(status="complete", failed_stage=None,
                         strategy_id=strategy_id, record=rec)
