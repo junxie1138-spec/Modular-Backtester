@@ -319,7 +319,7 @@ A separate, opt-in subsystem that lives at `factory/` and wraps the backtester. 
 
 ```bash
 python -m factory.loop                                    # run the continuous loop
-python -m dashboard.server                                # local dashboard at http://127.0.0.1:8787
+python -m factory.dashboard.server                        # local dashboard at http://127.0.0.1:8787
 python -m factory.scripts.endurance_check --cycles 100    # validate 100 unattended cycles
 python -m factory.scripts.telegram_smoke                  # verify Telegram credentials
 ```

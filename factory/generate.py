@@ -75,19 +75,45 @@ def _find_outer_json_object(text: str) -> str:
     raise ValueError("unbalanced braces in text")
 
 
+def _find_envelope_with_result(stdout: str) -> dict[str, Any]:
+    """Scan stdout for any top-level JSON object that has a 'result' field.
+
+    Tolerates: leading/trailing whitespace, prefix or suffix non-JSON text,
+    multiple JSON objects on stdout (e.g. when claude emits diagnostic JSON
+    before/after the result envelope without --bare), and pretty-printed
+    multi-line JSON. Returns the first matching object.
+    """
+    pos = 0
+    while pos < len(stdout):
+        start = stdout.find("{", pos)
+        if start < 0:
+            break
+        try:
+            obj_str = _find_outer_json_object(stdout[start:])
+            obj = json.loads(obj_str)
+        except (ValueError, json.JSONDecodeError):
+            pos = start + 1
+            continue
+        if isinstance(obj, dict) and "result" in obj:
+            return obj
+        pos = start + len(obj_str)
+    raise GenerationError(
+        "could not parse CLI envelope: no JSON object with 'result' field "
+        "found in stdout"
+    )
+
+
 def parse_claude_output(stdout: str) -> tuple[dict[str, Any], float]:
     """Defensive double-unwrap.
 
     Returns (parsed_strategy_dict, total_cost_usd).
     Raises GenerationError on any parse failure or missing required key.
     """
-    # Layer 1: CLI envelope.
-    try:
-        envelope = json.loads(stdout)
-    except json.JSONDecodeError as exc:
-        raise GenerationError(f"could not parse CLI envelope: {exc}") from exc
-    if not isinstance(envelope, dict) or "result" not in envelope:
-        raise GenerationError("envelope missing 'result' field")
+    # Layer 1: CLI envelope. We scan for a {...} block with a 'result' field
+    # rather than parsing the entire stdout, because claude without --bare can
+    # emit additional diagnostic content on stdout (hooks output, plugin sync,
+    # CLAUDE.md auto-discovery, etc.) that breaks a strict json.loads(stdout).
+    envelope = _find_envelope_with_result(stdout)
     inner_text = envelope["result"]
     cost = float(envelope.get("total_cost_usd", 0.0) or 0.0)
 
