@@ -11,3 +11,4 @@
 1778884848	Long entry when vol compresses below baseline and return SNR is positive, size scaled by SNR magnitude
 1778885023	Consecutive up-close AND up-volume streaks enter momentum long; fixed ATR stop exits
 1778885300	Predator-retreat recovery: drawdown-memory plus vol-compression percentile gates volatility-targeted long entry
+1778885440	ROC acceleration AND epidemic growth ratio both confirm expanding momentum burst

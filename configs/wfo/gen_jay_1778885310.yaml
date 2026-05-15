@@ -1,0 +1,30 @@
+run_name: gen_jay_1778885310
+strategy: gen_jay_1778885310
+strategy_params: {roc_window: 10, accel_window: 5, accel_threshold: 0.0, growth_lag: 5, growth_threshold: 1.10}
+data:
+  symbols: ["SPY"]
+  timeframe: "1d"
+  start: "2015-01-02"
+  end: "2024-12-31"
+  source: "csv"
+  root: "data/raw"
+execution:
+  initial_cash: 100000
+  commission_bps: 2
+  slippage_bps: 5
+  allow_fractional: false
+  allow_short: false
+portfolio:
+  sizing_mode: "percent_equity"
+  size: 0.95
+optimization:
+  objective: sharpe
+  param_space:
+    roc_window: [7, 10, 14]
+    growth_threshold: [1.05, 1.10, 1.20]
+    growth_lag: [3, 5, 8]
+wfo:
+  enabled: true
+  train_bars: 756
+  test_bars: 252
+  step_bars: 252
