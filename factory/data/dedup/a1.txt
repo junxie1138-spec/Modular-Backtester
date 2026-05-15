@@ -12,3 +12,4 @@ Volume-confirmed short-horizon momentum thrust, traded long/short with surge-and
 1778883604	Long-only weekday-tide seasonality gated by rate-of-change acceleration, breakeven-then-trail exit
 1778883697	Buy SPY after N consecutive down-closes inside a drawdown, hold via ratcheting ATR trailing stop
 1778883827	Long SPY on an up-gap only when the rolling lag-1 autocorrelation of gaps is positive; fixed-bar exit
+1778883975	Long-only drawdown recovery entered on the zero-crossing of momentum's second derivative (rate-of-change acceleration)
