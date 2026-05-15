@@ -18,6 +18,7 @@ from __future__ import annotations
 import argparse
 import random
 import re
+import shutil
 import sys
 from pathlib import Path
 from unittest import mock
@@ -91,6 +92,26 @@ def _scenario_payload(scenario: str, strategy_id: str, fixtures: Path) -> dict:
     }
 
 
+def _purge_endurance_artifacts(settings) -> int:
+    """Delete the gen_endurance_*.py / .yaml files this script generates.
+
+    Returns the count removed. The endurance run must write strategy files
+    into the *real* strategies/ dir (the backtester subprocess imports them
+    via registry auto-discovery), so the script owns their cleanup. The
+    `gen_endurance_` prefix is unique to this script — it never matches
+    curated strategies or real factory output (`gen_<node_id>_<ts>.*`).
+    """
+    removed = 0
+    for directory, pattern in (
+        (settings.paths.strategies_dir, "gen_endurance_*.py"),
+        (settings.paths.configs_dir, "gen_endurance_*.yaml"),
+    ):
+        for path in directory.glob(pattern):
+            path.unlink()
+            removed += 1
+    return removed
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--cycles", type=int, default=100)
@@ -100,8 +121,21 @@ def main(argv: list[str] | None = None) -> int:
 
     repo = Path(__file__).resolve().parents[2]
     fixtures = repo / "factory" / "tests" / "fixtures"
+    # Start from a clean scratch tree. read_records() unions every shard in
+    # the results dir, so records left by a previous run would inflate the
+    # final count and fail the `len(records) == cycles` invariant. The whole
+    # _endurance_scratch tree is disposable, so wipe it before each run.
+    if args.scratch.exists():
+        shutil.rmtree(args.scratch, ignore_errors=True)
     args.scratch.mkdir(parents=True, exist_ok=True)
     s = _load_settings(repo, args.scratch)
+
+    # The run writes strategy/config files into the *real* strategies/ and
+    # configs/wfo/ dirs. Purge any left by a prior run so filenames do not
+    # collide; they are purged again after the run so the repo stays clean.
+    purged = _purge_endurance_artifacts(s)
+    if purged:
+        print(f"removed {purged} leftover gen_endurance_* file(s) from a prior run")
 
     from factory.cycle import run_cycle
     from factory.generate import GenerationResult
@@ -134,6 +168,11 @@ def main(argv: list[str] | None = None) -> int:
             completed += 1
             if (i + 1) % 10 == 0:
                 print(f"  cycle {i + 1}/{args.cycles} -> {outcome.status}")
+
+    # Cycles done — remove the strategy/config files this run created so the
+    # repo is left clean. Done before the invariant asserts below so a
+    # failing assert cannot skip the cleanup.
+    _purge_endurance_artifacts(s)
 
     # Post-run invariants.
     from factory.results import read_records
