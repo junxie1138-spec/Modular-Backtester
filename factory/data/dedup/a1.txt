@@ -22,3 +22,4 @@ Volume-confirmed short-horizon momentum thrust, traded long/short with surge-and
 1778884821	Long when the current calendar month's endogenous historical seasonal bias AND positive rate-of-change acceleration both agree.
 1778884912	Hysteresis-armed drawdown regime fires on first up-gap; drawdown-depth-scaled size, fixed-bar exit
 1778885095	Leverage-effect regime switch: return/vol-change correlation flips between panic mean-reversion and vol-expansion momentum
+1778885259	Buy SPY after a percentile-exceeding high-low range shock closing near the high; vol-targeted size, breakeven-then-trail exit.
