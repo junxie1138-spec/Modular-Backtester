@@ -18,6 +18,8 @@ def test_loads_all_sections(tmp_settings_file: Path) -> None:
     assert s.loop.mode == "continuous"
     assert s.loop.max_cycles == 1
     assert s.dashboard.port == 8787
+    assert s.node_id == "local"
+    assert s.sync.enabled is False
 
 
 def test_paths_resolve_under_root(tmp_settings_file: Path) -> None:
@@ -68,10 +70,11 @@ def test_node_id_read_from_local_override(tmp_settings_file: Path) -> None:
     assert s.node_id == "desk"
 
 
-def test_malformed_node_id_is_fatal(tmp_settings_file: Path) -> None:
+@pytest.mark.parametrize("bad", ["Bad_ID", "-desk", "", "node id", "UPPER"])
+def test_malformed_node_id_is_fatal(tmp_settings_file: Path, bad: str) -> None:
     """A node_id that is not ^[a-z0-9][a-z0-9-]*$ fails settings load."""
     local = tmp_settings_file.parent / "settings.local.toml"
-    local.write_text('node_id = "Bad_ID"\n', encoding="utf-8")
+    local.write_text(f'node_id = "{bad}"\n', encoding="utf-8")
     with pytest.raises(ValueError, match="node_id"):
         load_settings(tmp_settings_file)
 
