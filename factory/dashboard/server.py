@@ -42,10 +42,10 @@ def _aggregate(records: list[dict], threshold_metric: str, threshold: float) -> 
         tok = r.get("generation_tokens")
         if tok:
             cumulative_tokens += (
-                int(tok.get("input", 0) or 0)
-                + int(tok.get("output", 0) or 0)
-                + int(tok.get("cache_creation", 0) or 0)
-                + int(tok.get("cache_read", 0) or 0)
+                int(tok.get("input") or 0)
+                + int(tok.get("output") or 0)
+                + int(tok.get("cache_creation") or 0)
+                + int(tok.get("cache_read") or 0)
             )
         if r.get("status") == "failed":
             stage = r.get("failed_stage") or "unknown"

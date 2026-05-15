@@ -137,5 +137,5 @@ def test_api_summary_sums_cumulative_tokens(app_with_records) -> None:
     """
     client, _ = app_with_records
     data = client.get("/api/summary").get_json()
-    # gen_1: 3120 + 3540 + 0 + 18000 = 24660. gen_2 and gen_3: no tokens -> 0.
+    # gen_1: 3120 + 3540 + 0 + 18000 = 24660. The other two records: no tokens -> 0.
     assert data["cumulative_tokens"] == 24660
