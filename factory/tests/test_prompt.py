@@ -7,6 +7,7 @@ def test_build_prompt_fills_all_placeholders() -> None:
         "signal_primitive": "close-to-close returns",
         "holding_horizon": "3-5 days",
         "direction": "long-only",
+        "exit_rule": "fixed-bar exit (exit exactly N bars after entry, no signal-based exit)",
         "constraint_twist": "<=2 tunable params",
         "inspiration_anchor": "hysteresis control",
     }
@@ -34,7 +35,7 @@ def test_build_prompt_fills_all_placeholders() -> None:
 def test_empty_dedup_tail_is_handled() -> None:
     slots = {n: "x" for n in (
         "strategy_family", "signal_primitive", "holding_horizon",
-        "direction", "constraint_twist", "inspiration_anchor",
+        "direction", "exit_rule", "constraint_twist", "inspiration_anchor",
     )}
     text = build_prompt(strategy_id="gen_1", slots=slots, dedup_tail=[])
     assert "(none yet)" in text
@@ -43,7 +44,7 @@ def test_empty_dedup_tail_is_handled() -> None:
 def test_long_dedup_tail_caps_at_30() -> None:
     slots = {n: "x" for n in (
         "strategy_family", "signal_primitive", "holding_horizon",
-        "direction", "constraint_twist", "inspiration_anchor",
+        "direction", "exit_rule", "constraint_twist", "inspiration_anchor",
     )}
     tail = [f"idea {i}" for i in range(100)]
     text = build_prompt(strategy_id="gen_1", slots=slots, dedup_tail=tail)
@@ -51,3 +52,18 @@ def test_long_dedup_tail_caps_at_30() -> None:
     assert "idea 70" in text
     assert "idea 99" in text
     assert "idea 69" not in text
+
+
+def test_exit_rule_placeholder_is_substituted() -> None:
+    slots = {
+        "strategy_family": "momentum",
+        "signal_primitive": "close-to-close returns",
+        "holding_horizon": "3-5 days",
+        "direction": "long-only",
+        "exit_rule": "DISTINCTIVE-EXIT-RULE-MARKER",
+        "constraint_twist": "<=2 tunable params",
+        "inspiration_anchor": "hysteresis control",
+    }
+    text = build_prompt(strategy_id="gen_1", slots=slots, dedup_tail=[])
+    assert "DISTINCTIVE-EXIT-RULE-MARKER" in text
+    assert "{{exit_rule}}" not in text

@@ -75,6 +75,11 @@ THIS IDEA'S RANDOM CONSTRAINTS:
 - Target holding horizon: {{holding_horizon}}
 - Direction: {{direction}} (if "long/short", you may emit -1 signals; if
   "long-only", never emit -1)
+- Exit rule (the strategy MUST implement this exit mechanic): {{exit_rule}}
+  Implement it inside generate_signals by driving df["signal"] to 0 when the
+  exit fires - there is no config-level stop-loss block. A bar-indexed Python
+  loop is acceptable for this exit computation: trailing and breakeven exits
+  are path-dependent and have no clean vectorised equivalent.
 - Hard twist (must satisfy): {{constraint_twist}}
 - Loose inspiration (use only if genuinely useful): {{inspiration_anchor}}
 
