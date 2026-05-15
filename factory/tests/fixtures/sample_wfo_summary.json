@@ -1,0 +1,15 @@
+{
+  "oos_summary": {
+    "total_return": 0.31078674058870415,
+    "sharpe": 0.6897185480952924,
+    "max_drawdown": -0.07374129512318983,
+    "n_trades": 109,
+    "win_rate": 0.660377358490566
+  },
+  "is_summary_avg": {"sharpe": 1.0344, "total_return": 0.1859},
+  "parameter_stability": {
+    "entry_percentile": {"unique": 2, "mode": 30.0, "values_by_window": [30.0, 30.0, 30.0, 10.0, 10.0, 10.0]},
+    "max_hold": {"unique": 2, "mode": 10, "values_by_window": [10, 10, 10, 5, 5, 5]}
+  },
+  "n_windows": 6
+}

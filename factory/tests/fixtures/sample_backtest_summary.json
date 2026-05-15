@@ -1,0 +1,18 @@
+{
+  "total_return": 0.04789374275677183,
+  "annualized_return": 0.004696651430814214,
+  "annualized_vol": 0.06607341894887274,
+  "sharpe": 0.10408681366641073,
+  "sortino": 0.07678489985397205,
+  "max_drawdown": -0.18412515335473634,
+  "n_trades": 286,
+  "n_round_trips": 143,
+  "win_rate": 0.4965034965034965,
+  "avg_round_trip_pnl": 33.49212780193766,
+  "time_in_market": 0.27980922098569155,
+  "turnover": 271.8263207425216,
+  "final_equity": 104789.37427567718,
+  "params": {"range_period": 10, "percentile_window": 60, "entry_percentile": 20.0, "exit_percentile": 70.0, "max_hold": 5, "size": 1.0},
+  "symbol": "SPY",
+  "timeframe": "1d"
+}

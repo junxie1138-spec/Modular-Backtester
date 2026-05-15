@@ -1,0 +1,14 @@
+{
+  "best_params": {"fast": 20, "slow": 100, "size": 1.0},
+  "best_score_objective": "sharpe",
+  "best_summary": {
+    "total_return": 1.151945029732036,
+    "sharpe": 0.6652567100252722,
+    "max_drawdown": -0.22533808426677238,
+    "n_trades": 27,
+    "win_rate": 0.3076923076923077,
+    "params": {"fast": 20, "slow": 100, "size": 1.0},
+    "symbol": "SPY",
+    "timeframe": "1d"
+  }
+}

@@ -1,0 +1,8 @@
+data/results.json
+data/dedup_log.txt
+data/_tmp/
+logs/
+__pycache__/
+.pytest_cache/
+*.pyc
+config/settings.local.toml

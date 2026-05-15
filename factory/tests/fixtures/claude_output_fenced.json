@@ -1,0 +1,5 @@
+{
+  "result": "```json\n{\"strategy_id\": \"gen_2\", \"one_line_summary\": \"rsi reversal\", \"hypothesis\": \"oversold bounces.\", \"novelty_justification\": \"x.\", \"failure_mode\": \"trends.\", \"allow_short\": false, \"strategy_file\": \"# placeholder\\n\", \"config_file\": \"run_name: gen_2\\n\"}\n```",
+  "session_id": "def",
+  "total_cost_usd": 0.041
+}

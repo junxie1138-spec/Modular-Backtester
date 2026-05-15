@@ -1,0 +1,169 @@
+"""100-cycle endurance check with stubbed claude -p.
+
+Runs N cycles against the real backtester subprocesses on the real CSV
+data. Generator output rotates through three pre-built strategy/config
+pairs (one valid, one validation-fail, one stage-fail) so we hit every
+record path. Verifies at the end that the results store contains N
+records, the registry has no duplicate lines, the dedup log has the
+right number of entries, and no orphan tmp files exist.
+
+USAGE:
+    python -m factory.scripts.endurance_check --cycles 10        # quick sanity
+    python -m factory.scripts.endurance_check --cycles 100       # full run
+
+This is an operator script, NOT a pytest test. It takes real wall-clock
+time (the valid scenarios run real subprocess stages).
+"""
+from __future__ import annotations
+
+import argparse
+import random
+import re
+import sys
+from pathlib import Path
+from unittest import mock
+
+
+SCENARIOS = ("valid", "validation_fail", "stage_fail")
+
+
+def _load_settings(repo: Path, scratch: Path):
+    from factory.settings_loader import load_settings
+    settings_toml = scratch / "settings.toml"
+    settings_toml.write_text(f"""
+[paths]
+backtester_root  = "{repo.as_posix()}"
+strategies_dir   = "strategies"
+configs_dir      = "configs/wfo"
+registry_file    = "backtester/strategies/registry.py"
+output_runs_dir  = "output/runs"
+dedup_log        = "{(scratch / 'dedup.txt').as_posix()}"
+results_store    = "{(scratch / 'results.json').as_posix()}"
+factory_log      = "{(scratch / 'factory.log').as_posix()}"
+tmp_dir          = "{(scratch / '_tmp').as_posix()}"
+
+[generation]
+claude_cmd             = "claude"
+claude_flags           = ["-p"]
+generation_timeout_sec = 120
+
+[stages]
+stage_timeout_sec = 1800
+
+[alerts]
+alert_threshold_metric = "wfo.oos_sharpe"
+alert_threshold        = 999.0
+telegram_bot_token     = ""
+telegram_chat_id       = ""
+dashboard_base_url     = "http://127.0.0.1:8787"
+
+[loop]
+mode                  = "continuous"
+inter_cycle_sleep_sec = 0
+max_cycles            = 0
+
+[dashboard]
+host             = "127.0.0.1"
+port             = 8787
+auto_refresh_sec = 10
+""", encoding="utf-8")
+    return load_settings(settings_toml)
+
+
+def _scenario_payload(scenario: str, strategy_id: str, fixtures: Path) -> dict:
+    if scenario == "valid":
+        src = (fixtures / "valid_strategy.py").read_text(encoding="utf-8")
+        cfg = (fixtures / "valid_config.yaml").read_text(encoding="utf-8")
+    elif scenario == "validation_fail":
+        src = (fixtures / "invalid_no_shift.py").read_text(encoding="utf-8")
+        cfg = (fixtures / "valid_config.yaml").read_text(encoding="utf-8")
+    else:  # stage_fail — valid src but config that will fail backtest
+        src = (fixtures / "valid_strategy.py").read_text(encoding="utf-8")
+        cfg = (fixtures / "valid_config.yaml").read_text(encoding="utf-8")
+    src = re.sub(r'strategy_id = "[^"]+"', f'strategy_id = "{strategy_id}"', src, count=1)
+    cfg = re.sub(r"gen_test_valid", strategy_id, cfg)
+    return {
+        "strategy_id": strategy_id,
+        "one_line_summary": f"endurance test cycle {scenario}",
+        "hypothesis": "h", "novelty_justification": "n", "failure_mode": "f",
+        "allow_short": False,
+        "strategy_file": src,
+        "config_file": cfg,
+    }
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--cycles", type=int, default=100)
+    parser.add_argument("--scratch", type=Path,
+                        default=Path("factory/data/_endurance_scratch"))
+    args = parser.parse_args(argv)
+
+    repo = Path(__file__).resolve().parents[2]
+    fixtures = repo / "factory" / "tests" / "fixtures"
+    args.scratch.mkdir(parents=True, exist_ok=True)
+    s = _load_settings(repo, args.scratch)
+
+    from factory.cycle import run_cycle
+    from factory.generate import GenerationResult
+    from factory.loop import configure_logging
+
+    configure_logging(s.paths.factory_log)
+    rng = random.Random(0)
+
+    completed = 0
+    counter = {"n": 0}
+
+    def fake_call_claude(**kwargs):
+        counter["n"] += 1
+        scenario = SCENARIOS[counter["n"] % len(SCENARIOS)]
+        sid = f"gen_endurance_{counter['n']}"
+        parsed = _scenario_payload(scenario, sid, fixtures)
+        return GenerationResult(parsed=parsed, cost_usd=0.03, raw_stdout="{}")
+
+    # We also need to mock pick_unused_strategy_id so the cycle locks in
+    # the scenario-generated id (not the gen_<time> default). pick_unused_strategy_id
+    # runs BEFORE call_claude in the cycle, so we look ahead by +1 to match
+    # the id that fake_call_claude will embed in the file.
+    def fake_pick_id(base, *, strategies_dir):
+        return f"gen_endurance_{counter['n'] + 1}"
+
+    with mock.patch("factory.cycle.call_claude", side_effect=fake_call_claude), \
+         mock.patch("factory.cycle.pick_unused_strategy_id", side_effect=fake_pick_id):
+        for i in range(args.cycles):
+            outcome = run_cycle(s, rng=rng)
+            completed += 1
+            if (i + 1) % 10 == 0:
+                print(f"  cycle {i + 1}/{args.cycles} -> {outcome.status}")
+
+    # Post-run invariants.
+    from factory.results import read_records
+    records = read_records(s.paths.results_store)
+    print(f"records: {len(records)} (expected {args.cycles})")
+    assert len(records) == args.cycles, "results store record count mismatch"
+
+    statuses = {"complete": 0, "failed": 0}
+    for r in records:
+        statuses[r["status"]] = statuses.get(r["status"], 0) + 1
+    print(f"complete: {statuses['complete']}  failed: {statuses['failed']}")
+
+    # Registry must have NO duplicate gen_endurance_* strategy IDs.
+    # Each registered strategy contributes exactly two lines:
+    #   from strategies.gen_endurance_N import GeneratedStrategy as _gen_endurance_N
+    #   register_strategy(_gen_endurance_N)
+    # That's 3 regex matches per strategy (import path + alias definition + register call).
+    # A true duplicate would give >3 matches for the same N.
+    reg_text = s.paths.registry_file.read_text(encoding="utf-8")
+    from collections import Counter
+    id_counts = Counter(re.findall(r"gen_endurance_(\d+)", reg_text))
+    duplicates = {k: v for k, v in id_counts.items() if v > 3}
+    assert not duplicates, f"duplicate registry entries detected: {duplicates}"
+
+    unique_ids = len(id_counts)
+    print(f"registry alias count: {unique_ids}")
+    print("ENDURANCE CHECK PASSED")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

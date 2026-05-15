@@ -1,0 +1,44 @@
+import random
+from collections import Counter
+
+from factory.slots import SLOT_NAMES, SLOTS, pull_slots
+
+
+def test_six_slots_with_expected_names() -> None:
+    assert SLOT_NAMES == (
+        "strategy_family",
+        "signal_primitive",
+        "holding_horizon",
+        "direction",
+        "constraint_twist",
+        "inspiration_anchor",
+    )
+    for name in SLOT_NAMES:
+        assert len(SLOTS[name]) >= 3, name
+
+
+def test_pull_returns_one_per_slot() -> None:
+    rng = random.Random(42)
+    pulled = pull_slots(rng)
+    assert set(pulled.keys()) == set(SLOT_NAMES)
+    for name, value in pulled.items():
+        assert value in SLOTS[name], (name, value)
+
+
+def test_pull_is_diverse_across_many_calls() -> None:
+    rng = random.Random(0)
+    families = Counter()
+    for _ in range(200):
+        families[pull_slots(rng)["strategy_family"]] += 1
+    # All distinct families should appear within 200 pulls (~12 families).
+    assert len(families) == len(SLOTS["strategy_family"])
+
+
+def test_direction_is_weighted_toward_long_only() -> None:
+    # spec: long-only x2, long/short x1
+    rng = random.Random(7)
+    counts = Counter(pull_slots(rng)["direction"] for _ in range(3000))
+    assert counts["long-only"] > counts["long/short"]
+    # Expect ratio ~2:1 — allow generous tolerance for randomness.
+    ratio = counts["long-only"] / counts["long/short"]
+    assert 1.4 < ratio < 2.6, ratio
