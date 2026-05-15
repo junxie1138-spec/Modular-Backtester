@@ -9,3 +9,4 @@
 1778884606	Buy momentum-wave troughs in high-tide uptrend via double rolling-rank percentile threshold
 1778884735	Z-score breakout blocked by post-spike refractory window, ATR trailing stop exit
 1778884848	Long entry when vol compresses below baseline and return SNR is positive, size scaled by SNR magnitude
+1778885023	Consecutive up-close AND up-volume streaks enter momentum long; fixed ATR stop exits
