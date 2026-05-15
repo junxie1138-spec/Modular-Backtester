@@ -44,3 +44,4 @@ Volume-confirmed short-horizon momentum thrust, traded long/short with surge-and
 1778887976	Per-weekday rolling mean t-statistic of close-to-close returns gates a t-stat-sized long/short entry; profit-target/time-stop exit.
 1778888105	Buy drawdown recoveries when peak high-low range deformation has elastically recoiled back toward its baseline; fixed-bar exit.
 1778888215	Enter long when mid-range relative position shows positive velocity and positive acceleration; breakeven-then-ATR-trail exit.
+1778888353	Enter on fresh crossing of momentum's rolling percentile threshold, but lock out spike-driven momentum; rolling-high ATR trailing exit
