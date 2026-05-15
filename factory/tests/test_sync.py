@@ -255,3 +255,31 @@ def test_sync_pull_raises_on_unreachable_remote(tmp_path: Path) -> None:
     s = _node_settings(repo, "desk")
     with pytest.raises(SyncError):
         sync_pull(s)
+
+
+def test_run_loop_swallows_sync_failure(tmp_path: Path) -> None:
+    """With sync enabled but the remote unreachable, run_loop logs the sync
+    failures and still completes its cycles — sync failure never aborts the
+    loop."""
+    import random
+    from unittest import mock
+    from factory.cycle import CycleOutcome
+    from factory.loop import run_loop
+
+    repo = tmp_path / "node"
+    repo.mkdir()
+    _git(["init", "-b", "master"], repo)
+    _git(["config", "user.email", "n@example.com"], repo)
+    _git(["config", "user.name", "N"], repo)
+    (repo / "README.md").write_text("x\n", encoding="utf-8")
+    _git(["add", "-A"], repo)
+    _git(["commit", "-m", "init"], repo)
+    _git(["remote", "add", "origin", str(tmp_path / "missing.git")], repo)
+    s = _node_settings(repo, "desk")   # sync enabled, remote unreachable
+
+    fake = CycleOutcome(status="failed", failed_stage="generation",
+                        strategy_id=None, record={"status": "failed"})
+    with mock.patch("factory.loop.run_cycle", return_value=fake) as rc:
+        completed = run_loop(s, rng=random.Random(0), max_cycles_override=1)
+    assert rc.call_count == 1
+    assert completed == 1

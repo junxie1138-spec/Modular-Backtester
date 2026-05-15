@@ -12,6 +12,7 @@ from typing import Optional
 
 from factory.cycle import run_cycle
 from factory.settings_loader import Settings, load_settings
+from factory.sync import bootstrap, sync_pull, sync_push
 
 log = logging.getLogger(__name__)
 
@@ -78,8 +79,17 @@ def run_loop(
     max_cycles = max_cycles_override if max_cycles_override is not None else settings.loop.max_cycles
     sleep_sec = settings.loop.inter_cycle_sleep_sec
 
+    try:
+        bootstrap(settings)
+    except Exception as exc:
+        log.exception("sync bootstrap failed (continuing): %s", exc)
+
     completed = 0
     while not flag.is_set():
+        try:
+            sync_pull(settings)
+        except Exception as exc:
+            log.exception("sync_pull failed (continuing): %s", exc)
         try:
             outcome = run_cycle(settings, rng=rng)
             log.info("cycle %d outcome=%s id=%s",
@@ -89,6 +99,10 @@ def run_loop(
             # (run_cycle is supposed to never raise on expected failures, so
             # reaching here means a bug — but the loop must not die.)
             log.exception("unexpected exception in run_cycle: %s", exc)
+        try:
+            sync_push(settings)
+        except Exception as exc:
+            log.exception("sync_push failed (continuing): %s", exc)
         completed += 1
         if max_cycles and completed >= max_cycles:
             break
