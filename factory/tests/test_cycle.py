@@ -178,3 +178,54 @@ def test_stage_failure_writes_failed_record_keeps_dedup_and_files(
     # Files + registry ARE present (per §9 landmine 2: orphan accepted).
     assert (s.paths.strategies_dir / "gen_1715800000.py").exists()
     assert "_gen_1715800000" in s.paths.registry_file.read_text(encoding="utf-8")
+
+
+def test_screened_out_skips_wfo_and_promotion(
+    tmp_settings_file: Path, tmp_path: Path,
+) -> None:
+    _seed_backtester_tree(tmp_path)
+    s = load_settings(tmp_settings_file)
+
+    valid_src = (Path(__file__).parent / "fixtures" / "valid_strategy.py").read_text(encoding="utf-8")
+    valid_cfg = (Path(__file__).parent / "fixtures" / "valid_config.yaml").read_text(encoding="utf-8")
+    valid_src = valid_src.replace('strategy_id = "gen_test_valid"', 'strategy_id = "gen_1715800000"')
+    valid_cfg = valid_cfg.replace("gen_test_valid", "gen_1715800000")
+
+    from factory.generate import GenerationResult
+    fake = GenerationResult(parsed={
+        "strategy_id": "gen_1715800000",
+        "one_line_summary": "screened test idea",
+        "hypothesis": "h", "novelty_justification": "n", "failure_mode": "f",
+        "allow_short": False,
+        "strategy_file": valid_src,
+        "config_file": valid_cfg,
+    }, cost_usd=0.04, raw_stdout="{}")
+
+    from factory.stages import StageResult
+    bt = StageResult(stage="backtest",
+                     parsed={"sharpe": 0.4, "total_return": 0.05, "max_drawdown": -0.05,
+                             "win_rate": 0.5, "n_trades": 10, "run_bundle_path": "p1"},
+                     bundle_path=Path("p1"), raw_summary={})
+    # best_score 0.5 is below the 1.3 floor -> screen fires.
+    opt = StageResult(stage="optimize",
+                      parsed={"best_params": {"size": 1.0}, "objective": "sharpe",
+                              "best_score": 0.5, "run_bundle_path": "p2"},
+                      bundle_path=Path("p2"), raw_summary={})
+
+    with mock.patch("factory.cycle.call_claude", return_value=fake), \
+         mock.patch("factory.cycle._now_unix_int", return_value=1715800000), \
+         mock.patch("factory.cycle._iso_now", return_value="2026-05-15T09:00:00Z"), \
+         mock.patch("factory.cycle.run_backtest_stage", return_value=bt), \
+         mock.patch("factory.cycle.run_optimize_stage", return_value=opt), \
+         mock.patch("factory.cycle.run_wfo_stage") as run_wfo_stage:
+        outcome = run_cycle(s, rng=random.Random(0))
+
+    # WFO stage was never invoked.
+    run_wfo_stage.assert_not_called()
+
+    assert outcome.status == "complete"
+    assert outcome.failed_stage is None
+    assert outcome.record["screened_out"] is True
+    assert outcome.record["wfo"] is None
+    assert outcome.record["promotion"] is None
+    assert "0.500" in outcome.record["screen_reason"]

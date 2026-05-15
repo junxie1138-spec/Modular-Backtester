@@ -38,7 +38,7 @@
       (rec.idea && rec.idea.one_line_summary) || "(no idea)",
       rec.status === "failed"
         ? `<span class="failed-stage">failed: ${rec.failed_stage}</span>`
-        : rec.status,
+        : (rec.screened_out ? "complete (screened)" : rec.status),
       rec.backtest ? fmt(rec.backtest.sharpe) : "",
       rec.wfo ? fmt(rec.wfo.oos_sharpe) : "",
       rec.wfo ? fmtPct(rec.wfo.oos_total_return) : "",
@@ -76,6 +76,7 @@
         Object.entries(summary.failures_by_stage).map(([k, v]) => `${k}=${v}`).join(", ") + ")";
       const a = document.getElementById("c-above");       if (a) a.textContent = summary.above_threshold;
       const p = document.getElementById("c-promoted");    if (p) p.textContent = summary.promoted;
+      const sc = document.getElementById("c-screened");    if (sc) sc.textContent = summary.screened;
       const s = document.getElementById("c-spend");       if (s) s.textContent = "$" + Number(summary.cumulative_spend_usd).toFixed(2);
     } catch (err) {
       console.warn("refresh failed", err);

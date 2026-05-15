@@ -41,3 +41,7 @@ data_source       = "yfinance"        # csv if all tickers in data/raw/; yfinanc
 min_avg_sharpe    = 0.7
 trigger_metric    = "wfo.oos_sharpe"
 trigger_threshold = 1.0
+
+[screening]
+enabled            = true
+min_optimize_score = 1.3

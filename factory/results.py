@@ -24,6 +24,8 @@ def build_record(
     wfo: Optional[Mapping[str, Any]],
     alerted: bool,
     promotion: Optional[Mapping[str, Any]] = None,
+    screened_out: bool = False,
+    screen_reason: Optional[str] = None,
 ) -> Record:
     """Build a `status: complete` results record (§6, reconciled).
 
@@ -44,6 +46,8 @@ def build_record(
         "optimize": dict(optimize) if optimize is not None else None,
         "wfo": dict(wfo) if wfo is not None else None,
         "promotion": dict(promotion) if promotion is not None else None,
+        "screened_out": bool(screened_out),
+        "screen_reason": screen_reason,
         "alerted": bool(alerted),
     }
 
@@ -78,6 +82,8 @@ def build_failed_record(
         "optimize": dict(optimize) if optimize is not None else None,
         "wfo": dict(wfo) if wfo is not None else None,
         "promotion": dict(promotion) if promotion is not None else None,
+        "screened_out": False,
+        "screen_reason": None,
         "alerted": False,
     }
 

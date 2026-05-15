@@ -72,7 +72,7 @@
         <pre>{{ record.wfo.parameter_stability | tojson(indent=2) }}</pre></li>
       <li><strong>run_bundle_path:</strong> {{ record.wfo.run_bundle_path }}</li>
     </ul>
-  {% else %}<p>(not reached)</p>{% endif %}
+  {% elif record.screened_out %}<p>(WFO skipped &mdash; screened out: {{ record.screen_reason }})</p>{% else %}<p>(not reached)</p>{% endif %}
 
   <h2>Stage 4 — Held-out Promotion</h2>
   {% if record.promotion %}
