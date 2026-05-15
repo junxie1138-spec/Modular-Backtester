@@ -218,7 +218,7 @@ def test_two_nodes_converge_conflict_free(tmp_path: Path) -> None:
     assert (node_a / "factory" / "data" / "results" / "b.jsonl").exists()
 
 
-def test_sync_push_noop_when_nothing_changed(tmp_path: Path, caplog) -> None:
+def test_sync_push_noop_when_nothing_changed(tmp_path: Path, caplog: pytest.LogCaptureFixture) -> None:
     repo = _clone(_init_bare_remote(tmp_path / "remote.git"), tmp_path / "node")
     _seed_master(repo)
     s = _node_settings(repo, "desk")
@@ -229,7 +229,7 @@ def test_sync_push_noop_when_nothing_changed(tmp_path: Path, caplog) -> None:
     assert "no-op" in caplog.text.lower()
 
 
-def test_sync_pull_skips_on_dirty_tree(tmp_path: Path, caplog) -> None:
+def test_sync_pull_skips_on_dirty_tree(tmp_path: Path, caplog: pytest.LogCaptureFixture) -> None:
     repo = _clone(_init_bare_remote(tmp_path / "remote.git"), tmp_path / "node")
     _seed_master(repo)
     s = _node_settings(repo, "desk")

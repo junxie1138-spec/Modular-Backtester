@@ -114,11 +114,12 @@ def _fold_legacy_stores(settings: Settings) -> None:
 
 def _commit_paths(settings: Settings) -> list[str]:
     """The directories this machine commits — its strategies, configs, and
-    result/dedup shards. Only existing paths are returned (git add of a
-    missing pathspec errors)."""
+    result/dedup shards, as repo-relative posix pathspecs. Only existing
+    paths are returned (git add of a missing pathspec errors)."""
     p = settings.paths
+    root = p.backtester_root
     dirs = [p.strategies_dir, p.configs_dir, p.results_dir, p.dedup_dir]
-    return [str(d) for d in dirs if d.exists()]
+    return [d.relative_to(root).as_posix() for d in dirs if d.exists()]
 
 
 def bootstrap(settings: Settings) -> None:
@@ -200,7 +201,8 @@ def sync_push(settings: Settings) -> None:
         log.warning("sync_push: push rejected (attempt %d/%d): %s",
                     attempt, settings.sync.push_retries,
                     (push.stderr or "").strip())
-        _git(["pull", "--rebase", remote, branch], cwd=root)
+        if attempt < settings.sync.push_retries:
+            _git(["pull", "--rebase", remote, branch], cwd=root)
     raise SyncError(
         f"sync_push: push still failing after {settings.sync.push_retries} retries"
     )
