@@ -33,12 +33,40 @@ Method semantics:
 - warmup_bars(params) must return an int >= the longest lookback any indicator
   uses. If you use .diff() or .pct_change() before a rolling window of length L,
   return L + 1.
-- Use only pandas and numpy. Import them. No other libraries.
 - Prefer vectorised pandas operations; avoid .rolling().apply() with Python
   callables where a vectorised equivalent exists.
 - The signal must be mechanically computable from SPY OHLCV alone.
 - DO NOT set uses_multi_symbol = True. DO NOT set uses_per_bar = True. The
   factory only supports the v0.3.0-style single-symbol contract.
+
+ALLOWED IMPORTS - this is the EXHAUSTIVE list. Any other import is a fatal bug
+that will cause the strategy to be rejected:
+- `from __future__ import annotations` (recommended)
+- `from dataclasses import dataclass`
+- `from typing import ...` (if you need it)
+- `import numpy as np`
+- `import pandas as pd`
+- `from backtester.core.types import SignalFrame, StrategyContext`
+- `from backtester.strategies.base import BaseStrategy`
+
+DO NOT import from `factory`, `factory.*`, `strategies`, `strategies.*`,
+`tests`, `os`, `sys`, `requests`, `scipy`, `sklearn`, `statsmodels`, or any
+other module not listed above. The framework only ships pandas + numpy +
+the backtester contract. There are no other helpers available.
+
+The complete imports block at the top of your strategy file should look
+EXACTLY like this:
+
+```python
+from __future__ import annotations
+from dataclasses import dataclass
+
+import numpy as np
+import pandas as pd
+
+from backtester.core.types import SignalFrame, StrategyContext
+from backtester.strategies.base import BaseStrategy
+```
 
 THIS IDEA'S RANDOM CONSTRAINTS:
 - strategy_id (use exactly this, do not invent your own): {{strategy_id}}
