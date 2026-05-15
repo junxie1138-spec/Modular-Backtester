@@ -17,3 +17,4 @@ Volume-confirmed short-horizon momentum thrust, traded long/short with surge-and
 1778884230	Standing-wave node detection: buy low return-path-efficiency regimes on a down day, profit-target/time-stop exit
 1778884335	Tide-gauge trend strength: count volume-confirmed up days in a short window, enter on threshold crossing, fixed 16-bar hold
 1778884462	SI-epidemic force-of-infection (beta*S*I) on volume-confirmed up days drives entry, sizing, and signal-reversal exit
+1778884563	Fade statistically extreme overnight down-gaps in SPY as compressed-spring overreactions; exit on profit-target or time-stop.
