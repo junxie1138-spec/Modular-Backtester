@@ -163,6 +163,6 @@ def test_stage_failure_records_correct_failed_stage(
     assert f"stage={failed_stage}" in rec["error"]
     # Dedup entry IS kept.
     assert read_tail(s.paths.dedup_dir, n=10) == [f"trigger {failed_stage} failure"]
-    # Files + registry kept (§9 landmine 2: orphan is accepted).
+    # The strategy file is kept (orphan accepted). The registry is not
+    # edited per-strategy any more (auto-discovery replaces it).
     assert (s.paths.strategies_dir / f"{strategy_id}.py").exists()
-    assert f"_{strategy_id}" in s.paths.registry_file.read_text(encoding="utf-8")

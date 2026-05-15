@@ -72,9 +72,6 @@ def test_validation_failure_writes_dedup_but_no_files(
     # No strategy file or config was written (validation failed before write).
     assert not (s.paths.strategies_dir / "gen_local_1715800000.py").exists()
     assert not (s.paths.configs_dir / "gen_local_1715800000.yaml").exists()
-    # Registry is untouched.
-    reg_text = s.paths.registry_file.read_text(encoding="utf-8")
-    assert "gen_local_1715800000" not in reg_text
 
 
 def test_complete_cycle_writes_files_registry_record(
@@ -131,8 +128,6 @@ def test_complete_cycle_writes_files_registry_record(
     # Strategy + config written.
     assert (s.paths.strategies_dir / "gen_local_1715800000.py").exists()
     assert (s.paths.configs_dir / "gen_local_1715800000.yaml").exists()
-    # Registry has the entry.
-    assert "_gen_local_1715800000" in s.paths.registry_file.read_text(encoding="utf-8")
     # Record written with wfo block.
     from factory.results import read_records
     rec = read_records(s.paths.results_dir)[0]
@@ -176,9 +171,9 @@ def test_stage_failure_writes_failed_record_keeps_dedup_and_files(
     # Dedup entry IS present.
     from factory.dedup import read_tail
     assert read_tail(s.paths.dedup_dir, n=10) == ["another test idea"]
-    # Files + registry ARE present (per §9 landmine 2: orphan accepted).
+    # The strategy file IS present (orphan accepted); the registry is no
+    # longer edited per-strategy — it auto-discovers gen_*.py at import.
     assert (s.paths.strategies_dir / "gen_local_1715800000.py").exists()
-    assert "_gen_local_1715800000" in s.paths.registry_file.read_text(encoding="utf-8")
 
 
 def test_screened_out_skips_wfo_and_promotion(

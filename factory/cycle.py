@@ -10,8 +10,6 @@ from typing import Any, Optional
 
 from factory.dedup import append_summary, read_tail
 from factory.filesystem import (
-    RegistryAlreadyHasStrategy,
-    append_registry_entry,
     pick_unused_strategy_id,
     write_strategy_artifacts,
 )
@@ -139,7 +137,7 @@ def run_cycle(settings: Settings, *, rng: random.Random) -> CycleOutcome:
         return CycleOutcome(status="failed", failed_stage="validation",
                             strategy_id=strategy_id, record=rec)
 
-    # Step 8-10: write files + register.
+    # Step 8-9: write files. Registry is auto-discovery now (no per-strategy edit).
     write_strategy_artifacts(
         strategy_id=strategy_id,
         strategy_src=parsed["strategy_file"],
@@ -147,10 +145,6 @@ def run_cycle(settings: Settings, *, rng: random.Random) -> CycleOutcome:
         strategies_dir=paths.strategies_dir,
         configs_dir=paths.configs_dir,
     )
-    try:
-        append_registry_entry(strategy_id=strategy_id, registry_file=paths.registry_file)
-    except RegistryAlreadyHasStrategy:
-        log.info("registry already has %s; continuing", strategy_id)
 
     canonical_cfg = paths.configs_dir / f"{strategy_id}.yaml"
 
