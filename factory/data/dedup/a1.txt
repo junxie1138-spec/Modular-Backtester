@@ -7,3 +7,4 @@ Volume-confirmed short-horizon momentum thrust, traded long/short with surge-and
 1778882973	Epidemic-prevalence regime gates down-streak dip-buys confirmed by capitulation volume burst; profit-target/time-stop exit
 1778883092	Trade drawdown-depth percentile overflow: long deep-DD top-decile snapbacks, short near-peak bottom-decile fades
 1778883229	SI-epidemic growth-phase regime gate on volume-confirmed up moves, ATR trailing-stop exit
+1778883347	Lotka-Volterra predator-prey oscillator driven by returns; long when prey momentum population dominates predator, size scaled by population gap
