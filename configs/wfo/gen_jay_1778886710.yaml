@@ -1,0 +1,30 @@
+run_name: gen_jay_1778886710
+strategy: gen_jay_1778886710
+strategy_params: {atr_period: 14, eq_period: 50, pct_window: 126, entry_pct_lo: 0.05, entry_pct_hi: 0.25, stop_k: 2.0, max_hold: 10, trade_size: 1.0}
+data:
+  symbols: ["SPY"]
+  timeframe: "1d"
+  start: "2015-01-02"
+  end: "2024-12-31"
+  source: "csv"
+  root: "data/raw"
+execution:
+  initial_cash: 100000
+  commission_bps: 2
+  slippage_bps: 5
+  allow_fractional: false
+  allow_short: false
+portfolio:
+  sizing_mode: "percent_equity"
+  size: 0.95
+optimization:
+  objective: sharpe
+  param_space:
+    entry_pct_hi: [0.15, 0.25, 0.35]
+    stop_k: [1.5, 2.0, 2.5]
+    eq_period: [30, 50, 75]
+wfo:
+  enabled: true
+  train_bars: 756
+  test_bars: 252
+  step_bars: 252
