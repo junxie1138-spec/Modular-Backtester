@@ -15,8 +15,10 @@ from factory.filesystem import (
     pick_unused_strategy_id,
     write_strategy_artifacts,
 )
+from dataclasses import asdict
 from factory.generate import GenerationError, GenerationResult, call_claude
-from factory.notify import NotifyConfig, maybe_send_alert
+from factory.notify import NotifyConfig, extract_metric, maybe_send_alert
+from factory.promote import PromotionResult, promote_strategy
 from factory.prompt import build_prompt
 from factory.results import build_failed_record, build_record, write_record
 from factory.settings_loader import Settings
@@ -190,15 +192,53 @@ def run_cycle(settings: Settings, *, rng: random.Random) -> CycleOutcome:
 
     assert bt is not None and opt is not None and wfo is not None
 
+    # Step 13.5: held-out promotion (v0.3). Runs only if promotion is enabled
+    # AND the WFO trigger metric clears the configured threshold. Failure
+    # inside promote_strategy is captured into the promotion block; it never
+    # raises into the cycle. The cycle's status stays "complete" regardless
+    # of promotion outcome — the alert trigger is unchanged (still keyed on
+    # the main WFO threshold).
+    promotion_dict: Optional[dict[str, Any]] = None
+    if s.promotion.enabled:
+        provisional = {
+            "backtest": bt.parsed, "optimize": opt.parsed, "wfo": wfo.parsed,
+        }
+        trigger_value = extract_metric(provisional, s.promotion.trigger_metric)
+        if trigger_value is not None and trigger_value >= s.promotion.trigger_threshold:
+            log.info(
+                "cycle id=%s WFO cleared promotion trigger (%s=%.3f >= %.3f); running held-out on %s",
+                strategy_id, s.promotion.trigger_metric, trigger_value,
+                s.promotion.trigger_threshold, list(s.promotion.tickers),
+            )
+            promo: PromotionResult = promote_strategy(
+                strategy_id=strategy_id,
+                optimized_params=opt.parsed["best_params"],
+                canonical_config_path=canonical_cfg,
+                promotion_cfg=s.promotion,
+                tmp_dir=paths.tmp_dir,
+                output_runs_dir=paths.output_runs_dir,
+                stage_timeout_sec=s.stages.stage_timeout_sec,
+                backtester_root=paths.backtester_root,
+            )
+            promotion_dict = asdict(promo)
+            log.info(
+                "cycle id=%s promotion passed=%s avg_sharpe=%s",
+                strategy_id, promo.passed,
+                f"{promo.avg_sharpe:.3f}" if promo.avg_sharpe is not None else "n/a",
+            )
+
     # Step 14-15: build complete record.
     rec = build_record(
         strategy_id=strategy_id, timestamp=ts, slots=slots, idea=idea,
         generation_cost_usd=cost,
         backtest=bt.parsed, optimize=opt.parsed, wfo=wfo.parsed,
+        promotion=promotion_dict,
         alerted=False,  # patched below after maybe_send_alert
     )
 
     # Step 16: alert (conditional). maybe_send_alert never raises.
+    # NOTE: alert trigger is unchanged (still wfo.oos_sharpe by default).
+    # Promotion is informational on the dashboard, not a gate on alerts.
     notify_result = maybe_send_alert(rec, _notify_cfg(s))
     rec["alerted"] = bool(notify_result.sent)
 

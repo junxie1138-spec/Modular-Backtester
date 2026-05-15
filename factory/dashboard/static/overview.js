@@ -25,9 +25,13 @@
     const tr = document.createElement("tr");
     const value = rec.status === "complete" ? extractMetric(rec, THRESHOLD_METRIC) : null;
     const isGood = value != null && value > THRESHOLD;
+    const promo = rec.promotion || null;
+    const isPromoted = !!(promo && promo.passed);
     if (rec.status === "failed") tr.classList.add("failed");
+    else if (isPromoted) tr.classList.add("promoted");
     else if (isGood) tr.classList.add("good");
     if (rec.strategy_id) tr.dataset.strategyId = rec.strategy_id;
+    const promoAvg = (promo && typeof promo.avg_sharpe === "number") ? fmt(promo.avg_sharpe) : "";
     const cells = [
       rec.timestamp || "",
       rec.strategy_id || "(no id)",
@@ -40,6 +44,8 @@
       rec.wfo ? fmtPct(rec.wfo.oos_total_return) : "",
       rec.wfo ? fmtPct(rec.wfo.oos_max_drawdown) : "",
       isGood ? "*" : "",
+      promoAvg,
+      isPromoted ? "*" : "",
       rec.alerted ? "*" : "",
     ];
     for (const html of cells) {
@@ -69,6 +75,7 @@
         (summary.total_cycles - summary.completes) + " (" +
         Object.entries(summary.failures_by_stage).map(([k, v]) => `${k}=${v}`).join(", ") + ")";
       const a = document.getElementById("c-above");       if (a) a.textContent = summary.above_threshold;
+      const p = document.getElementById("c-promoted");    if (p) p.textContent = summary.promoted;
       const s = document.getElementById("c-spend");       if (s) s.textContent = "$" + Number(summary.cumulative_spend_usd).toFixed(2);
     } catch (err) {
       console.warn("refresh failed", err);
@@ -86,6 +93,7 @@
     if (key === "oos_sharpe") return rec.wfo ? rec.wfo.oos_sharpe : null;
     if (key === "oos_total_return") return rec.wfo ? rec.wfo.oos_total_return : null;
     if (key === "oos_max_drawdown") return rec.wfo ? rec.wfo.oos_max_drawdown : null;
+    if (key === "promotion_avg_sharpe") return rec.promotion ? rec.promotion.avg_sharpe : null;
     return null;
   }
 

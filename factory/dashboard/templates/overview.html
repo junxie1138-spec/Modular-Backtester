@@ -23,6 +23,7 @@
       ({% for stage, n in summary.failures_by_stage.items() %}{{ stage }}={{ n }}{% if not loop.last %}, {% endif %}{% endfor %})</span>
     <span>Above threshold ({{ summary.threshold_metric }} &gt; {{ summary.threshold_value }}):
       <strong id="c-above">{{ summary.above_threshold }}</strong></span>
+    <span>Promoted: <strong id="c-promoted">{{ summary.promoted }}</strong> / {{ summary.promotion_attempted }} attempted</span>
     <span>Cumulative spend: <strong id="c-spend">${{ "%.2f"|format(summary.cumulative_spend_usd) }}</strong></span>
   </div>
   <table id="records">
@@ -37,12 +38,14 @@
         <th data-sort="oos_total_return">OOS Return</th>
         <th data-sort="oos_max_drawdown">OOS DD</th>
         <th>Good?</th>
+        <th data-sort="promotion_avg_sharpe">Promo Avg</th>
+        <th>Promoted?</th>
         <th>Alerted?</th>
       </tr>
     </thead>
     <tbody id="records-body">
       {% for r in records %}
-      <tr class="{% if r.status == 'failed' %}failed{% elif r.is_good %}good{% endif %}"
+      <tr class="{% if r.status == 'failed' %}failed{% elif r.is_promoted %}promoted{% elif r.is_good %}good{% endif %}"
           data-strategy-id="{{ r.strategy_id or '' }}">
         <td>{{ r.timestamp }}</td>
         <td>{{ r.strategy_id or '(no id)' }}</td>
@@ -53,6 +56,8 @@
         <td>{{ "%.2f%%"|format(r.wfo.oos_total_return * 100) if r.wfo else '' }}</td>
         <td>{{ "%.2f%%"|format(r.wfo.oos_max_drawdown * 100) if r.wfo else '' }}</td>
         <td>{{ '*' if r.is_good else '' }}</td>
+        <td>{{ "%.3f"|format(r.promotion.avg_sharpe) if r.promotion and r.promotion.avg_sharpe is not none else '' }}</td>
+        <td>{{ '*' if r.is_promoted else '' }}</td>
         <td>{{ '*' if r.alerted else '' }}</td>
       </tr>
       {% endfor %}

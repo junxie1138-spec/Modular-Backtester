@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import logging
 import re
+import shutil
 import subprocess
 import sys
 from dataclasses import dataclass
@@ -74,19 +75,45 @@ def _find_outer_json_object(text: str) -> str:
     raise ValueError("unbalanced braces in text")
 
 
+def _find_envelope_with_result(stdout: str) -> dict[str, Any]:
+    """Scan stdout for any top-level JSON object that has a 'result' field.
+
+    Tolerates: leading/trailing whitespace, prefix or suffix non-JSON text,
+    multiple JSON objects on stdout (e.g. when claude emits diagnostic JSON
+    before/after the result envelope without --bare), and pretty-printed
+    multi-line JSON. Returns the first matching object.
+    """
+    pos = 0
+    while pos < len(stdout):
+        start = stdout.find("{", pos)
+        if start < 0:
+            break
+        try:
+            obj_str = _find_outer_json_object(stdout[start:])
+            obj = json.loads(obj_str)
+        except (ValueError, json.JSONDecodeError):
+            pos = start + 1
+            continue
+        if isinstance(obj, dict) and "result" in obj:
+            return obj
+        pos = start + len(obj_str)
+    raise GenerationError(
+        "could not parse CLI envelope: no JSON object with 'result' field "
+        "found in stdout"
+    )
+
+
 def parse_claude_output(stdout: str) -> tuple[dict[str, Any], float]:
     """Defensive double-unwrap.
 
     Returns (parsed_strategy_dict, total_cost_usd).
     Raises GenerationError on any parse failure or missing required key.
     """
-    # Layer 1: CLI envelope.
-    try:
-        envelope = json.loads(stdout)
-    except json.JSONDecodeError as exc:
-        raise GenerationError(f"could not parse CLI envelope: {exc}") from exc
-    if not isinstance(envelope, dict) or "result" not in envelope:
-        raise GenerationError("envelope missing 'result' field")
+    # Layer 1: CLI envelope. We scan for a {...} block with a 'result' field
+    # rather than parsing the entire stdout, because claude without --bare can
+    # emit additional diagnostic content on stdout (hooks output, plugin sync,
+    # CLAUDE.md auto-discovery, etc.) that breaks a strict json.loads(stdout).
+    envelope = _find_envelope_with_result(stdout)
     inner_text = envelope["result"]
     cost = float(envelope.get("total_cost_usd", 0.0) or 0.0)
 
@@ -121,11 +148,22 @@ def call_claude(
 
     Raises GenerationError on non-zero exit, timeout, or unparseable output.
     """
-    cmd = [claude_cmd, *claude_flags, prompt]
-    log.info("calling claude (cmd=%s flags=%s)", claude_cmd, claude_flags)
+    # Resolve the command on PATH. shutil.which handles Windows .cmd/.bat shims
+    # (npm installs claude as claude.CMD on Windows; bare "claude" is not an .exe
+    # so subprocess.run without shell=True fails to find it).
+    resolved = shutil.which(claude_cmd)
+    if resolved is None:
+        raise GenerationError(f"claude command not found on PATH: {claude_cmd}")
+    # We pipe the prompt via stdin rather than as a trailing positional arg.
+    # Reason: claude's `--allowedTools <tools...>` is variadic and greedily
+    # consumes whatever follows as additional tool names — including a trailing
+    # prompt argument. Stdin keeps the prompt out of argv entirely.
+    cmd = [resolved, *claude_flags]
+    log.info("calling claude (resolved=%s flags=%s)", resolved, claude_flags)
     try:
         proc = subprocess.run(
             cmd,
+            input=prompt,
             capture_output=True,
             text=True,
             timeout=timeout_sec,
@@ -136,6 +174,10 @@ def call_claude(
         raise GenerationError(f"claude -p timed out after {timeout_sec}s") from exc
     except FileNotFoundError as exc:
         raise GenerationError(f"claude command not found: {claude_cmd}") from exc
+    except OSError as exc:
+        # On Windows, attempting to invoke a .cmd directly without shell=True
+        # can raise OSError (e.g., "Invalid argument") for some shim flavors.
+        raise GenerationError(f"claude subprocess failed to start: {exc}") from exc
 
     if proc.returncode != 0:
         tail = (proc.stderr or "")[-500:]

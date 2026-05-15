@@ -8,7 +8,7 @@ Local, unattended strategy-idea factory wrapping the Modular-Backtester.
 2. `pip install Flask` (the factory's only extra runtime dep).
 3. Edit `factory/config/settings.toml` — set `backtester_root` to an absolute path if needed, and fill `telegram_bot_token` / `telegram_chat_id` if you want alerts.
 4. Run the loop: `python -m factory.loop`
-5. Run the dashboard (separate terminal): `python -m dashboard.server`
+5. Run the dashboard (separate terminal): `python -m factory.dashboard.server`
 6. Open `http://127.0.0.1:8787`
 
 ## Tests

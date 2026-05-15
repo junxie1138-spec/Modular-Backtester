@@ -23,8 +23,14 @@ def build_record(
     optimize: Optional[Mapping[str, Any]],
     wfo: Optional[Mapping[str, Any]],
     alerted: bool,
+    promotion: Optional[Mapping[str, Any]] = None,
 ) -> Record:
-    """Build a `status: complete` results record (§6, reconciled)."""
+    """Build a `status: complete` results record (§6, reconciled).
+
+    `promotion` is an optional v0.3 held-out-validation block. None means the
+    promotion stage did not run (either disabled in settings or the WFO
+    trigger threshold was not cleared).
+    """
     return {
         "strategy_id": strategy_id,
         "timestamp": timestamp,
@@ -37,6 +43,7 @@ def build_record(
         "backtest": dict(backtest) if backtest is not None else None,
         "optimize": dict(optimize) if optimize is not None else None,
         "wfo": dict(wfo) if wfo is not None else None,
+        "promotion": dict(promotion) if promotion is not None else None,
         "alerted": bool(alerted),
     }
 
@@ -53,6 +60,7 @@ def build_failed_record(
     backtest: Optional[Mapping[str, Any]] = None,
     optimize: Optional[Mapping[str, Any]] = None,
     wfo: Optional[Mapping[str, Any]] = None,
+    promotion: Optional[Mapping[str, Any]] = None,
 ) -> Record:
     """Build a `status: failed` results record (§3.1)."""
     if failed_stage not in FAILED_STAGES:
@@ -69,6 +77,7 @@ def build_failed_record(
         "backtest": dict(backtest) if backtest is not None else None,
         "optimize": dict(optimize) if optimize is not None else None,
         "wfo": dict(wfo) if wfo is not None else None,
+        "promotion": dict(promotion) if promotion is not None else None,
         "alerted": False,
     }
 
