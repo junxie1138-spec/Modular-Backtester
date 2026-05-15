@@ -31,3 +31,4 @@ Volume-confirmed short-horizon momentum thrust, traded long/short with surge-and
 1778886075	Enter long after a streak of consecutive new 20-bar-high closes; exit on fixed ATR-from-entry volatility stop
 1778886180	Long modest up-gaps absorbed within prior range capacity during compressed-volatility bull regimes, fixed-bar exit
 1778886351	Trade the conflict between overnight gap direction and same-day close-to-close return (gap-rejection continuation), size scaled by return z-score
+1778886528	Long only mid-sigma up-gaps inside a signal-to-noise band, vol-targeted size scaled by gap SNR, fixed ATR vol-stop
