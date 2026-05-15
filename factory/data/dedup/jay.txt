@@ -7,3 +7,4 @@
 1778884165	Sustained range-compression with bullish close SNR filter enters long for fixed-bar hold
 1778884486	Starved-predator exhaustion: range-compression streak AND directional streak both agree; fade with ATR trailing stop
 1778884606	Buy momentum-wave troughs in high-tide uptrend via double rolling-rank percentile threshold
+1778884735	Z-score breakout blocked by post-spike refractory window, ATR trailing stop exit
