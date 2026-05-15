@@ -16,3 +16,4 @@
 1778886480	Prey-accumulation breakout: quiet-range cluster primes spring before two confirmed expansion bars trigger long
 1778886702	Drawdown depth plus range-ratio bifurcates elastic bounce longs from plastic deformation shorts
 1778886932	Long when ATR-normalized displacement-from-SMA sits in sweet-spot percentile band
+1778887234	Tidal node-break: range-compression streak signals resonance expansion long entry, sized by node duration
