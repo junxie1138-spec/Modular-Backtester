@@ -3,11 +3,33 @@ from __future__ import annotations
 import random
 from typing import Mapping
 
+# --- exit_rule slot values (named so SLOTS and the Task-2 guard stay in sync) -
+_EXIT_TRAILING_HWM = (
+    "rolling-high trailing stop (track the highest close since entry; exit "
+    "when close falls k*ATR below that in-trade high-water mark; the stop "
+    "only ratchets up)"
+)
+_EXIT_FIXED_BAR = "fixed-bar exit (exit exactly N bars after entry, no signal-based exit)"
+_EXIT_SIGNAL_REVERSAL = "signal-reversal exit (exit only when the entry condition flips)"
+_EXIT_PROFIT_TARGET_TIME = (
+    "profit-target + time-stop (exit at +X% gain or after N bars, whichever "
+    "comes first)"
+)
+_EXIT_VOL_STOP = (
+    "fixed volatility-stop (exit when close falls below entry price minus "
+    "k*ATR - fixed, not trailing)"
+)
+_EXIT_BREAKEVEN_TRAIL = (
+    "breakeven-then-trail (after price reaches +X%, move the stop to entry "
+    "price, then trail by k*ATR; the stop only ever moves up, never down)"
+)
+
 SLOT_NAMES: tuple[str, ...] = (
     "strategy_family",
     "signal_primitive",
     "holding_horizon",
     "direction",
+    "exit_rule",
     "constraint_twist",
     "inspiration_anchor",
 )
@@ -32,13 +54,20 @@ SLOTS: Mapping[str, tuple[str, ...]] = {
     "direction": (
         "long-only", "long-only", "long/short",
     ),
+    "exit_rule": (
+        _EXIT_TRAILING_HWM,
+        _EXIT_FIXED_BAR,
+        _EXIT_SIGNAL_REVERSAL,
+        _EXIT_PROFIT_TARGET_TIME,
+        _EXIT_VOL_STOP,
+        _EXIT_BREAKEVEN_TRAIL,
+    ),
     "constraint_twist": (
         "<=2 tunable params", "regime filter on 200-day MA",
         "signal-scaled position sizing", "symmetric entry/exit rule",
-        "fixed-bar exit (no signal-based exit)",
         "two-primitive AND (both must agree)",
         "percentile threshold instead of fixed level",
-        "warmup <=10 bars", "no stop-loss allowed",
+        "warmup <=10 bars",
         "two-bar confirmation before entry",
     ),
     "inspiration_anchor": (

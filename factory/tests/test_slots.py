@@ -4,12 +4,13 @@ from collections import Counter
 from factory.slots import SLOT_NAMES, SLOTS, pull_slots
 
 
-def test_six_slots_with_expected_names() -> None:
+def test_seven_slots_with_expected_names() -> None:
     assert SLOT_NAMES == (
         "strategy_family",
         "signal_primitive",
         "holding_horizon",
         "direction",
+        "exit_rule",
         "constraint_twist",
         "inspiration_anchor",
     )
@@ -42,3 +43,20 @@ def test_direction_is_weighted_toward_long_only() -> None:
     # Expect ratio ~2:1 — allow generous tolerance for randomness.
     ratio = counts["long-only"] / counts["long/short"]
     assert 1.4 < ratio < 2.6, ratio
+
+
+def test_exit_rule_slot_has_six_values() -> None:
+    assert len(SLOTS["exit_rule"]) == 6
+
+
+def test_exit_entries_migrated_out_of_constraint_twist() -> None:
+    twists = SLOTS["constraint_twist"]
+    assert "fixed-bar exit (no signal-based exit)" not in twists
+    assert "no stop-loss allowed" not in twists
+    assert len(twists) == 8
+
+
+def test_pull_includes_exit_rule() -> None:
+    rng = random.Random(123)
+    pulled = pull_slots(rng)
+    assert pulled["exit_rule"] in SLOTS["exit_rule"]
