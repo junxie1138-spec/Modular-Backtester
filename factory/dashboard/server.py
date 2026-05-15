@@ -34,6 +34,7 @@ def _aggregate(records: list[dict], threshold_metric: str, threshold: float) -> 
     above_threshold = 0
     promoted = 0
     promotion_attempted = 0
+    screened = 0
     cumulative_spend = 0.0
     for r in records:
         cumulative_spend += float(r.get("generation_cost_usd") or 0.0)
@@ -41,6 +42,8 @@ def _aggregate(records: list[dict], threshold_metric: str, threshold: float) -> 
             stage = r.get("failed_stage") or "unknown"
             failures_by_stage[stage] = failures_by_stage.get(stage, 0) + 1
         elif r.get("status") == "complete":
+            if r.get("screened_out"):
+                screened += 1
             val = extract_metric(r, threshold_metric)
             if val is not None and val > threshold:
                 above_threshold += 1
@@ -56,6 +59,7 @@ def _aggregate(records: list[dict], threshold_metric: str, threshold: float) -> 
         "above_threshold": above_threshold,
         "promotion_attempted": promotion_attempted,
         "promoted": promoted,
+        "screened": screened,
         "cumulative_spend_usd": cumulative_spend,
         "threshold_metric": threshold_metric,
         "threshold_value": threshold,

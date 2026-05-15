@@ -20,8 +20,8 @@ stage_timeout_sec = 5400
 [alerts]
 alert_threshold_metric = "wfo.oos_sharpe"
 alert_threshold        = 1.0
-telegram_bot_token     = "8925904657:AAHBODLzbOqhv0e_ZlnPEkHbkz69mIqqmBc"
-telegram_chat_id       = "-5132673396"
+telegram_bot_token     = ""       # fill in locally; do not commit real credentials
+telegram_chat_id       = ""       # fill in locally; do not commit real credentials
 dashboard_base_url     = "http://127.0.0.1:8787"
 
 [loop]
@@ -41,3 +41,7 @@ data_source       = "yfinance"        # csv if all tickers in data/raw/; yfinanc
 min_avg_sharpe    = 0.7
 trigger_metric    = "wfo.oos_sharpe"
 trigger_threshold = 1.0
+
+[screening]
+enabled            = true
+min_optimize_score = 1.3

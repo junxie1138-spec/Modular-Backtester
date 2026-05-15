@@ -41,7 +41,7 @@ def _stub_stage_result(stage: str):
                   "win_rate": 0.5, "n_trades": 10, "run_bundle_path": "p"}
     elif stage == "optimize":
         parsed = {"best_params": {"size": 1.0}, "objective": "sharpe",
-                  "best_score": 0.7, "run_bundle_path": "p"}
+                  "best_score": 1.3, "run_bundle_path": "p"}
     elif stage == "wfo":
         parsed = {"oos_sharpe": 0.8, "oos_total_return": 0.1, "oos_max_drawdown": -0.05,
                   "oos_n_trades": 20, "parameter_stability": {}, "n_windows": 6,
