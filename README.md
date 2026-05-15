@@ -276,7 +276,8 @@ backtester/                # framework (do not modify per-strategy)
   io/                      # artifact writer, logging, serialization
 
 strategies/                # user/AI-authored strategies (sma_cross, rsi_mean_reversion,
-                           # breakout_20d, rsi_long_short, momentum_streak, mean_reversion_atr)
+                           # breakout_20d, rsi_long_short, momentum_streak, mean_reversion_atr,
+                           # gen_1715800000)
 configs/                   # YAML configs for runs (backtests/, optimize/, wfo/, universe.yaml)
 data/raw/                  # real OHLCV fixtures (15-name universe + SPY + AAPL + ^VIX)
 data/synth/                # deterministic synthetic OHLCV (backwards-compat test fixture)
@@ -285,6 +286,8 @@ output/runs/               # per-run artifact bundles (gitignored)
 docs/                      # contracts, runbook, and design specs/plans under superpowers/
 tests/                     # unit + integration tests
 scripts/                   # sample data generator + screen_universe.py
+factory/                   # Strategy Factory v0.2.0 — unattended loop that generates
+                           # strategies via `claude -p` and runs them through the pipeline
 ```
 
 ---
@@ -305,6 +308,23 @@ python -m pytest -q
 ```
 
 The test suite is **338 passing + 5 xfail-by-default** strategy-performance gates (4 stress windows + held-out 2022-2025). It covers every public surface — types, exceptions, data loaders (CSV + yfinance), validators, the engine (signed-qty Position arithmetic, tri-state simulator transitions, trailing stops, tranche stops, regime gates, risk-budget + sector-cap enforcement, multi-symbol simulator), analytics, all six sample strategies, the optimizer (grid + discrete-LHS), WFO, and the four CLIs as end-to-end integration tests. The xfail markers can be flipped to hard asserts once the strategy is tuned to clear PRD performance thresholds — see [`docs/runbook.md`](docs/runbook.md) for the workflow.
+
+---
+
+## Strategy Factory v0.2.0
+
+A separate, opt-in subsystem that lives at `factory/` and wraps the backtester. It is an unattended loop that mass-produces SPY strategy ideas via `claude -p`, validates each one (static AST checks + functional smoke test against the real backtester package), writes it to disk, registers it, and runs the full backtest → optimize → WFO pipeline. Hits are surfaced via a local Flask dashboard and Telegram alerts.
+
+**Critical context**: at ~24 strategies/day on one asset over one historical path, some strategies will post OOS Sharpe > 1.0 on luck alone. WFO mitigates but does not eliminate multiple-comparisons risk. The dashboard's "good" flag and the Telegram alert are explicitly labelled **shortlist signals, not verdicts** — a held-out gate (different symbol or fully unseen period) is required before treating any row as a real candidate. That held-out promotion step is the natural v0.3.
+
+```bash
+python -m factory.loop                                    # run the continuous loop
+python -m dashboard.server                                # local dashboard at http://127.0.0.1:8787
+python -m factory.scripts.endurance_check --cycles 100    # validate 100 unattended cycles
+python -m factory.scripts.telegram_smoke                  # verify Telegram credentials
+```
+
+Quickstart and configuration live in [`factory/README.md`](factory/README.md). The implementation plan with all reconciliation findings is at [`docs/superpowers/plans/2026-05-15-strategy-factory-v020.md`](docs/superpowers/plans/2026-05-15-strategy-factory-v020.md). The factory has its own 82 fast tests + 5 slow integration tests; only `backtester/strategies/registry.py` is appended to inside the backtester repo (a single carved-out write target).
 
 ---
 
