@@ -101,3 +101,4 @@
 1778910903	Symmetric VRPS score: elastic-compressed range plus up-volume dominance at range-top signals plastic escape long
 1778911082	Rolling return-ACF queue-overflow: capacity exhaustion triggers contrarian entries with two-bar confirmation, fixed-bar exit
 1778911288	Plastic coil: compressed-range bullish-close streak triggers two-bar confirmed long with fixed ATR stop
+1778911541	Lag-1 ACF fatigue recovery at drawdown depth signals elastic mean-reversion bounce
