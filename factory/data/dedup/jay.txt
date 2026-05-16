@@ -113,3 +113,4 @@
 1778913698	Coherent-gap SNR percentile gate with trend-aligned momentum entry and ATR trailing stop
 1778913864	Directional body-anisotropy plastic deformation confirmed by ATR-normalized gap, ATR trailing stop exit
 1778914082	Gap-volatility compression coil: quiet gap period snaps open on large gap-up with two-bar confirm
+1778914345	Multi-horizon return-rank epidemic clearing triggers vol-targeted longs with breakeven-trail exit
