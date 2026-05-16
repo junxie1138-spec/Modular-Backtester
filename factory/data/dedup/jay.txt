@@ -68,3 +68,4 @@
 1778898736	Calendar-day batting average hysteresis gates seasonal long/short with fixed-bar exit
 1778898846	Gap-queue saturation capacity overflow triggers long entry on release-valve negative gap in bull regime
 1778899078	Consecutive up-streak entry gated by declining bearish-bar density, sized by streak length, ATR trailing stop
+1778903679	Elastic intraday recovery percentile AND momentum percentile gate longs with fixed ATR stop
