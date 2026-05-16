@@ -73,6 +73,7 @@ def _seed_promotion_bundle(output_runs_dir: Path, run_name: str, oos_sharpe: flo
     (bundle / "summary.json").write_text(json.dumps({
         "oos_summary": {
             "sharpe": oos_sharpe,
+            "sortino": oos_sharpe,
             "total_return": 0.18,
             "max_drawdown": -0.07,
             "n_trades": 80,
