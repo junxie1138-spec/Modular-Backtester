@@ -155,3 +155,4 @@ Volume-confirmed short-horizon momentum thrust, traded long/short with surge-and
 1778907613	Buy the epidemic-curve inflection: ROC-acceleration crosses zero inside a deep dip within a bull regime, fixed ATR vol-stop.
 1778907783	Donchian breakout taken only when ROC-acceleration exceeds a volatility-scaled escape velocity; excess-scaled size, breakeven-then-trail exit
 1778907896	Free-flow trend: trade only when rolling-rank of regression slope strength AND fit-quality R-squared both rank high; fixed 2-bar hold
+1778908060	Trade the month-to-month gradient of seasonal realized-volatility (calendar vol shockwave); rising-vol months short, calmer months long.
