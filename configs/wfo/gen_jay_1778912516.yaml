@@ -1,0 +1,30 @@
+run_name: gen_jay_1778912516
+strategy: gen_jay_1778912516
+strategy_params: {fill_window: 40, fill_threshold: 0.55, accum_window: 5, accum_z_window: 60, accum_z_thresh: 1.2, atr_window: 14, atr_stop_k: 2.5, min_gap_pct: 0.001}
+data:
+  symbols: ["SPY"]
+  timeframe: "1d"
+  start: "2015-01-02"
+  end: "2024-12-31"
+  source: "csv"
+  root: "data/raw"
+execution:
+  initial_cash: 100000
+  commission_bps: 2
+  slippage_bps: 5
+  allow_fractional: false
+  allow_short: true
+portfolio:
+  sizing_mode: "percent_equity"
+  size: 0.95
+optimization:
+  objective: sharpe
+  param_space:
+    fill_threshold: [0.45, 0.55, 0.65]
+    accum_z_thresh: [0.8, 1.2, 1.6]
+    atr_stop_k: [1.5, 2.5, 3.5]
+wfo:
+  enabled: true
+  train_bars: 756
+  test_bars: 252
+  step_bars: 252
