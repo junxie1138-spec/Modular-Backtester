@@ -78,3 +78,4 @@ Volume-confirmed short-horizon momentum thrust, traded long/short with surge-and
 1778893147	Greenshields kinematic-wave speed flips sign as a drawdown jam clears the half-density point; trade the reversion.
 1778893258	Buy drawdowns whose increment series turns anti-persistent (jam-dissipating autocorrelation) in a 200-MA bull regime
 1778893435	Volume-confirmed up-gap treated as an infection event in an un-extended (susceptible) market, signal-scaled size, profit-target/time-stop exit
+1778893607	Enter long when realized vol sits below its calendar-month climatological norm AND that month is seasonally bullish
