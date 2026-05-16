@@ -149,11 +149,12 @@ push_retries = 5               # bounded retry on a non-fast-forward push
    node_id = "desk"
    ```
    A malformed or duplicated `node_id` defeats the no-collision guarantee. Pick a distinct short name per machine (`desk`, `laptop`, `vps1`). The template is gitignored once copied, so editing it never dirties the working tree.
-3. **Enable sync** in `factory/config/settings.toml`:
+3. **Enable sync** — in that same `settings.local.toml`, set:
    ```toml
    [sync]
    enabled = true
    ```
+   Set this in the gitignored `settings.local.toml`, **not** the tracked `settings.toml`. Editing the tracked file dirties the working tree, which makes `sync_pull` skip every cycle — and the factory then commits pool updates to the wrong branch.
 4. **Ensure git can push without a prompt** — the loop runs unattended. Use an SSH key or a cached credential helper for `origin`.
 5. **Run the preflight check** to confirm the machine is actually ready:
    ```bash
@@ -195,7 +196,8 @@ A pool can mix Windows and macOS machines. The repo ships a `.gitattributes` tha
 | Symptom | Cause / fix |
 |---|---|
 | Startup fails: *invalid node_id* | `node_id` must match `^[a-z0-9][a-z0-9-]*$`. Set it in `settings.local.toml`. |
-| `sync_pull: working tree has tracked changes; skipping` | You have uncommitted tracked edits on the checkout. Commit, stash, or revert them; the next cycle will sync. |
+| `sync_pull: working tree has tracked changes; skipping` | You have uncommitted tracked edits on the checkout. Commit, stash, or revert them; the next cycle will sync. A common cause is editing the tracked `settings.toml` — move per-machine settings to `settings.local.toml`. |
+| `sync_push: working tree is on '...', not the pool branch` | `sync_pull` skipped (dirty tree), so the loop never reached the pool branch. `sync_push` correctly refuses to commit to the wrong branch — resolve the tracked changes and sync resumes. |
 | `sync_push: push still failing after N retries` | The remote is unreachable or auth expired. Generation continues; fix git auth and the next cycle catches up. Raise `push_retries` if your pool is very large and pushes collide often. |
 | Two machines produced near-identical ideas | Expected within a sync window — dedup is eventual. It self-corrects as shards propagate. |
 | A generated strategy is missing from a run | A `gen_*.py` that fails to import is skipped (auto-discovery logs its filename and the exception). Check the factory log. |
@@ -213,6 +215,41 @@ python -m factory.scripts.telegram_smoke                 # verify Telegram crede
 `preflight` is the readiness gate for the distributed factory — run it on each machine before enabling `[sync]`. `endurance_check` runs real backtest/optimize/WFO cycles with a stubbed `claude -p`, exercising the heavy local pipeline. Neither touches the network destructively: `preflight`'s remote check is a read-only `git ls-remote`, and all sync *tests* use a throwaway local repo.
 
 Logs rotate under `factory/logs/factory.log` (10 MB × 5 backups) and also mirror to stderr for interactive runs.
+
+---
+
+## Upgrading from an earlier version
+
+Ran the factory before these changes? Here is how to update and what carries over.
+
+### How to update
+
+1. **Pull the new code.** Single-machine: `git pull` on the branch you run from. Distributed: the loop runs `factory-pool`'s code, so update *that* branch — on one machine `git checkout factory-pool && git merge master && git push origin factory-pool`; every other machine picks the update up on its next `sync_pull`.
+2. **Refresh dependencies** — re-run the [Install](#install) steps. `Flask` and the `[data]` extra (yfinance, used by held-out promotion) may be newer requirements than when you first set up.
+3. **Run the preflight check** — `python -m factory.scripts.preflight` — to confirm the machine is still good.
+
+### Is my progress saved? — yes
+
+An upgrade discards no generated work:
+
+- **Strategy and config files** (`strategies/gen_*.py`, `configs/wfo/gen_*.yaml`) are plain files on disk — untouched. The registry auto-discovers them, including older `gen_<timestamp>.py` ids minted before the `gen_<node_id>_<timestamp>` scheme.
+- **Results records are forward-compatible.** Token tracking adds a `generation_tokens` field to *new* records only; older records have no such field and are read as "no token data" — the detail view shows `n/a` for them and they contribute `0` to the cumulative-tokens total. No migration, no data loss.
+
+### If you ran a much older (single-file) version
+
+A pre-distributed factory kept one `factory/data/results.json` and one `factory/data/dedup_log.txt`. The current factory uses per-machine shard directories — `factory/data/results/<node_id>.jsonl` and `factory/data/dedup/<node_id>.txt`.
+
+- **Enabling distributed mode:** the first `bootstrap()` (run automatically at loop start) folds those legacy files into this machine's shards for you — a one-time verbatim copy, skipped if the shard already exists.
+- **Staying single-machine** (`[sync] enabled = false`): `bootstrap()` is a no-op, so do the one-time copy yourself (create the `results/` and `dedup/` directories first if they do not exist):
+  ```bash
+  cp factory/data/results.json   factory/data/results/local.jsonl    # "local" = default node_id
+  cp factory/data/dedup_log.txt  factory/data/dedup/local.txt
+  ```
+  The formats are compatible — results is JSONL either way, and old un-timestamped dedup lines are tolerated (treated as oldest). Skip the copy and only the dashboard history of those old runs is lost; the strategy files themselves are unaffected.
+
+### Moving to distributed mode
+
+Put `node_id` and `[sync] enabled` in the gitignored `settings.local.toml` (copy `settings.local.toml.example`) — **not** in the tracked `settings.toml`. A tracked-but-modified `settings.toml` permanently dirties the working tree, which makes `sync_pull` skip every cycle and the factory commit pool updates to the wrong branch. See [Configuration](#configuration).
 
 ---
 
