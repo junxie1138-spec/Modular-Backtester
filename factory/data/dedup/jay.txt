@@ -94,3 +94,4 @@
 1778909329	Range-deficit queue saturation at price trough triggers 1-2 bar mean-reversion long
 1778909544	ROC second-derivative zero-crossing at oversold trough with 200-MA regime gate
 1778909810	Consecutive close streak AND ATR expansion ratio gate trend entries, fixed-bar exit
+1778910041	Two-bar volume-confirmed relative-position escape from rolling range-bottom prey zone triggers long
