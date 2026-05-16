@@ -73,3 +73,4 @@
 1778904120	Elastic coil streak AND plastic breakout dual gate with ATR trailing stop
 1778904328	Harmonic volatility node across three ATR harmonics with two-bar bullish confirmation
 1778904685	Gap epidemic growth phase: directional infection pressure percentile drives long/short entries with breakeven-trail exit
+1778904977	Predation-ratio percentile gates mean-reversion longs/shorts with vol-targeted sizing and breakeven-trail exit
