@@ -81,3 +81,4 @@
 1778906111	Resonant MA zero-crossing velocity filters long/short momentum entries with profit-target exit
 1778906389	Predator-prey drawdown z-score velocity exhaustion two-bar confirmation fixed ATR stop long/short
 1778906705	SI epidemic up-volume contagion growth phase gates momentum longs in bull regime
+1778906907	Vol-of-vol calm-regime gates trend entries; refractory after spikes; fixed-bar exit; vol-targeted compression-depth sizing
