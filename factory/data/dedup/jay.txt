@@ -96,3 +96,4 @@
 1778909810	Consecutive close streak AND ATR expansion ratio gate trend entries, fixed-bar exit
 1778910041	Two-bar volume-confirmed relative-position escape from rolling range-bottom prey zone triggers long
 1778910333	Consecutive streak of returns beating DOW seasonal baseline gates long/short with signal-reversal exit
+1778910538	High-percentile downward gap with same-bar intraday reversal triggers long entry, ATR trailing stop exit
