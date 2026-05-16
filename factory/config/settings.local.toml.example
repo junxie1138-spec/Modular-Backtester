@@ -47,3 +47,13 @@ telegram_chat_id   = ""        # e.g. "-1001234567890"
 # this machine needs different values.
 [sync]
 enabled = false                # set to true to join the distributed pool
+
+# --- generation (optional) --------------------------------------------------
+# Override the model used by `claude -p` for strategy generation. settings.toml
+# passes no --model flag, so the factory defaults to your Claude Code default
+# (Opus). Uncomment to use a cheaper/faster model -- "sonnet" or "haiku".
+#
+# IMPORTANT: --model must come BEFORE --allowedTools. --allowedTools is variadic
+# and would otherwise swallow the model name as a tool name.
+# [generation]
+# claude_flags = ["-p", "--output-format", "json", "--model", "sonnet", "--allowedTools", "Read"]
