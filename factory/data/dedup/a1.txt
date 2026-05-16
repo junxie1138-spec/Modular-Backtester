@@ -193,3 +193,4 @@ Volume-confirmed short-horizon momentum thrust, traded long/short with surge-and
 1778912554	Long the two-bar-confirmed upside release of a high inside-bar-fraction compression coil, ATR rolling-high trailing stop.
 1778912651	Long when distance-from-MA z-score crosses its yield point into the plastic regime; hold until the stretch relaxes
 1778912784	Buy consecutive down-close streaks as dissipating traffic shockwaves; size by streak depth; exit on up-close streak reversal
+1778912897	Buy the two-bar rising turn after price spent a long consecutive streak submerged below a tide-level MA
