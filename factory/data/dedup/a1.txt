@@ -82,3 +82,4 @@ Volume-confirmed short-horizon momentum thrust, traded long/short with surge-and
 1778893717	Volume-confirmed thrust regime: net up/down confirmed-bar count switches to accumulation, fire long on confirmed up-bar, refractory after volume climax
 1778893834	Yield-point momentum: enter when ATR-strain crosses the elastic limit and the deformation stays plastic (retained); breakeven-trail exit
 1778893963	Long when return-dispersion compresses to a low percentile AND a return breaks out beyond that compressed band; fixed-bar exit.
+1778894079	Trade drawdown recoveries when overnight gaps stop being filled intraday and start being retained to the close (elastic-to-plastic transition).
