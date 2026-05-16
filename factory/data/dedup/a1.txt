@@ -186,3 +186,4 @@ Volume-confirmed short-horizon momentum thrust, traded long/short with surge-and
 1778911497	Long when %B (relative position in volatility std-band) crosses up out of low-tide zone, above 200MA; profit-target or time-stop exit
 1778911634	Buy the velocity-release of a deeply negative distance-from-MA z-score during an above-200MA drawdown; breakeven-then-ATR-trail exit.
 1778911807	Trade momentum continuation when a same-sign return streak exceeds its own rolling percentile yield point; vol-targeted, flip-exit
+1778911920	Long a rising price channel when higher-highs AND higher-lows both dominate, Parkinson-vol-targeted size, hysteresis flip exit.
