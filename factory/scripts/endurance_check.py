@@ -51,7 +51,7 @@ generation_timeout_sec = 120
 stage_timeout_sec = 1800
 
 [alerts]
-alert_threshold_metric = "wfo.oos_sharpe"
+alert_threshold_metric = "wfo.oos_sortino"
 alert_threshold        = 999.0
 telegram_bot_token     = ""
 telegram_chat_id       = ""
