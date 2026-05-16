@@ -111,3 +111,4 @@ Volume-confirmed short-horizon momentum thrust, traded long/short with surge-and
 1778897637	Buy failed downside breakouts: bar undercuts the N-day low but closes back in its upper range
 1778897807	Long when close sits low in an asymmetric upside/downside semi-deviation volatility corridor during downside-vol dominance; mirror-position exit.
 1778897994	Ride trends while the prevalence of volatility-significant directional bars (infection rate) is rising and unsaturated
+1778898098	Long when ROC acceleration breaches its own noise band (yield strength); elastic sub-band moves ignored, fixed ATR vol-stop.
