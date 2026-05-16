@@ -118,3 +118,4 @@
 1778914774	Hysteresis-armed drawdown-depth recovery gated by efficiency-ratio trend strength with two-bar confirm
 1778915249	Streak-intensity percentile hysteretically gates trend-follow vs fade regime; ATR trailing stop exits
 1778915547	Selling-epidemic R-number drop plus down-volume pool depletion fires mean-reversion long in bull regime
+1778915902	Gap-down long when predator down-gap density peaks then retreats while ACF signals mean-reversion
