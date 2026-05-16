@@ -27,3 +27,4 @@
 1778889154	Drawdown-rank hysteresis arms buy when dd recovers within compressed range
 1778889353	Range-expansion velocity from compression trough gates long entry sized by expansion force
 1778889556	Prey-surge long: high momentum-rank AND low ATR-rank signals predator-scarce momentum burst
+1778889755	Elastic deformation reversion: low price rank plus low volume rank flags conviction-free selloffs
