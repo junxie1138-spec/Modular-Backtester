@@ -103,3 +103,4 @@
 1778911288	Plastic coil: compressed-range bullish-close streak triggers two-bar confirmed long with fixed ATR stop
 1778911541	Lag-1 ACF fatigue recovery at drawdown depth signals elastic mean-reversion bounce
 1778911718	Shockwave-duration decel-streak gates ROC acceleration reversal long entries with vol-targeted sizing
+1778912040	Seller-immunity exhaustion percentile gates volume-confirmed longs in 200-MA bull regime, fixed-bar exit
