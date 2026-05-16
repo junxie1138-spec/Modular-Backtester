@@ -175,3 +175,4 @@ Volume-confirmed short-horizon momentum thrust, traded long/short with surge-and
 1778910138	Buy the pre-inflection take-off of an SI infection curve built from the rolling fraction of up-closes
 1778910278	Overnight gap triggers entry; drawdown depth flips between fading the gap (taut spring) and following it (slack spring).
 1778910449	Long when volatility-of-volatility (ATR coefficient of variation) flatlines into an equilibrium coil during an uptrend.
+1778910551	Breakout in cumulative-return space: enter when N-day summed return makes a new rolling high, ATR trailing-stop exit
