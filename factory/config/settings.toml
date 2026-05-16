@@ -20,7 +20,7 @@ generation_timeout_sec = 3000
 stage_timeout_sec = 5400
 
 [alerts]
-alert_threshold_metric = "wfo.oos_sharpe"
+alert_threshold_metric = "wfo.oos_sortino"
 alert_threshold        = 1.0
 telegram_bot_token     = ""       # real value goes in config/settings.local.toml (gitignored)
 telegram_chat_id       = ""       # real value goes in config/settings.local.toml (gitignored)
@@ -40,8 +40,8 @@ auto_refresh_sec = 10
 enabled           = true
 tickers           = ["AAPL", "QQQ", "DIA"]
 data_source       = "yfinance"        # csv if all tickers in data/raw/; yfinance fetches on first run
-min_avg_sharpe    = 0.7
-trigger_metric    = "wfo.oos_sharpe"
+min_avg_sortino   = 0.7
+trigger_metric    = "wfo.oos_sortino"
 trigger_threshold = 1.0
 
 [screening]
