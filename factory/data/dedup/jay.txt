@@ -46,3 +46,4 @@
 1778893403	Z-score oversold gated by return-skewness recovery from predator-dominant left-tail regime
 1778893675	Long when same weekday logs N consecutive positive closes; per-weekday refractory blocks re-entry after exit
 1778893907	Dual rolling-rank of signed efficiency-ratio and momentum confirms shockwave-release trend entry
+1778894191	Consecutive bearish-close streak AND negative return autocorrelation gate mean-reversion long with profit-target/time-stop exit
