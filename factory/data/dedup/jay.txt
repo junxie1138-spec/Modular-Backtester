@@ -52,3 +52,4 @@
 1778895009	Volume plasticity regime: cross-timescale rolling-rank differential gates fixed-bar longs via second-order percentile threshold
 1778895230	Multi-lag ACF shockwave transition gates trend longs sized by autocorrelation strength
 1778895391	Dual-timescale z-score divergence: short-term predator dominance vs intact long-term buyer base
+1778895693	Drawdown-gated arm-fire z-score hysteresis with oversell-depth-scaled sizing and ATR trailing stop
