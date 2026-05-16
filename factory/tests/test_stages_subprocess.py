@@ -130,7 +130,7 @@ def test_run_wfo_stage_uses_wfo_suffix(tmp_path: Path) -> None:
     bundle = output_runs / "20260101_0900_gen_42_wfo"
     bundle.mkdir(parents=True)
     (bundle / "summary.json").write_text(json.dumps({
-        "oos_summary": {"sharpe": 1.1, "total_return": 0.2, "max_drawdown": -0.06, "n_trades": 30},
+        "oos_summary": {"sharpe": 1.1, "sortino": 1.4, "total_return": 0.2, "max_drawdown": -0.06, "n_trades": 30},
         "parameter_stability": {},
         "n_windows": 6,
     }), encoding="utf-8")
@@ -145,6 +145,7 @@ def test_run_wfo_stage_uses_wfo_suffix(tmp_path: Path) -> None:
             timeout_sec=30,
         )
     assert result.parsed["oos_sharpe"] == pytest.approx(1.1)
+    assert result.parsed["oos_sortino"] == pytest.approx(1.4)
     assert result.parsed["n_windows"] == 6
 
 
