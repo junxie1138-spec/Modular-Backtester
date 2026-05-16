@@ -85,3 +85,4 @@
 1778907195	Signed directional volatility flow acceleration gates momentum entries with 200-MA regime filter and breakeven-trail exit
 1778907314	Negative-return density shockwave dissipation triggers drawdown-recovery long entries
 1778907635	Two-bar arm/fire hysteresis: signed volume z-score arms, directional efficiency fires, fixed ATR stop
+1778907936	SI epidemic curve phase (early/late) in ATR-infection rate gates momentum or reversion entries with G(t)-scaled sizing
