@@ -124,3 +124,4 @@ Volume-confirmed short-horizon momentum thrust, traded long/short with surge-and
 1778903547	OBV accumulation-regime gate; enter long after two consecutive volume-surge up-bars; profit-target or time-stop exit.
 1778903688	Saturating sign-pressure queue: go long when a clamped up-pressure accumulator hits capacity, fixed-bar exit.
 1778903873	Fade isolated counter-trend overnight gaps (gap-self-vol z-score), skip propagating gap shockwaves, 200-MA regime-aligned, vol-targeted size.
+1778904050	Buy when an abnormally long down-close streak ends, confirmed by two up-closes; ATR trailing-stop exit
