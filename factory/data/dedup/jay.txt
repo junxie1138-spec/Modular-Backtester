@@ -119,3 +119,4 @@
 1778915249	Streak-intensity percentile hysteretically gates trend-follow vs fade regime; ATR trailing stop exits
 1778915547	Selling-epidemic R-number drop plus down-volume pool depletion fires mean-reversion long in bull regime
 1778915902	Gap-down long when predator down-gap density peaks then retreats while ACF signals mean-reversion
+1778916204	N-day breakout confirmed by range-expansion shockwave initiates 3-4 week trend with ATR trailing stop
