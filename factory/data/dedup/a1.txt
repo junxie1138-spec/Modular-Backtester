@@ -171,3 +171,4 @@ Volume-confirmed short-horizon momentum thrust, traded long/short with surge-and
 1778909696	Sign of close-within-range autocorrelation selects ride-vs-fade of intraday close strength; 200MA-gated, fixed-bar exit
 1778909809	Long momentum only in the calm regime where a rolling true-range queue stays below its percentile capacity ceiling.
 1778909895	Long when rolling lag-1 autocorrelation of ROC-acceleration ranks in its own top percentile and price accelerates up; profit-target or time-stop exit.
+1778909991	Long when lag-1 autocorrelation of the gap series percentile-ranks high (Schmitt-trigger) and recent gaps are up; signal-reversal exit.
