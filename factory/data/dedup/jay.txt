@@ -49,3 +49,4 @@
 1778894191	Consecutive bearish-close streak AND negative return autocorrelation gate mean-reversion long with profit-target/time-stop exit
 1778894587	Intra-month tidal phase gates dual-bar volume-momentum entry with fixed ATR stop
 1778894828	Gap-susceptibility long: low recent-gap infection rate plus CC-return pullback signals epidemic contagion burst
+1778895009	Volume plasticity regime: cross-timescale rolling-rank differential gates fixed-bar longs via second-order percentile threshold
