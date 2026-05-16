@@ -73,3 +73,4 @@ Volume-confirmed short-horizon momentum thrust, traded long/short with surge-and
 1778892399	Fade distance-from-MA z-score extremes only when its half-cycle autocorrelation is negative (predator-prey limit-cycle regime), 200-MA gated.
 1778892505	Long when days-above-MA persistence streak crosses its own rolling percentile high; hysteresis re-arm, fixed ATR vol-stop.
 1778892612	Long healthy pullbacks when the volatility infection burns out: SI-style decay of excess-ATR below half its drawdown peak.
+1778892784	Buy convalescence: enter when drawdown-level percentile AND infected-fraction percentile both agree after a prior epidemic arm
