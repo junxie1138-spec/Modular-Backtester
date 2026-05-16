@@ -1,0 +1,40 @@
+run_name: gen_jay_1778907322
+strategy: gen_jay_1778907322
+strategy_params:
+  vol_lookback: 20
+  vol_arm_z: 1.0
+  vol_fire_z: 1.8
+  eff_lookback: 5
+  eff_arm_thresh: 0.15
+  eff_fire_thresh: 0.28
+  atr_lookback: 14
+  atr_stop_k: 2.0
+  target_daily_vol: 0.015
+  cooldown_bars: 2
+data:
+  symbols: ["SPY"]
+  timeframe: "1d"
+  start: "2015-01-02"
+  end: "2024-12-31"
+  source: "csv"
+  root: "data/raw"
+execution:
+  initial_cash: 100000
+  commission_bps: 2
+  slippage_bps: 5
+  allow_fractional: false
+  allow_short: true
+portfolio:
+  sizing_mode: "percent_equity"
+  size: 0.95
+optimization:
+  objective: sharpe
+  param_space:
+    vol_fire_z: [1.4, 1.8, 2.2]
+    atr_stop_k: [1.5, 2.0, 2.5]
+    eff_fire_thresh: [0.20, 0.28, 0.36]
+wfo:
+  enabled: true
+  train_bars: 756
+  test_bars: 252
+  step_bars: 252
