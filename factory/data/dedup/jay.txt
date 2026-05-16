@@ -89,3 +89,4 @@
 1778908105	Symmetric ATR-gated hysteresis deadband on rolling intrabar close-polarity drives long/short
 1778908314	Smoothed drawdown-convexity inflection in stressed regime gates longs with signal-reversal exit
 1778908565	Month-end sell-shockwave dissipation triggers volume-confirmed bullish resumption entry
+1778908793	Gap infection recovery crossover with susceptible-zone z-score gate and ATR trailing stop
