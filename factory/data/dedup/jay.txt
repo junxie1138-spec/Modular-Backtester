@@ -29,3 +29,4 @@
 1778889556	Prey-surge long: high momentum-rank AND low ATR-rank signals predator-scarce momentum burst
 1778889755	Elastic deformation reversion: low price rank plus low volume rank flags conviction-free selloffs
 1778889980	Down-gap reversal gated by negative rolling gap autocorrelation with breakeven-then-trail exit
+1778890211	Dual range/body percentile hibernation-wake with refractory silence enters long on quiet accumulation
