@@ -94,3 +94,4 @@ Volume-confirmed short-horizon momentum thrust, traded long/short with surge-and
 1778895314	Long when an overnight up-gap breaches the high percentile of its own weekday's trailing gap climatology; fixed-bar exit
 1778895523	Loaded-spring breakout: leaky-integrator tension from range-percentile compression, fired on percentile breakout cross.
 1778895678	Two-state elastic spring on distance-from-MA z-score: load at percentile extreme, fire long/short on velocity recoil, breakeven-then-trail exit.
+1778895781	Higher-lows staircase streak builds a support coil; breakout fires long when close clears the staircase ceiling, profit-target/time-stop exit
