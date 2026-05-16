@@ -79,3 +79,4 @@
 1778905655	ATR consecutive-descent arrest triggers long on compression inflection with profit-target exit
 1778905895	OBV signal-to-noise regime gates volume-burst bullish-close entries with fixed-bar exit
 1778906111	Resonant MA zero-crossing velocity filters long/short momentum entries with profit-target exit
+1778906389	Predator-prey drawdown z-score velocity exhaustion two-bar confirmation fixed ATR stop long/short
