@@ -152,3 +152,4 @@ Volume-confirmed short-horizon momentum thrust, traded long/short with surge-and
 1778907254	Long when a live up-close streak count matures past a threshold (two-bar confirmed); fixed ATR volatility-stop exit.
 1778907373	Long/short when instantaneous drawdown-depth gate AND integrated underwater-area trend-purity agree; fixed ATR volatility-stop exit.
 1778907499	Directional range-extension ratio: long when higher-highs dominate lower-lows; breakeven-then-ATR-trail exit, ratio-scaled size
+1778907613	Buy the epidemic-curve inflection: ROC-acceleration crosses zero inside a deep dip within a bull regime, fixed ATR vol-stop.
