@@ -108,3 +108,4 @@
 1778912505	Declining negative-return epidemic AND z-score oversold triggers drawdown-recovery long with fixed ATR stop
 1778912935	Intraday gap-fill rate regime detector inverts rolling gap-accumulation z-score signal polarity for trend vs reversion entries
 1778913114	Cross-frequency return-rank divergence (predator overtakes prey) drives two-bar confirmed long/short momentum
+1778913257	Hysteresis-band exit on rolling quantile of cumulative gap pressure in 200-MA bull regime
