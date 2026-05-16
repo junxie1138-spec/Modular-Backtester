@@ -69,3 +69,4 @@ Volume-confirmed short-horizon momentum thrust, traded long/short with surge-and
 1778891772	Long when range-path efficiency (net move over cumulative high-low range) crosses high, signal-scaled size, profit-target/time-stop exit
 1778891911	Drawdown hysteresis Schmitt-trigger: arm on deep drawdown, fire long on recovery cross, size scaled by trough depth; profit-target/time-stop exit.
 1778892035	Inside-bar nesting density gauges a coil; trade the close breakout from the cluster, ATR-trailing exit
+1778892249	Up-close streak crossing a yield-point count enters long, size scaled by accumulated ATR-strain, breakeven-then-trail exit
