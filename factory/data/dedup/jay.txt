@@ -77,3 +77,4 @@
 1778905180	Bivariate day-of-week × week-of-month seasonal ROC-acceleration filter with elastic-springback confirmation and breakeven-trail exit
 1778905356	Gap-spring tension: accumulated downward gaps release on two-bar bullish confirmation with ATR stop
 1778905655	ATR consecutive-descent arrest triggers long on compression inflection with profit-target exit
+1778905895	OBV signal-to-noise regime gates volume-burst bullish-close entries with fixed-bar exit
