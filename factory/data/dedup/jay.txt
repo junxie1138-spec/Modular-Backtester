@@ -55,3 +55,4 @@
 1778895693	Drawdown-gated arm-fire z-score hysteresis with oversell-depth-scaled sizing and ATR trailing stop
 1778895950	DOM seasonal return average AND z-score pullback jointly gate long entries with ATR trailing stop
 1778896131	Epidemic prevalence inflection of rolling drawdown infection rate signals mean-reversion entries
+1778896332	Plastic deformation: range-acceleration AND bullish body-efficiency jointly confirm directional trend breakout
