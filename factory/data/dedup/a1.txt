@@ -214,3 +214,4 @@ Volume-confirmed short-horizon momentum thrust, traded long/short with surge-and
 1778914965	Long unfilled up-gaps that survive intraday on top-percentile volume; fixed ATR vol-stop, 5-day time cap
 1778915059	Long when a drained volatility-queue (low rolling-range occupancy vs capacity) coincides with ROC acceleration crossing positive; fixed-bar exit.
 1778915167	Elastic restoring trade: enter when drawdown depth from a rolling peak AND positive ROC acceleration both agree; profit-target/time-stop exit.
+1778915298	Long the steep middle of an SI-style adoption curve: peak force-of-infection on close's percentile rank, rising.
