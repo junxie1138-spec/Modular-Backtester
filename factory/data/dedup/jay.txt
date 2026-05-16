@@ -31,3 +31,4 @@
 1778889980	Down-gap reversal gated by negative rolling gap autocorrelation with breakeven-then-trail exit
 1778890211	Dual range/body percentile hibernation-wake with refractory silence enters long on quiet accumulation
 1778890413	ATR compression AND negative return-autocorrelation gate elastic spring-release longs
+1778890614	Up-gap breakout gated by epidemic gap-frequency acceleration above 200-day MA
