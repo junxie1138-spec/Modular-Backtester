@@ -99,3 +99,4 @@ Volume-confirmed short-horizon momentum thrust, traded long/short with surge-and
 1778896003	Long when z-score rebound velocity beats the peak descent velocity that caused the drawdown (elastic recoil); profit-target/time-stop exit.
 1778896130	In low-percentile-range neap-tide compression, buy the lower channel node for mean reversion to center
 1778896309	Short when overnight up-gap streak diverges from intraday red-body streak (and mirror long); breakeven-then-trail exit
+1778896445	Autocorrelation regime flips streak polarity: ride up-streaks in momentum regime, buy down-streaks in reversion regime, 200-MA gated.
