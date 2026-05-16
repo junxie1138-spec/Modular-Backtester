@@ -80,3 +80,4 @@ Volume-confirmed short-horizon momentum thrust, traded long/short with surge-and
 1778893435	Volume-confirmed up-gap treated as an infection event in an un-extended (susceptible) market, signal-scaled size, profit-target/time-stop exit
 1778893607	Enter long when realized vol sits below its calendar-month climatological norm AND that month is seasonally bullish
 1778893717	Volume-confirmed thrust regime: net up/down confirmed-bar count switches to accumulation, fire long on confirmed up-bar, refractory after volume climax
+1778893834	Yield-point momentum: enter when ATR-strain crosses the elastic limit and the deformation stays plastic (retained); breakeven-trail exit
