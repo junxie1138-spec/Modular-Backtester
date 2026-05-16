@@ -77,10 +77,10 @@ At load time `settings.local.toml` is **merged over** `settings.toml`, section b
 | `[paths]` | `backtester_root` and the repo-relative dirs for strategies, configs, results shards, dedup shards, logs, tmp. |
 | `[generation]` | `claude_cmd`, `claude_flags`, `generation_timeout_sec`. |
 | `[stages]` | `stage_timeout_sec` — per-stage subprocess timeout. |
-| `[alerts]` | `alert_threshold_metric` / `alert_threshold` (default `wfo.oos_sharpe` > 1.0), Telegram credentials, `dashboard_base_url`. |
+| `[alerts]` | `alert_threshold_metric` / `alert_threshold` (default `wfo.oos_sortino` > 1.0), Telegram credentials, `dashboard_base_url`. |
 | `[loop]` | `inter_cycle_sleep_sec`, `max_cycles` (`0` = unlimited). |
 | `[dashboard]` | `host`, `port`, `auto_refresh_sec`. |
-| `[promotion]` | Held-out gate: `tickers`, `data_source`, `min_avg_sharpe`, `trigger_metric`/`trigger_threshold`. |
+| `[promotion]` | Held-out gate: `tickers`, `data_source`, `min_avg_sortino`, `trigger_metric`/`trigger_threshold`. |
 | `[screening]` | Skip WFO when the best optimize score is below `min_optimize_score`. |
 | `[sync]` | Distributed mode — see below. `enabled = false` by default. |
 
