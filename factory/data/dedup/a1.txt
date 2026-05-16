@@ -210,3 +210,4 @@ Volume-confirmed short-horizon momentum thrust, traded long/short with surge-and
 1778914517	Long when rolling Spearman rank-correlation of close vs time confirms a strong monotonic uptrend; ATR rolling-high trailing exit.
 1778914645	Long/short the recovery-thrust-to-drawdown-depth ratio (escape velocity per unit hole), two-bar confirmed, reversal-exit
 1778914748	Wald-Wolfowitz runs-test detects a positive-autocorrelation regime; enter on a live up-close streak above 200MA.
+1778914847	Buy persistent consecutive up-gap streaks with deadband hysteresis; streak-scaled size; fixed-bar exit.
