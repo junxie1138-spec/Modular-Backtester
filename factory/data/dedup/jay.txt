@@ -105,3 +105,4 @@
 1778911718	Shockwave-duration decel-streak gates ROC acceleration reversal long entries with vol-targeted sizing
 1778912040	Seller-immunity exhaustion percentile gates volume-confirmed longs in 200-MA bull regime, fixed-bar exit
 1778912295	Intraday-strength streak AND volume acceleration long entry, refractory on volume spike, fixed ATR stop
+1778912505	Declining negative-return epidemic AND z-score oversold triggers drawdown-recovery long with fixed ATR stop
