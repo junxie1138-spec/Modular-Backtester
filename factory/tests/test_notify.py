@@ -43,7 +43,7 @@ def test_format_alert_message_labels_as_shortlist_signal() -> None:
     assert "shortlist signal" in msg.lower()
     assert "gen_42" in msg
     assert "compression breakout test" in msg
-    assert "1.4" in msg or "1.40" in msg or "1.400" in msg  # oos_sortino
+    assert "OOS Sortino: 1.4" in msg  # oos_sortino headline
     assert "1.25" in msg or "1.250" in msg  # oos_sharpe
     assert "http://x.y" in msg
     # MUST NOT use words that imply finality.
