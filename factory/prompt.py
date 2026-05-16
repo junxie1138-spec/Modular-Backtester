@@ -125,7 +125,7 @@ portfolio:
   sizing_mode: "percent_equity"
   size: 0.95
 optimization:
-  objective: sharpe
+  objective: sortino
   param_space: {<2-3 params, 3 values each>}
 wfo:
   enabled: true
