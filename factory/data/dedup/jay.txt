@@ -43,3 +43,4 @@
 1778892487	Hysteresis-armed z-score momentum: compress-then-fire with burst-scaled sizing
 1778892665	ATR-normalized directional range-asymmetry score with hysteresis thresholds gates two-bar confirmed trend entries
 1778892993	ATR-compression ratio AND rolling close-position buyer dominance gate long entries with trailing stop
+1778893403	Z-score oversold gated by return-skewness recovery from predator-dominant left-tail regime
