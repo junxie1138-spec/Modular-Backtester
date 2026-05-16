@@ -86,3 +86,4 @@ Volume-confirmed short-horizon momentum thrust, traded long/short with surge-and
 1778894220	Long when close sits above its rolling median by k ATRs; mirror exit when k ATRs below median, refractory after vol spikes.
 1778894387	Trade distance-from-MA z-score de-seasonalized against its trailing month-of-year climatology; two-bar confirmed discount entry, mirror-flip exit.
 1778894521	Long when two consecutive down-gaps are intraday-rejected (bought back) during a drawdown; profit-target/time-stop exit.
+1778894708	Buy selling exhaustion when intrabar range contracts while closes keep pinning near the low
