@@ -97,3 +97,4 @@ Volume-confirmed short-horizon momentum thrust, traded long/short with surge-and
 1778895781	Higher-lows staircase streak builds a support coil; breakout fires long when close clears the staircase ceiling, profit-target/time-stop exit
 1778895891	Long when range-fill level enters upper band below capacity AND ROC acceleration is positive; mirror-flip exit
 1778896003	Long when z-score rebound velocity beats the peak descent velocity that caused the drawdown (elastic recoil); profit-target/time-stop exit.
+1778896130	In low-percentile-range neap-tide compression, buy the lower channel node for mean reversion to center
