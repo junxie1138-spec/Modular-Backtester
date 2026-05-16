@@ -150,3 +150,4 @@ Volume-confirmed short-horizon momentum thrust, traded long/short with surge-and
 1778907012	Enter when smoothed-ROC trend sign and its own acceleration sign are concordant; fixed-bar exit with post-trade refractory lockout
 1778907153	Trade direction of return-energy polarization index (up vs down return magnitude balance), two-bar confirmed, fixed ATR vol-stop
 1778907254	Long when a live up-close streak count matures past a threshold (two-bar confirmed); fixed ATR volatility-stop exit.
+1778907373	Long/short when instantaneous drawdown-depth gate AND integrated underwater-area trend-purity agree; fixed ATR volatility-stop exit.
