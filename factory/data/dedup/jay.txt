@@ -64,3 +64,4 @@
 1778897392	Drawdown-depth rolling percentile rank triggers vol-targeted mean-reversion long with fixed 2-bar exit
 1778897657	Volatility-compression percentile AND range-position dual gate with compression-scaled sizing and ATR trailing stop
 1778898117	Drawdown-depth percentile arm-fire hysteresis gates breakout longs and shorts with fixed ATR stop
+1778898394	Annual Fourier tidal phase at compressed ATR trough triggers two-bar confirmed longs with fixed stop
