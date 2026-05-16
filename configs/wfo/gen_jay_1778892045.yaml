@@ -1,0 +1,30 @@
+run_name: gen_jay_1778892045
+strategy: gen_jay_1778892045
+strategy_params: {streak_threshold: 3, confirm_bars: 2, profit_target_pct: 2.0, max_hold_bars: 10, min_gap_pct: 0.15}
+data:
+  symbols: ["SPY"]
+  timeframe: "1d"
+  start: "2015-01-02"
+  end: "2024-12-31"
+  source: "csv"
+  root: "data/raw"
+execution:
+  initial_cash: 100000
+  commission_bps: 2
+  slippage_bps: 5
+  allow_fractional: false
+  allow_short: true
+portfolio:
+  sizing_mode: "percent_equity"
+  size: 0.95
+optimization:
+  objective: sharpe
+  param_space:
+    streak_threshold: [2, 3, 4]
+    profit_target_pct: [1.5, 2.0, 3.0]
+    max_hold_bars: [7, 10, 15]
+wfo:
+  enabled: true
+  train_bars: 756
+  test_bars: 252
+  step_bars: 252

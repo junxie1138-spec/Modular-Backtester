@@ -39,3 +39,4 @@
 1778891698	Buyer volume dominance crossover after drawdown signals prey-recovery long sized by dominance strength
 1778891854	Fade large-range candles against their direction with fixed 2-bar exit
 1778892035	Efficiency-Ratio percentile gates trend-clarity long with profit-target and time-stop exit
+1778892291	Fade consecutive gap streaks confirmed by two intraday-reversal candle bodies
