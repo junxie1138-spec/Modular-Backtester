@@ -31,7 +31,7 @@
     else if (isPromoted) tr.classList.add("promoted");
     else if (isGood) tr.classList.add("good");
     if (rec.strategy_id) tr.dataset.strategyId = rec.strategy_id;
-    const promoAvg = (promo && typeof promo.avg_sharpe === "number") ? fmt(promo.avg_sharpe) : "";
+    const promoAvg = (promo && typeof promo.avg_sortino === "number") ? fmt(promo.avg_sortino) : "";
     const cells = [
       rec.timestamp || "",
       rec.strategy_id || "(no id)",
@@ -94,7 +94,7 @@
     if (key === "oos_sharpe") return rec.wfo ? rec.wfo.oos_sharpe : null;
     if (key === "oos_total_return") return rec.wfo ? rec.wfo.oos_total_return : null;
     if (key === "oos_max_drawdown") return rec.wfo ? rec.wfo.oos_max_drawdown : null;
-    if (key === "promotion_avg_sharpe") return rec.promotion ? rec.promotion.avg_sharpe : null;
+    if (key === "promotion_avg_sharpe") return rec.promotion ? rec.promotion.avg_sortino : null;
     return null;
   }
 

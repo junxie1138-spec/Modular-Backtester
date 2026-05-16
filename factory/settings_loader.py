@@ -63,7 +63,7 @@ class PromotionCfg:
     enabled: bool
     tickers: tuple[str, ...]
     data_source: str
-    min_avg_sharpe: float
+    min_avg_sortino: float
     trigger_metric: str
     trigger_threshold: float
 
@@ -170,8 +170,8 @@ def load_settings(path: Path) -> Settings:
             enabled=bool(pr.get("enabled", False)),
             tickers=tuple(pr.get("tickers", ())),
             data_source=str(pr.get("data_source", "yfinance")),
-            min_avg_sharpe=float(pr.get("min_avg_sharpe", 0.7)),
-            trigger_metric=str(pr.get("trigger_metric", "wfo.oos_sharpe")),
+            min_avg_sortino=float(pr.get("min_avg_sortino", 0.7)),
+            trigger_metric=str(pr.get("trigger_metric", "wfo.oos_sortino")),
             trigger_threshold=float(pr.get("trigger_threshold", 1.0)),
         ),
         screening=ScreeningCfg(

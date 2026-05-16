@@ -232,9 +232,9 @@ def run_cycle(settings: Settings, *, rng: random.Random) -> CycleOutcome:
             )
             promotion_dict = asdict(promo)
             log.info(
-                "cycle id=%s promotion passed=%s avg_sharpe=%s",
+                "cycle id=%s promotion passed=%s avg_sortino=%s",
                 strategy_id, promo.passed,
-                f"{promo.avg_sharpe:.3f}" if promo.avg_sharpe is not None else "n/a",
+                f"{promo.avg_sortino:.3f}" if promo.avg_sortino is not None else "n/a",
             )
 
     # Step 14-15: build complete record.
