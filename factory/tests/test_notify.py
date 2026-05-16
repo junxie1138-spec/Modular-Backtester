@@ -18,7 +18,7 @@ def _record() -> dict:
         "idea": {"one_line_summary": "compression breakout test"},
         "backtest": {"sharpe": 0.9},
         "optimize": {"best_score": 1.4},
-        "wfo": {"oos_sharpe": 1.25, "oos_total_return": 0.18,
+        "wfo": {"oos_sharpe": 1.25, "oos_sortino": 1.40, "oos_total_return": 0.18,
                 "oos_max_drawdown": -0.06, "oos_n_trades": 25},
     }
 
@@ -43,6 +43,7 @@ def test_format_alert_message_labels_as_shortlist_signal() -> None:
     assert "shortlist signal" in msg.lower()
     assert "gen_42" in msg
     assert "compression breakout test" in msg
+    assert "1.4" in msg or "1.40" in msg or "1.400" in msg  # oos_sortino
     assert "1.25" in msg or "1.250" in msg  # oos_sharpe
     assert "http://x.y" in msg
     # MUST NOT use words that imply finality.
@@ -53,8 +54,8 @@ def test_format_alert_message_labels_as_shortlist_signal() -> None:
 
 def test_maybe_send_alert_skips_when_metric_below_threshold() -> None:
     cfg = NotifyConfig(
-        alert_threshold_metric="wfo.oos_sharpe",
-        alert_threshold=2.0,  # above this record's 1.25
+        alert_threshold_metric="wfo.oos_sortino",
+        alert_threshold=2.0,  # above this record's 1.40
         telegram_bot_token="t",
         telegram_chat_id="c",
         dashboard_base_url="http://x",
@@ -67,7 +68,7 @@ def test_maybe_send_alert_skips_when_metric_below_threshold() -> None:
 
 def test_maybe_send_alert_skips_when_credentials_missing() -> None:
     cfg = NotifyConfig(
-        alert_threshold_metric="wfo.oos_sharpe",
+        alert_threshold_metric="wfo.oos_sortino",
         alert_threshold=1.0,
         telegram_bot_token="",
         telegram_chat_id="",
@@ -83,7 +84,7 @@ def test_maybe_send_alert_skips_when_credentials_missing() -> None:
 
 def test_maybe_send_alert_calls_telegram_when_above_threshold() -> None:
     cfg = NotifyConfig(
-        alert_threshold_metric="wfo.oos_sharpe",
+        alert_threshold_metric="wfo.oos_sortino",
         alert_threshold=1.0,
         telegram_bot_token="t",
         telegram_chat_id="c",
@@ -102,7 +103,7 @@ def test_maybe_send_alert_calls_telegram_when_above_threshold() -> None:
 
 def test_maybe_send_alert_swallows_telegram_failures() -> None:
     cfg = NotifyConfig(
-        alert_threshold_metric="wfo.oos_sharpe",
+        alert_threshold_metric="wfo.oos_sortino",
         alert_threshold=1.0,
         telegram_bot_token="t",
         telegram_chat_id="c",
