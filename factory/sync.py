@@ -185,6 +185,23 @@ def sync_push(settings: Settings) -> None:
     branch = settings.sync.branch
     remote = settings.sync.remote
 
+    # Only ever commit pool updates while the working tree is on the pool
+    # branch. sync_pull is what checks the tree out onto `branch`; if it
+    # skipped this cycle (a dirty tree), the tree is still on whatever branch
+    # it was on. Committing here would dump pool updates onto that branch,
+    # and the subsequent `git push <branch>` would push the unchanged pool
+    # branch — a misleading no-op "success". Skip loudly instead.
+    current = _current_branch(root)
+    if current != branch:
+        log.warning(
+            "sync_push: working tree is on %r, not the pool branch %r; "
+            "skipping commit+push this cycle. This usually means sync_pull "
+            "skipped on a dirty working tree — resolve the tracked changes "
+            "so sync can resume.",
+            current, branch,
+        )
+        return
+
     add_paths = _commit_paths(settings)
     if add_paths:
         _git(["add", "--", *add_paths], cwd=root)
