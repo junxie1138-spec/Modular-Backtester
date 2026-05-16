@@ -71,3 +71,4 @@ Volume-confirmed short-horizon momentum thrust, traded long/short with surge-and
 1778892035	Inside-bar nesting density gauges a coil; trade the close breakout from the cluster, ATR-trailing exit
 1778892249	Up-close streak crossing a yield-point count enters long, size scaled by accumulated ATR-strain, breakeven-then-trail exit
 1778892399	Fade distance-from-MA z-score extremes only when its half-cycle autocorrelation is negative (predator-prey limit-cycle regime), 200-MA gated.
+1778892505	Long when days-above-MA persistence streak crosses its own rolling percentile high; hysteresis re-arm, fixed ATR vol-stop.
