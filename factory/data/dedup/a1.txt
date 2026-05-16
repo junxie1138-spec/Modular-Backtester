@@ -61,3 +61,4 @@ Volume-confirmed short-horizon momentum thrust, traded long/short with surge-and
 1778890539	Fade overshoot gaps that follow long market-closure weekends/holidays, after two confirming fade bars
 1778890659	Switch between return-momentum and return-reversal based on the percentile rank of lag-1 return autocorrelation; fixed-bar exit
 1778890832	Enter long when recent close-to-close returns stop touching their own historical percentile tails (return-distribution compression).
+1778891042	Long while the lag-1 autocorrelation of intrabar close-location is positive and recent closes sit high in the range
