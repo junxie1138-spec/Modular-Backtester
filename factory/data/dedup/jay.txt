@@ -53,3 +53,4 @@
 1778895230	Multi-lag ACF shockwave transition gates trend longs sized by autocorrelation strength
 1778895391	Dual-timescale z-score divergence: short-term predator dominance vs intact long-term buyer base
 1778895693	Drawdown-gated arm-fire z-score hysteresis with oversell-depth-scaled sizing and ATR trailing stop
+1778895950	DOM seasonal return average AND z-score pullback jointly gate long entries with ATR trailing stop
