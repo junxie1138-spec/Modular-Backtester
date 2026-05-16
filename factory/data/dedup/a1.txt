@@ -118,3 +118,4 @@ Volume-confirmed short-horizon momentum thrust, traded long/short with surge-and
 1778898558	Overnight-vs-intraday volatility partition decides whether to follow or fade the latest gap; fixed ATR vol-stop.
 1778898697	Trade close-direction streaks only when they terminate on a turn-of-week weekday, betting on the weekend-effect reversal
 1778898797	Long when prevalence of upward range-translation bars (HH+HL) crosses a critical infection threshold in a 200-MA uptrend; fixed-bar exit
+1778898914	Constructive interference: enter long when overnight gap AND intraday body both push up; fixed ATR vol-stop
