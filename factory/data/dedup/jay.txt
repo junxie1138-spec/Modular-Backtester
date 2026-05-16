@@ -41,3 +41,4 @@
 1778892035	Efficiency-Ratio percentile gates trend-clarity long with profit-target and time-stop exit
 1778892291	Fade consecutive gap streaks confirmed by two intraday-reversal candle bodies
 1778892487	Hysteresis-armed z-score momentum: compress-then-fire with burst-scaled sizing
+1778892665	ATR-normalized directional range-asymmetry score with hysteresis thresholds gates two-bar confirmed trend entries
