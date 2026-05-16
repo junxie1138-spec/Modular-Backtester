@@ -203,3 +203,4 @@ Volume-confirmed short-horizon momentum thrust, traded long/short with surge-and
 1778913613	Long SPY when the rolling variance ratio of close-to-close returns signals a positive-autocorrelation regime above the 200-day MA.
 1778913721	Trade the sign of upside-vs-downside RMS semi-deviation asymmetry as a trend-strength gauge; fixed-bar exit.
 1778913859	Buy the ATR up-tick release that ends a consecutive-ATR-decline compression streak, in a bull regime, vol-targeted size
+1778914004	Continuously long/short the sign of smoothed ROC acceleration as a predator-prey cycle phase oscillator, vol-targeted size, breakeven-then-trail exit.
