@@ -131,3 +131,4 @@ Volume-confirmed short-horizon momentum thrust, traded long/short with surge-and
 1778904535	Neuron-style refractory lockout: trade ROC-acceleration z-score spikes, then ignore echo-spikes for R bars; spike-scaled size, profit-target/time-stop exit.
 1778904671	Rankine-Hugoniot shockwave speed: ride trend fronts where return-flow jumps faster than return-density across two adjacent windows.
 1778904819	Range-weighted intrabar close-location: side that wins the wide-range shockwave bars is traded, conviction-scaled, fixed-bar exit.
+1778904903	Accumulate overnight gaps into a decaying tension reservoir; long when tension crosses its elastic limit above 200-MA.
