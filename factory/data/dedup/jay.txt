@@ -92,3 +92,4 @@
 1778908793	Gap infection recovery crossover with susceptible-zone z-score gate and ATR trailing stop
 1778909146	Range-compression epidemic R-number <1 triggers long at peak-compression saturation reversal
 1778909329	Range-deficit queue saturation at price trough triggers 1-2 bar mean-reversion long
+1778909544	ROC second-derivative zero-crossing at oversold trough with 200-MA regime gate
