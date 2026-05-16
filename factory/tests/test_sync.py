@@ -233,6 +233,44 @@ def test_sync_push_noop_when_nothing_changed(tmp_path: Path, caplog: pytest.LogC
     assert "no-op" in caplog.text.lower()
 
 
+def test_sync_push_skips_when_not_on_pool_branch(
+    tmp_path: Path, caplog: pytest.LogCaptureFixture,
+) -> None:
+    """If the working tree is not on the pool branch (e.g. sync_pull skipped
+    on a dirty tree), sync_push must NOT commit pool updates to the wrong
+    branch — it skips loudly instead."""
+    remote = _init_bare_remote(tmp_path / "remote.git")
+    repo = _clone(remote, tmp_path / "node")
+    _seed_master(repo)
+    s = _node_settings(repo, "desk")
+    bootstrap(s)
+    # bootstrap creates factory-pool but does not check it out — the tree is
+    # still on master. Normally sync_pull checks out the pool branch; here we
+    # simulate the cycle where sync_pull skipped (a dirty tree) and did not.
+    on_branch = subprocess.run(
+        ["git", "rev-parse", "--abbrev-ref", "HEAD"],
+        cwd=str(repo), capture_output=True, text=True,
+    ).stdout.strip()
+    assert on_branch == "master", f"test precondition: expected master, got {on_branch!r}"
+
+    _produce_strategy(repo, "desk", 1000)
+    with caplog.at_level("WARNING"):
+        sync_push(s)   # must not raise, must not commit to the wrong branch
+    assert "not the pool branch" in caplog.text.lower()
+    # No pool-update commit landed on master...
+    master_log = subprocess.run(
+        ["git", "log", "--oneline", "master"],
+        cwd=str(repo), capture_output=True, text=True,
+    ).stdout
+    assert "pool update" not in master_log
+    # ...and factory-pool on the remote has no pool-update commit either.
+    pool_log = subprocess.run(
+        ["git", "log", "--oneline", "origin/factory-pool"],
+        cwd=str(repo), capture_output=True, text=True,
+    ).stdout
+    assert "pool update" not in pool_log
+
+
 def test_sync_pull_skips_on_dirty_tree(tmp_path: Path, caplog: pytest.LogCaptureFixture) -> None:
     repo = _clone(_init_bare_remote(tmp_path / "remote.git"), tmp_path / "node")
     _seed_master(repo)

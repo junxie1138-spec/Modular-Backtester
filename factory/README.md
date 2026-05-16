@@ -86,6 +86,12 @@ At load time `settings.local.toml` is **merged over** `settings.toml`, section b
 
 ### Secrets and per-machine values — `settings.local.toml`
 
+A ready-to-fill template is committed at `factory/config/settings.local.toml.example`. Copy it and edit:
+
+```bash
+cp factory/config/settings.local.toml.example factory/config/settings.local.toml
+```
+
 ```toml
 # factory/config/settings.local.toml  —  NEVER committed
 node_id = "desk"
@@ -93,9 +99,12 @@ node_id = "desk"
 [alerts]
 telegram_bot_token = "123456:AA..."
 telegram_chat_id   = "-100..."
+
+[sync]
+enabled = true
 ```
 
-`node_id` lives here precisely because it differs per machine and the file is already gitignored and per-machine.
+`node_id` lives here precisely because it differs per machine and the file is already gitignored and per-machine. **`node_id` must be a top-level key, above every `[section]`** — in TOML a key written after a `[header]` belongs to that table, so a misplaced `node_id` is silently ignored. It must also match `^[a-z0-9][a-z0-9-]*$` (lowercase letters, digits, hyphens) or startup fails with a clear error.
 
 ---
 
@@ -130,11 +139,16 @@ push_retries = 5               # bounded retry on a non-fast-forward push
 ### One-time setup, on each machine
 
 1. **Clone the repo and install** (see [Install](#install)). Each machine is a *full* factory — it needs the repo, an authenticated `claude` CLI, and market data. Market data ships committed (the OHLCV fixtures under `data/raw/`), so a fresh clone is self-sufficient.
-2. **Give the machine a unique `node_id`** in `factory/config/settings.local.toml`:
-   ```toml
-   node_id = "desk"     # must match ^[a-z0-9][a-z0-9-]*$  — lowercase, digits, hyphens
+2. **Give the machine a unique `node_id`.** Copy the committed template, then edit it:
+   ```bash
+   cp factory/config/settings.local.toml.example factory/config/settings.local.toml
    ```
-   A malformed or duplicated `node_id` defeats the no-collision guarantee. Pick a distinct short name per machine (`desk`, `laptop`, `vps1`).
+   ```toml
+   # in factory/config/settings.local.toml — node_id must be a TOP-LEVEL key,
+   # above every [section], and match ^[a-z0-9][a-z0-9-]*$
+   node_id = "desk"
+   ```
+   A malformed or duplicated `node_id` defeats the no-collision guarantee. Pick a distinct short name per machine (`desk`, `laptop`, `vps1`). The template is gitignored once copied, so editing it never dirties the working tree.
 3. **Enable sync** in `factory/config/settings.toml`:
    ```toml
    [sync]
