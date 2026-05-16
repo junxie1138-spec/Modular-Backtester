@@ -165,3 +165,4 @@ Volume-confirmed short-horizon momentum thrust, traded long/short with surge-and
 1778908973	Buy distance-from-MA z-score dips ranking in their own bottom percentile; ratcheting ATR rolling-high trailing stop
 1778909147	Buy the bar a deep drawdown fully heals into a new rolling high, size by healed depth
 1778909309	Long the upward release of a consecutive range-contraction coil whose streak length ranks in its own top percentile
+1778909400	Long when elevated realized volatility rolls over (negative vol acceleration) in an uptrend; fixed-bar exit
