@@ -83,3 +83,4 @@
 1778906705	SI epidemic up-volume contagion growth phase gates momentum longs in bull regime
 1778906907	Vol-of-vol calm-regime gates trend entries; refractory after spikes; fixed-bar exit; vol-targeted compression-depth sizing
 1778907195	Signed directional volatility flow acceleration gates momentum entries with 200-MA regime filter and breakeven-trail exit
+1778907314	Negative-return density shockwave dissipation triggers drawdown-recovery long entries
