@@ -200,3 +200,4 @@ Volume-confirmed short-horizon momentum thrust, traded long/short with surge-and
 1778913358	Long when consecutive-bars-above-EMA streak crosses its own rolling percentile threshold; profit-target or time-stop exit with refractory lockout.
 1778913454	Fade accumulated overnight down-gap clusters via a Schmitt-trigger gap-deficit state machine; two-bar-confirmed entry, signal-reversal exit.
 1778913533	Long breakout above a trailing close-price percentile level, confirmed by positive ROC acceleration, post-exit refractory lockout, breakeven-then-trail exit.
+1778913613	Long SPY when the rolling variance ratio of close-to-close returns signals a positive-autocorrelation regime above the 200-day MA.
