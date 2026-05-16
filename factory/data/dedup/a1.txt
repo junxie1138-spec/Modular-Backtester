@@ -133,3 +133,4 @@ Volume-confirmed short-horizon momentum thrust, traded long/short with surge-and
 1778904819	Range-weighted intrabar close-location: side that wins the wide-range shockwave bars is traded, conviction-scaled, fixed-bar exit.
 1778904903	Accumulate overnight gaps into a decaying tension reservoir; long when tension crosses its elastic limit above 200-MA.
 1778905065	Seasonal tide table: long when current trading-day-of-month sits in a high rolling-percentile tide band, 2-day hold, fixed ATR vol-stop
+1778905241	Predator-prey regime: compare rolling mean lengths of completed up vs down streaks, long the newborn up-streak when prey-dominant
