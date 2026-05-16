@@ -180,3 +180,4 @@ Volume-confirmed short-horizon momentum thrust, traded long/short with surge-and
 1778910791	Long the up-return release of a stalled, dispersion-compressed return convoy; strict fixed-bar exit
 1778910929	Turn-of-month calendar window entered only in low-ATR-percentile bull regime, capacity-limited entries, fixed ATR vol-stop
 1778911060	Range-band shockwave front speed: net midpoint displacement over total range churned picks long/short; fixed ATR vol-stop.
+1778911152	Compression-gated two-bar-confirmed positive ROC-acceleration entry; exit only when acceleration flips negative for two bars.
