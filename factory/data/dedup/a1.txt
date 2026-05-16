@@ -158,3 +158,4 @@ Volume-confirmed short-horizon momentum thrust, traded long/short with surge-and
 1778908060	Trade the month-to-month gradient of seasonal realized-volatility (calendar vol shockwave); rising-vol months short, calmer months long.
 1778908174	Spring-stiffness regime switch: corr(acceleration, -displacement) selects elastic mean-reversion vs inertial momentum; flip-only exit.
 1778908289	Long when underwater-duration percentile rank is extreme and price reclaims its short MA; ATR rolling-high trailing stop, refractory lock.
+1778908398	Buy volatility-percentile coils in bull regime, hysteresis-band exit when range re-expands
