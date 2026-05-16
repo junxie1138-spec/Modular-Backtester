@@ -207,3 +207,4 @@ Volume-confirmed short-horizon momentum thrust, traded long/short with surge-and
 1778914135	Long-only regime switch on the recency ordering of rolling range extremes (Aroon-style), profit-target or time-stop exit.
 1778914261	Trade gaps whose magnitude breaks out of its own rolling percentile band, confirmed by an intraday-hold close, SNR-filtered.
 1778914387	Staircase breakout: count closes beyond prior bar's full range; enter when streak exceeds rolling percentile, flip on opposite
+1778914517	Long when rolling Spearman rank-correlation of close vs time confirms a strong monotonic uptrend; ATR rolling-high trailing exit.
