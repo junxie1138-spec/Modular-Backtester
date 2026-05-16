@@ -65,3 +65,4 @@ Volume-confirmed short-horizon momentum thrust, traded long/short with surge-and
 1778891180	Buy the two-bar confirmed escape of distance-from-MA z-score out of a discount jam; exit at the mirror overbought z-band.
 1778891410	Forced SI-epidemic model on distance-from-MA breakouts; long on infected-fraction ignition crossing, profit-target/time-stop exit.
 1778891578	Drawdown-gated leaky bucket of overnight down-gaps; long on capacity overflow, size scaled by overflow magnitude
+1778891698	Enter long on a fresh up-gap only when the recent gap-sign balance is coherently upward; profit-target/time-stop exit
