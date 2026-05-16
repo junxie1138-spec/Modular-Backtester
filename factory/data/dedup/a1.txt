@@ -106,3 +106,4 @@ Volume-confirmed short-horizon momentum thrust, traded long/short with surge-and
 1778897026	Finite-capacity queue of down-return shocks; buy when the saturated buffer drains after overflow in a 200-MA uptrend
 1778897167	Gap follow-through regime decides whether to long up-gaps or fade down-gaps; conviction-scaled size, ATR rolling-high trailing stop
 1778897274	Trade gaps in the direction of the gap only when the gap day's intraday range stays compressed (accepted repricing)
+1778897359	Buy deep multi-week declines only when the sell-off shockwave decelerates (recent drop slower than prior drop)
