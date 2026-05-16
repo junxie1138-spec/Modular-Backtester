@@ -87,7 +87,7 @@ def test_promote_strategy_passes_when_all_tickers_clear_avg_threshold(tmp_path: 
     canonical = tmp_path / "cfg.yaml"
     canonical.write_text(_canonical_config("gen_x"), encoding="utf-8")
     output_runs = tmp_path / "output" / "runs"
-    # Avg sharpe = (0.9 + 0.8 + 0.7) / 3 = 0.8 > threshold 0.7.
+    # Avg sortino = (0.9 + 0.8 + 0.7) / 3 = 0.8 > threshold 0.7.
     _seed_promotion_bundle(output_runs, "gen_x_promo_AAPL_wfo", 0.9)
     _seed_promotion_bundle(output_runs, "gen_x_promo_QQQ_wfo", 0.8)
     _seed_promotion_bundle(output_runs, "gen_x_promo_DIA_wfo", 0.7)
