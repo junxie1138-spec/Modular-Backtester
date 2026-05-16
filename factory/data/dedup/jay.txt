@@ -37,3 +37,4 @@
 1778891208	ATR-compressed range broken by high-efficiency volume-surge bar at N-day high, sized by compression×vol intensity
 1778891483	Expanding oscillation regime gates dual consecutive-streak high-tide position plus momentum acceleration entry with ATR trailing stop
 1778891698	Buyer volume dominance crossover after drawdown signals prey-recovery long sized by dominance strength
+1778891854	Fade large-range candles against their direction with fixed 2-bar exit
