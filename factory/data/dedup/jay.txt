@@ -86,3 +86,4 @@
 1778907314	Negative-return density shockwave dissipation triggers drawdown-recovery long entries
 1778907635	Two-bar arm/fire hysteresis: signed volume z-score arms, directional efficiency fires, fixed ATR stop
 1778907936	SI epidemic curve phase (early/late) in ATR-infection rate gates momentum or reversion entries with G(t)-scaled sizing
+1778908105	Symmetric ATR-gated hysteresis deadband on rolling intrabar close-polarity drives long/short
