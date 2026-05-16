@@ -139,3 +139,4 @@ Volume-confirmed short-horizon momentum thrust, traded long/short with surge-and
 1778905697	Trade two-bar volatility breakouts measured against each weekday's own seasonal realized-range baseline (plastic-yield momentum).
 1778905837	Long volume-confirmed up-bars only while measured lag-1 return autocorrelation is positive; breakeven-then-ATR-trail exit
 1778905994	Long when the rolling percentile rank of the up-gap defense success rate is high, with two-bar confirmation
+1778906080	Long a volume-confirmed capitulation flush: bottom-percentile cumulative return plus top-percentile volume, refractory-locked, fixed ATR vol-stop.
