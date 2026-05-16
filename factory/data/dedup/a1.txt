@@ -89,3 +89,4 @@ Volume-confirmed short-horizon momentum thrust, traded long/short with surge-and
 1778894708	Buy selling exhaustion when intrabar range contracts while closes keep pinning near the low
 1778894825	Shockwave front speed: net displacement measured in ATRs-per-bar drives a long/short stop-and-reverse
 1778894974	Detect anomalous close-to-close return jumps, enter long only if price retains the new level for two bars (plastic deformation), ATR rolling-high trailing exit
+1778895073	Donchian channel breakout that fires only when ATR is actively expanding above its baseline; 200-MA regime gate, fixed ATR vol-stop
