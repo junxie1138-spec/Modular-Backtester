@@ -30,13 +30,13 @@ def _canonical_config(strategy_id: str) -> str:
     return yaml.safe_dump(cfg, sort_keys=False)
 
 
-def _cfg(min_avg_sharpe: float = 0.7, tickers: tuple[str, ...] = ("AAPL", "QQQ", "DIA")) -> PromotionCfg:
+def _cfg(min_avg_sortino: float = 0.7, tickers: tuple[str, ...] = ("AAPL", "QQQ", "DIA")) -> PromotionCfg:
     return PromotionCfg(
         enabled=True,
         tickers=tickers,
         data_source="yfinance",
-        min_avg_sharpe=min_avg_sharpe,
-        trigger_metric="wfo.oos_sharpe",
+        min_avg_sortino=min_avg_sortino,
+        trigger_metric="wfo.oos_sortino",
         trigger_threshold=1.0,
     )
 
@@ -66,14 +66,14 @@ def test_build_promotion_config_swaps_symbol_source_and_params(tmp_path: Path) -
     assert cfg["wfo"]["enabled"] is True
 
 
-def _seed_promotion_bundle(output_runs_dir: Path, run_name: str, oos_sharpe: float) -> None:
+def _seed_promotion_bundle(output_runs_dir: Path, run_name: str, oos_sortino: float) -> None:
     """Pre-create a bundle dir + summary.json so the parser can find it."""
     bundle = output_runs_dir / f"20260101_0900_{run_name}"
     bundle.mkdir(parents=True, exist_ok=True)
     (bundle / "summary.json").write_text(json.dumps({
         "oos_summary": {
-            "sharpe": oos_sharpe,
-            "sortino": oos_sharpe,
+            "sharpe": oos_sortino,
+            "sortino": oos_sortino,
             "total_return": 0.18,
             "max_drawdown": -0.07,
             "n_trades": 80,
@@ -98,7 +98,7 @@ def test_promote_strategy_passes_when_all_tickers_clear_avg_threshold(tmp_path: 
             strategy_id="gen_x",
             optimized_params={"size": 1.0, "fast": 20},
             canonical_config_path=canonical,
-            promotion_cfg=_cfg(min_avg_sharpe=0.7),
+            promotion_cfg=_cfg(min_avg_sortino=0.7),
             tmp_dir=tmp_path / "_tmp",
             output_runs_dir=output_runs,
             stage_timeout_sec=60,
@@ -106,9 +106,9 @@ def test_promote_strategy_passes_when_all_tickers_clear_avg_threshold(tmp_path: 
 
     assert result.ran is True
     assert result.passed is True
-    assert result.avg_sharpe == pytest.approx(0.8)
+    assert result.avg_sortino == pytest.approx(0.8)
     assert set(result.per_ticker.keys()) == {"AAPL", "QQQ", "DIA"}
-    assert result.per_ticker["AAPL"]["oos_sharpe"] == pytest.approx(0.9)
+    assert result.per_ticker["AAPL"]["oos_sortino"] == pytest.approx(0.9)
     assert result.error is None
 
 
@@ -127,7 +127,7 @@ def test_promote_strategy_fails_when_avg_below_threshold(tmp_path: Path) -> None
             strategy_id="gen_x",
             optimized_params={"size": 1.0},
             canonical_config_path=canonical,
-            promotion_cfg=_cfg(min_avg_sharpe=0.7),
+            promotion_cfg=_cfg(min_avg_sortino=0.7),
             tmp_dir=tmp_path / "_tmp",
             output_runs_dir=output_runs,
             stage_timeout_sec=60,
@@ -135,7 +135,7 @@ def test_promote_strategy_fails_when_avg_below_threshold(tmp_path: Path) -> None
 
     assert result.ran is True
     assert result.passed is False
-    assert result.avg_sharpe == pytest.approx(0.4)
+    assert result.avg_sortino == pytest.approx(0.4)
     assert result.error is None  # No subprocess errors; just below threshold
 
 
@@ -154,7 +154,7 @@ def test_promote_strategy_continues_on_per_ticker_failure(tmp_path: Path) -> Non
             strategy_id="gen_x",
             optimized_params={"size": 1.0},
             canonical_config_path=canonical,
-            promotion_cfg=_cfg(min_avg_sharpe=0.5),
+            promotion_cfg=_cfg(min_avg_sortino=0.5),
             tmp_dir=tmp_path / "_tmp",
             output_runs_dir=output_runs,
             stage_timeout_sec=60,
@@ -164,7 +164,7 @@ def test_promote_strategy_continues_on_per_ticker_failure(tmp_path: Path) -> Non
     # Only 2 of 3 tickers completed; avg is over the 2, but passed=False because
     # one ticker is missing entirely.
     assert set(result.per_ticker.keys()) == {"AAPL", "DIA"}
-    assert result.avg_sharpe == pytest.approx(0.9)
+    assert result.avg_sortino == pytest.approx(0.9)
     assert result.passed is False
     assert result.error is not None
     assert "QQQ" in result.error
@@ -190,5 +190,5 @@ def test_promote_strategy_fails_when_subprocess_nonzero(tmp_path: Path) -> None:
     assert result.ran is True
     assert result.passed is False
     assert result.per_ticker == {}
-    assert result.avg_sharpe is None
+    assert result.avg_sortino is None
     assert "AAPL" in result.error and "exit=1" in result.error

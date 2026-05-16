@@ -58,7 +58,7 @@
         <td>{{ "%.2f%%"|format(r.wfo.oos_total_return * 100) if r.wfo else '' }}</td>
         <td>{{ "%.2f%%"|format(r.wfo.oos_max_drawdown * 100) if r.wfo else '' }}</td>
         <td>{{ '*' if r.is_good else '' }}</td>
-        <td>{{ "%.3f"|format(r.promotion.avg_sharpe) if r.promotion and r.promotion.avg_sharpe is not none else '' }}</td>
+        <td>{{ "%.3f"|format(r.promotion.avg_sortino) if r.promotion and r.promotion.avg_sortino is not none else '' }}</td>
         <td>{{ '*' if r.is_promoted else '' }}</td>
         <td>{{ '*' if r.alerted else '' }}</td>
       </tr>

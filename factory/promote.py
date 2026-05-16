@@ -3,8 +3,8 @@
 Triggered after WFO succeeds and clears settings.promotion.trigger_threshold.
 For each held-out ticker, build a promotion-specific YAML (canonical config
 cloned with data.symbols + data.source + strategy_params swapped, run_name
-suffixed) and run a full WFO via subprocess. Aggregate OOS Sharpe across the
-panel; gate against min_avg_sharpe.
+suffixed) and run a full WFO via subprocess. Aggregate OOS Sortino across the
+panel; gate against min_avg_sortino.
 
 Promotion failures do NOT fail the cycle (the cycle's status stays
 "complete"). The promotion result is informational on the dashboard; the
@@ -38,8 +38,8 @@ class PromotionResult:
     ran: bool
     tickers: tuple[str, ...]
     per_ticker: dict[str, dict[str, Any]]
-    avg_sharpe: Optional[float]
-    min_avg_sharpe_threshold: float
+    avg_sortino: Optional[float]
+    min_avg_sortino_threshold: float
     passed: bool
     error: Optional[str] = None
 
@@ -132,8 +132,8 @@ def promote_strategy(
     """Run the strategy on each held-out ticker with the SPY-optimized params.
 
     Continues even if individual tickers fail (captures partial per_ticker
-    data). passed=True only if ALL tickers succeed AND avg oos_sharpe clears
-    promotion_cfg.min_avg_sharpe.
+    data). passed=True only if ALL tickers succeed AND avg oos_sortino clears
+    promotion_cfg.min_avg_sortino.
     """
     per_ticker: dict[str, dict[str, Any]] = {}
     errors: list[str] = []
@@ -156,16 +156,16 @@ def promote_strategy(
             )
             per_ticker[ticker] = parsed
             log.info(
-                "promotion %s ticker=%s oos_sharpe=%.3f",
-                strategy_id, ticker, parsed.get("oos_sharpe", 0.0),
+                "promotion %s ticker=%s oos_sortino=%.3f",
+                strategy_id, ticker, parsed.get("oos_sortino", 0.0),
             )
         except StageError as exc:
             errors.append(f"{ticker}: {exc}")
             log.warning("promotion %s ticker=%s failed: %s", strategy_id, ticker, exc)
 
     if per_ticker:
-        sharpes = [float(p["oos_sharpe"]) for p in per_ticker.values()]
-        avg = sum(sharpes) / len(sharpes)
+        sortinos = [float(p["oos_sortino"]) for p in per_ticker.values()]
+        avg = sum(sortinos) / len(sortinos)
     else:
         avg = None
 
@@ -173,15 +173,15 @@ def promote_strategy(
     passed = (
         all_tickers_completed
         and avg is not None
-        and avg >= promotion_cfg.min_avg_sharpe
+        and avg >= promotion_cfg.min_avg_sortino
     )
     error = "; ".join(errors) if errors else None
     return PromotionResult(
         ran=True,
         tickers=tuple(promotion_cfg.tickers),
         per_ticker=per_ticker,
-        avg_sharpe=avg,
-        min_avg_sharpe_threshold=promotion_cfg.min_avg_sharpe,
+        avg_sortino=avg,
+        min_avg_sortino_threshold=promotion_cfg.min_avg_sortino,
         passed=passed,
         error=error,
     )
