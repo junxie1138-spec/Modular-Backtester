@@ -66,3 +66,4 @@
 1778898117	Drawdown-depth percentile arm-fire hysteresis gates breakout longs and shorts with fixed ATR stop
 1778898394	Annual Fourier tidal phase at compressed ATR trough triggers two-bar confirmed longs with fixed stop
 1778898736	Calendar-day batting average hysteresis gates seasonal long/short with fixed-bar exit
+1778898846	Gap-queue saturation capacity overflow triggers long entry on release-valve negative gap in bull regime
