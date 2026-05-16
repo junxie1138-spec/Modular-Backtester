@@ -103,3 +103,4 @@ Volume-confirmed short-horizon momentum thrust, traded long/short with surge-and
 1778896562	Long when the percentile-rank velocity of distance-from-MA z-score (shockwave front speed) enters its own high percentile band.
 1778896782	Trade the SI epidemic-curve inflection: enter on the sign-flip of logistic-squashed volatility velocity, regime-gated, fixed-bar exit.
 1778896899	Long on ROC-acceleration zero-cross, volatility-targeted size scaled by acceleration strength, breakeven-then-ATR-trail exit
+1778897026	Finite-capacity queue of down-return shocks; buy when the saturated buffer drains after overflow in a 200-MA uptrend
