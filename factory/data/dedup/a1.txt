@@ -143,3 +143,4 @@ Volume-confirmed short-horizon momentum thrust, traded long/short with surge-and
 1778906217	Sign of lag-1 return autocorrelation decides whether to ride or fade the distance-from-MA z-score; flip-only exit
 1778906331	Long when up-gap clustering frequency percentile-ranks high under Schmitt-trigger hysteresis; ATR rolling-high trailing stop exit.
 1778906489	Trade the direction of permanent set when a return path retains a high fraction of its peak excursion (plastic hysteresis).
+1778906576	Long volume-confirmed up-bars erupting from range-compressed coil; entry-strength-scaled size, refractory lock, volume-down-bar flip exit.
