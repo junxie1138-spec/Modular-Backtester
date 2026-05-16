@@ -35,3 +35,4 @@
 1778890877	K-bar-lagged range-compression percentile triggers price-rank momentum long with breakeven-trail exit
 1778891034	Rolling cumulative gap-pressure percentile rank signals plastic-deformation breakout entry with reversal exit
 1778891208	ATR-compressed range broken by high-efficiency volume-surge bar at N-day high, sized by compression×vol intensity
+1778891483	Expanding oscillation regime gates dual consecutive-streak high-tide position plus momentum acceleration entry with ATR trailing stop
