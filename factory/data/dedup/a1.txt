@@ -162,3 +162,4 @@ Volume-confirmed short-horizon momentum thrust, traded long/short with surge-and
 1778908552	Long while recent worst-drawdown depth ranks in a low percentile of its own history (elastic momentum regime)
 1778908744	Long deep drawdowns (rolling-quantile threshold) once the new-low shockwave front stops propagating; vol-targeted size, fixed ATR stop.
 1778908857	Range-compression node trade: drawdown-depth percentile picks direction, fixed-bar hold; deep dip longs, shallow crest shorts
+1778908973	Buy distance-from-MA z-score dips ranking in their own bottom percentile; ratcheting ATR rolling-high trailing stop
