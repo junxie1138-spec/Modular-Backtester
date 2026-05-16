@@ -198,3 +198,4 @@ Volume-confirmed short-horizon momentum thrust, traded long/short with surge-and
 1778913094	Long when return-dispersion coil compresses AND close-to-close return efficiency ratio confirms coherent upward drift; fixed ATR vol-stop.
 1778913245	Trade the expansion bar that breaks a percentile-compressed high-low channel; candle direction picks side, fixed ATR vol-stop.
 1778913358	Long when consecutive-bars-above-EMA streak crosses its own rolling percentile threshold; profit-target or time-stop exit with refractory lockout.
+1778913454	Fade accumulated overnight down-gap clusters via a Schmitt-trigger gap-deficit state machine; two-bar-confirmed entry, signal-reversal exit.
