@@ -168,3 +168,4 @@ Volume-confirmed short-horizon momentum thrust, traded long/short with surge-and
 1778909400	Long when elevated realized volatility rolls over (negative vol acceleration) in an uptrend; fixed-bar exit
 1778909524	Leaky range-pressure buffer with hard capacity overflow times drawdown-recovery long/short entries, two-bar confirmed, flip-only exit.
 1778909591	Long ATR-stretched dips below MA only while short/long realized-vol ratio confirms a cooling regime; ATR rolling-high trailing stop.
+1778909696	Sign of close-within-range autocorrelation selects ride-vs-fade of intraday close strength; 200MA-gated, fixed-bar exit
