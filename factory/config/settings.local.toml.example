@@ -1,0 +1,49 @@
+# ===========================================================================
+# settings.local.toml.example  --  TEMPLATE for per-machine factory settings
+# ===========================================================================
+# This .example file IS committed. The real file -- settings.local.toml -- is
+# gitignored (see factory/.gitignore), so machine-specific values and secrets
+# never reach version control.
+#
+# SETUP on each machine:
+#   1. Copy this file:
+#        cp factory/config/settings.local.toml.example factory/config/settings.local.toml
+#   2. Edit settings.local.toml and fill in the values below.
+#
+# settings.local.toml is merged OVER settings.toml at load time, section by
+# section -- you only list the keys you want to override here.
+#
+# IMPORTANT: keep per-machine values (node_id, secrets, [sync] enabled) ONLY in
+# settings.local.toml. Editing the tracked settings.toml dirties the git
+# working tree, which makes the distributed sync skip every cycle.
+# ===========================================================================
+
+# --- node_id ---------------------------------------------------------------
+# This machine's identity in the distributed pool. It is used in strategy ids
+# and shard filenames, so it MUST be unique across every machine in the pool.
+#
+#   * It MUST be a TOP-LEVEL key -- it has to appear ABOVE every [section]
+#     below. In TOML, any key written after a [header] belongs to that table,
+#     so a node_id placed lower down is silently ignored.
+#   * Allowed characters: lowercase letters, digits, and hyphens; no leading
+#     hyphen. Regex: ^[a-z0-9][a-z0-9-]*$
+#       valid:   "desk"   "laptop2"   "vps-1"
+#       invalid: "Desk"   "vps_1"   "my machine"   "-vps"
+#     An invalid value fails at startup with a clear error message.
+#
+# Replace REPLACE_ME with this machine's name (leaving it as-is fails on
+# purpose, so a machine is never started without a real, unique node_id).
+node_id = "REPLACE_ME"
+
+# --- alerts (optional) ------------------------------------------------------
+# Telegram credentials for hit alerts. Leave both strings empty to disable.
+[alerts]
+telegram_bot_token = ""        # e.g. "123456789:AAH...."
+telegram_chat_id   = ""        # e.g. "-1001234567890"
+
+# --- sync (distributed mode) ------------------------------------------------
+# Set enabled = true to join the shared factory-pool branch. branch, remote,
+# and push_retries default from settings.toml -- override them here only if
+# this machine needs different values.
+[sync]
+enabled = false                # set to true to join the distributed pool
