@@ -178,3 +178,4 @@ Volume-confirmed short-horizon momentum thrust, traded long/short with surge-and
 1778910551	Breakout in cumulative-return space: enter when N-day summed return makes a new rolling high, ATR trailing-stop exit
 1778910662	Trade single-bar volume z-score surges that confirm an ATR-scaled price thrust, regime-gated by 200MA, ATR rolling-high trailing stop
 1778910791	Long the up-return release of a stalled, dispersion-compressed return convoy; strict fixed-bar exit
+1778910929	Turn-of-month calendar window entered only in low-ATR-percentile bull regime, capacity-limited entries, fixed ATR vol-stop
