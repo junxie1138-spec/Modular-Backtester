@@ -173,3 +173,4 @@ Volume-confirmed short-horizon momentum thrust, traded long/short with surge-and
 1778909895	Long when rolling lag-1 autocorrelation of ROC-acceleration ranks in its own top percentile and price accelerates up; profit-target or time-stop exit.
 1778909991	Long when lag-1 autocorrelation of the gap series percentile-ranks high (Schmitt-trigger) and recent gaps are up; signal-reversal exit.
 1778910138	Buy the pre-inflection take-off of an SI infection curve built from the rolling fraction of up-closes
+1778910278	Overnight gap triggers entry; drawdown depth flips between fading the gap (taut spring) and following it (slack spring).
