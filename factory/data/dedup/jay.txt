@@ -98,3 +98,4 @@
 1778910333	Consecutive streak of returns beating DOW seasonal baseline gates long/short with signal-reversal exit
 1778910538	High-percentile downward gap with same-bar intraday reversal triggers long entry, ATR trailing stop exit
 1778910730	Downward-gap queue overflow plus MA z-score oversold gate fires 1-2 day mean-reversion long in bull regime
+1778910903	Symmetric VRPS score: elastic-compressed range plus up-volume dominance at range-top signals plastic escape long
