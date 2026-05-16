@@ -71,3 +71,4 @@
 1778903679	Elastic intraday recovery percentile AND momentum percentile gate longs with fixed ATR stop
 1778903877	Gap-pressure acceleration inflection signals predator-exhaustion long entries with breakeven-trail exit
 1778904120	Elastic coil streak AND plastic breakout dual gate with ATR trailing stop
+1778904328	Harmonic volatility node across three ATR harmonics with two-bar bullish confirmation
