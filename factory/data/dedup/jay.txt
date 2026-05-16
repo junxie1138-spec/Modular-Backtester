@@ -88,3 +88,4 @@
 1778907936	SI epidemic curve phase (early/late) in ATR-infection rate gates momentum or reversion entries with G(t)-scaled sizing
 1778908105	Symmetric ATR-gated hysteresis deadband on rolling intrabar close-polarity drives long/short
 1778908314	Smoothed drawdown-convexity inflection in stressed regime gates longs with signal-reversal exit
+1778908565	Month-end sell-shockwave dissipation triggers volume-confirmed bullish resumption entry
