@@ -122,3 +122,4 @@
 1778916204	N-day breakout confirmed by range-expansion shockwave initiates 3-4 week trend with ATR trailing stop
 1778916390	Dual-percentile spring: compressed range plus close at range floor triggers fixed-bar long
 1778916638	Normalized range second-derivative acceleration burst with percentile-ranked position sizing and fixed-bar exit
+1778916834	Seller gap-tide reversal: net-negative cumulative gap pressure flips on breakout gap-up, ATR trailing stop
