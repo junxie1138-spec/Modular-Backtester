@@ -115,3 +115,4 @@ Volume-confirmed short-horizon momentum thrust, traded long/short with surge-and
 1778898224	Count consecutive below-median-range bars; on the expansion bar that ends the quiet streak, trade ROC-acceleration direction.
 1778898344	Trade the sign duty-cycle of distance-from-MA z-score; long/short on trend-strength threshold cross, conviction-scaled size, profit-target/time-stop exit.
 1778898435	Low-vol anomaly: long when realized-volatility percentile rank stays in its bottom band two bars; vol-targeted size, fixed ATR vol-stop.
+1778898558	Overnight-vs-intraday volatility partition decides whether to follow or fade the latest gap; fixed ATR vol-stop.
