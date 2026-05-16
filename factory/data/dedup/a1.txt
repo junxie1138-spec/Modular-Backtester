@@ -109,3 +109,4 @@ Volume-confirmed short-horizon momentum thrust, traded long/short with surge-and
 1778897359	Buy deep multi-week declines only when the sell-off shockwave decelerates (recent drop slower than prior drop)
 1778897459	Long when SNR-filtered ROC acceleration shows upward convexity in a 200-MA uptrend; fixed-bar exit
 1778897637	Buy failed downside breakouts: bar undercuts the N-day low but closes back in its upper range
+1778897807	Long when close sits low in an asymmetric upside/downside semi-deviation volatility corridor during downside-vol dominance; mirror-position exit.
