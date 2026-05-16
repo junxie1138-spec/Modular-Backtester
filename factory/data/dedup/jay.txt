@@ -61,3 +61,4 @@
 1778896876	ATR velocity awakening AND bullish-bar persistence dual gate; breakeven-trail exit with vol-spike refractory
 1778897047	Z-score velocity recovery filtered by SNR enters pullback longs with fixed-bar exit
 1778897244	Runs-ratio elastic regime gate triggers reversion longs on negative cumulative return windows
+1778897392	Drawdown-depth rolling percentile rank triggers vol-targeted mean-reversion long with fixed 2-bar exit
