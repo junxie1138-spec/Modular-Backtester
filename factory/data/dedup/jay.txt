@@ -111,3 +111,4 @@
 1778913257	Hysteresis-band exit on rolling quantile of cumulative gap pressure in 200-MA bull regime
 1778913506	Down-gap sell-queue overflow at rolling 10th-percentile in bull regime triggers fixed-bar long
 1778913698	Coherent-gap SNR percentile gate with trend-aligned momentum entry and ATR trailing stop
+1778913864	Directional body-anisotropy plastic deformation confirmed by ATR-normalized gap, ATR trailing stop exit
