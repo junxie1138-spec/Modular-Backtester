@@ -121,3 +121,4 @@
 1778915902	Gap-down long when predator down-gap density peaks then retreats while ACF signals mean-reversion
 1778916204	N-day breakout confirmed by range-expansion shockwave initiates 3-4 week trend with ATR trailing stop
 1778916390	Dual-percentile spring: compressed range plus close at range floor triggers fixed-bar long
+1778916638	Normalized range second-derivative acceleration burst with percentile-ranked position sizing and fixed-bar exit
