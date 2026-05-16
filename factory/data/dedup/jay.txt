@@ -115,3 +115,4 @@
 1778914082	Gap-volatility compression coil: quiet gap period snaps open on large gap-up with two-bar confirm
 1778914345	Multi-horizon return-rank epidemic clearing triggers vol-targeted longs with breakeven-trail exit
 1778914545	Gap-direction entropy depletion in ATR-compressed range fires hysteresis-controlled long entries
+1778914774	Hysteresis-armed drawdown-depth recovery gated by efficiency-ratio trend strength with two-bar confirm
