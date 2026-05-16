@@ -74,3 +74,4 @@
 1778904328	Harmonic volatility node across three ATR harmonics with two-bar bullish confirmation
 1778904685	Gap epidemic growth phase: directional infection pressure percentile drives long/short entries with breakeven-trail exit
 1778904977	Predation-ratio percentile gates mean-reversion longs/shorts with vol-targeted sizing and breakeven-trail exit
+1778905180	Bivariate day-of-week × week-of-month seasonal ROC-acceleration filter with elastic-springback confirmation and breakeven-trail exit
