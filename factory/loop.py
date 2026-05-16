@@ -54,6 +54,20 @@ def configure_logging(log_path: Path) -> None:
     root.addHandler(stream_h)
 
 
+def _model_from_flags(claude_flags: tuple[str, ...]) -> str:
+    """Extract the --model value from claude_flags for display.
+
+    settings.toml passes no --model, so the factory uses the Claude Code
+    default (Opus) unless an override is set in settings.local.toml.
+    """
+    for i, flag in enumerate(claude_flags):
+        if flag == "--model" and i + 1 < len(claude_flags):
+            return claude_flags[i + 1]
+        if flag.startswith("--model="):
+            return flag.split("=", 1)[1]
+    return "(Claude Code default)"
+
+
 def _install_signal_handlers(flag: _ShutdownFlag) -> None:
     def _handler(signum, frame):  # noqa: ARG001
         log.info("received signal %s; requesting graceful shutdown", signum)
@@ -78,6 +92,13 @@ def run_loop(
     flag = shutdown_flag or _ShutdownFlag()
     max_cycles = max_cycles_override if max_cycles_override is not None else settings.loop.max_cycles
     sleep_sec = settings.loop.inter_cycle_sleep_sec
+
+    mode = "distributed" if settings.sync.enabled else "standalone"
+    model = _model_from_flags(settings.generation.claude_flags)
+    log.info(
+        "factory loop starting: node=%s mode=%s model=%s",
+        settings.node_id, mode, model,
+    )
 
     try:
         bootstrap(settings)

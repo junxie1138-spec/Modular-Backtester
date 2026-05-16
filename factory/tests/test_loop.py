@@ -5,8 +5,22 @@ from unittest import mock
 
 import pytest
 
-from factory.loop import configure_logging, run_loop
+from factory.loop import _model_from_flags, configure_logging, run_loop
 from factory.settings_loader import load_settings
+
+
+def test_model_from_flags_extracts_separate_arg() -> None:
+    flags = ("-p", "--model", "sonnet", "--allowedTools", "Read")
+    assert _model_from_flags(flags) == "sonnet"
+
+
+def test_model_from_flags_extracts_equals_form() -> None:
+    assert _model_from_flags(("-p", "--model=haiku")) == "haiku"
+
+
+def test_model_from_flags_defaults_when_absent() -> None:
+    flags = ("-p", "--output-format", "json", "--allowedTools", "Read")
+    assert _model_from_flags(flags) == "(Claude Code default)"
 
 
 def test_configure_logging_creates_rotating_handler(tmp_path: Path) -> None:
