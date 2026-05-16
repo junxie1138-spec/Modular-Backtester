@@ -45,3 +45,4 @@
 1778892993	ATR-compression ratio AND rolling close-position buyer dominance gate long entries with trailing stop
 1778893403	Z-score oversold gated by return-skewness recovery from predator-dominant left-tail regime
 1778893675	Long when same weekday logs N consecutive positive closes; per-weekday refractory blocks re-entry after exit
+1778893907	Dual rolling-rank of signed efficiency-ratio and momentum confirms shockwave-release trend entry
