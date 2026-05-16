@@ -100,3 +100,4 @@
 1778910730	Downward-gap queue overflow plus MA z-score oversold gate fires 1-2 day mean-reversion long in bull regime
 1778910903	Symmetric VRPS score: elastic-compressed range plus up-volume dominance at range-top signals plastic escape long
 1778911082	Rolling return-ACF queue-overflow: capacity exhaustion triggers contrarian entries with two-bar confirmation, fixed-bar exit
+1778911288	Plastic coil: compressed-range bullish-close streak triggers two-bar confirmed long with fixed ATR stop
