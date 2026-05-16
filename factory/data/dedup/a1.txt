@@ -215,3 +215,4 @@ Volume-confirmed short-horizon momentum thrust, traded long/short with surge-and
 1778915059	Long when a drained volatility-queue (low rolling-range occupancy vs capacity) coincides with ROC acceleration crossing positive; fixed-bar exit.
 1778915167	Elastic restoring trade: enter when drawdown depth from a rolling peak AND positive ROC acceleration both agree; profit-target/time-stop exit.
 1778915298	Long the steep middle of an SI-style adoption curve: peak force-of-infection on close's percentile rank, rising.
+1778915412	Long when distance-from-MA z-score is stretched AND trend adoption fraction is still spreading below saturation; fixed-bar exit
