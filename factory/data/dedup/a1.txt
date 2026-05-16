@@ -66,3 +66,4 @@ Volume-confirmed short-horizon momentum thrust, traded long/short with surge-and
 1778891410	Forced SI-epidemic model on distance-from-MA breakouts; long on infected-fraction ignition crossing, profit-target/time-stop exit.
 1778891578	Drawdown-gated leaky bucket of overnight down-gaps; long on capacity overflow, size scaled by overflow magnitude
 1778891698	Enter long on a fresh up-gap only when the recent gap-sign balance is coherently upward; profit-target/time-stop exit
+1778891772	Long when range-path efficiency (net move over cumulative high-low range) crosses high, signal-scaled size, profit-target/time-stop exit
