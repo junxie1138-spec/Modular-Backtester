@@ -91,3 +91,4 @@ Volume-confirmed short-horizon momentum thrust, traded long/short with surge-and
 1778894974	Detect anomalous close-to-close return jumps, enter long only if price retains the new level for two bars (plastic deformation), ATR rolling-high trailing exit
 1778895073	Donchian channel breakout that fires only when ATR is actively expanding above its baseline; 200-MA regime gate, fixed ATR vol-stop
 1778895203	Cumulative overnight-gap momentum reservoir, percentile-ranked; long while it stays in its high band, hysteresis exit.
+1778895314	Long when an overnight up-gap breaches the high percentile of its own weekday's trailing gap climatology; fixed-bar exit
