@@ -188,3 +188,4 @@ Volume-confirmed short-horizon momentum thrust, traded long/short with surge-and
 1778911807	Trade momentum continuation when a same-sign return streak exceeds its own rolling percentile yield point; vol-targeted, flip-exit
 1778911920	Long a rising price channel when higher-highs AND higher-lows both dominate, Parkinson-vol-targeted size, hysteresis flip exit.
 1778912052	Long when the product of envelope-midpoint ascent rate and close's position inside the high-low envelope ranks in its own top percentile.
+1778912231	Predator-prey cycle of rolling up/down gap counts; buy percentile-rank recovery from trough, breakeven-then-ATR-trail exit
