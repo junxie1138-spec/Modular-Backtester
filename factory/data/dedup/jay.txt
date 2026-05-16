@@ -59,3 +59,4 @@
 1778896500	Fractal range ratio hysteresis arm-fire gates momentum burst with expansion-scaled sizing
 1778896644	Return-range coil under negative momentum signals prey-exhaustion burst, fixed-bar exit
 1778896876	ATR velocity awakening AND bullish-bar persistence dual gate; breakeven-trail exit with vol-spike refractory
+1778897047	Z-score velocity recovery filtered by SNR enters pullback longs with fixed-bar exit
