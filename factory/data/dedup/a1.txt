@@ -56,3 +56,4 @@ Volume-confirmed short-horizon momentum thrust, traded long/short with surge-and
 1778889687	Long when the drawdown series itself prints a fresh N-bar high while still negative, inside a recoverable-depth capacity band, size scaled by escaped depth
 1778889826	Long when upside semivariance dominates downside semivariance (laminar trend); rolling-high ATR trailing stop exit.
 1778890093	Rank trading-day-of-month by trailing forward-return seasonality; enter long top-ranked calendar windows in 200-MA bull regime, breakeven-trail exit.
+1778890227	Long/short when momentum across four horizons all rank-percentile high (or low) together for two confirming bars
