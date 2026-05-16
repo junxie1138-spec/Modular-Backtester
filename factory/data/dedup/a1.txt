@@ -147,3 +147,4 @@ Volume-confirmed short-horizon momentum thrust, traded long/short with surge-and
 1778906698	Long when path-efficiency ratio (traveling-vs-standing-wave) percentile-ranks high in an uptrend; fixed ATR vol-stop.
 1778906820	Bull-regime gate plus drawdown-velocity reversal: buy when a deep drawdown starts recovering for two bars, fixed-bar exit
 1778906906	Long only when channel relative-position is in the upper range AND smoothed ROC acceleration is positive; exit when either primitive flips.
+1778907012	Enter when smoothed-ROC trend sign and its own acceleration sign are concordant; fixed-bar exit with post-trade refractory lockout
