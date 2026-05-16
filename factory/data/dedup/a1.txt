@@ -75,3 +75,4 @@ Volume-confirmed short-horizon momentum thrust, traded long/short with surge-and
 1778892612	Long healthy pullbacks when the volatility infection burns out: SI-style decay of excess-ATR below half its drawdown peak.
 1778892784	Buy convalescence: enter when drawdown-level percentile AND infected-fraction percentile both agree after a prior epidemic arm
 1778892943	Recent down-gap disturbance primes a long that fires when price ROC-acceleration releases upward; 200-MA gated, signal-reversal exit
+1778893147	Greenshields kinematic-wave speed flips sign as a drawdown jam clears the half-density point; trade the reversion.
