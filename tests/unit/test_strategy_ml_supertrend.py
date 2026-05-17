@@ -146,3 +146,51 @@ def test_wilder_rsi_all_gains_is_100():
     close = pd.Series(np.linspace(100.0, 160.0, 40))
     rsi = _wilder_rsi(close, length=14)
     assert rsi.dropna().iloc[-1] == pytest.approx(100.0)
+
+
+_IND_COLUMNS = {
+    "atr", "st_trend", "rsi", "roll_high", "roll_low",
+    "is_new_high", "is_new_low", "rsi_cold", "rsi_hot",
+    "vol_surge", "sig_high", "sig_low",
+}
+
+
+def test_indicators_produces_all_columns():
+    from strategies.ml_supertrend import MLSupertrendStrategy, MLSupertrendParams
+
+    data = _ohlcv(n=120, seed=5)
+    ind = MLSupertrendStrategy().indicators(data, MLSupertrendParams())
+    assert _IND_COLUMNS.issubset(set(ind.columns))
+    assert len(ind) == len(data)
+    assert set(np.unique(ind["st_trend"].to_numpy())).issubset({-1, 1})
+    assert ind["atr"].dropna().gt(0).all()
+    for col in ("is_new_high", "is_new_low", "rsi_cold", "rsi_hot",
+                "vol_surge", "sig_high", "sig_low"):
+        assert ind[col].dtype == bool
+
+
+def test_indicators_rsi_filters_off_when_disabled():
+    from strategies.ml_supertrend import MLSupertrendStrategy, MLSupertrendParams
+
+    data = _ohlcv(n=120, seed=6)
+    ind = MLSupertrendStrategy().indicators(
+        data, MLSupertrendParams(enable_rsi=False)
+    )
+    # With RSI disabled both filter columns are constant True.
+    assert ind["rsi_cold"].all()
+    assert ind["rsi_hot"].all()
+
+
+def test_indicators_major_levels_filter_is_subset():
+    from strategies.ml_supertrend import MLSupertrendStrategy, MLSupertrendParams
+
+    data = _ohlcv(n=200, seed=7)
+    strat = MLSupertrendStrategy()
+    base = strat.indicators(data, MLSupertrendParams(enable_major_levels_only=False))
+    major = strat.indicators(data, MLSupertrendParams(enable_major_levels_only=True))
+    # The key-levels filter can only remove fresh extremes, never add them.
+    assert (major["sig_high"] <= base["sig_high"]).all()
+    assert (major["sig_low"] <= base["sig_low"]).all()
+    # When the filter is off, sig_* equals is_new_* exactly.
+    assert base["sig_high"].equals(base["is_new_high"])
+    assert base["sig_low"].equals(base["is_new_low"])

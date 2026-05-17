@@ -175,7 +175,67 @@ class MLSupertrendStrategy(BaseStrategy[MLSupertrendParams]):
         ) + 1
 
     def indicators(self, data: pd.DataFrame, params: MLSupertrendParams) -> pd.DataFrame:
-        return pd.DataFrame(index=data.index)
+        out = pd.DataFrame(index=data.index)
+        close = data["close"]
+
+        src = _resolve_source(data, params.source_type)
+        atr = _smoothed_tr(data, params.atr_period, params.use_atr)
+        out["atr"] = atr
+        out["st_trend"] = _supertrend_trend(
+            src.to_numpy(), atr.to_numpy(), close.to_numpy(), params.multiplier
+        )
+        out["rsi"] = _wilder_rsi(close, params.rsi_len)
+
+        # Rolling extremes over the sensitivity window.
+        roll_high = data["high"].rolling(params.sensitivity).max()
+        roll_low = data["low"].rolling(params.sensitivity).min()
+        out["roll_high"] = roll_high
+        out["roll_low"] = roll_low
+
+        # Fresh-pivot detection: the rolling extreme changed vs `lookback` bars
+        # ago AND close pushed past that prior extreme.
+        lookback = max(1, int(round(params.sensitivity / 10.0)))
+        prev_high = roll_high.shift(lookback)
+        prev_low = roll_low.shift(lookback)
+        out["is_new_high"] = (
+            roll_high.notna() & prev_high.notna()
+            & (roll_high != prev_high) & (close > prev_high)
+        )
+        out["is_new_low"] = (
+            roll_low.notna() & prev_low.notna()
+            & (roll_low != prev_low) & (close < prev_low)
+        )
+
+        # RSI hot/cold memory: was RSI past the threshold within the lookback?
+        if params.enable_rsi:
+            cold = out["rsi"] < params.rsi_bot
+            hot = out["rsi"] > params.rsi_top
+            out["rsi_cold"] = (
+                cold.rolling(params.rsi_lookback_bot, min_periods=1).max()
+                .fillna(0.0).astype(bool)
+            )
+            out["rsi_hot"] = (
+                hot.rolling(params.rsi_lookback_top, min_periods=1).max()
+                .fillna(0.0).astype(bool)
+            )
+        else:
+            out["rsi_cold"] = pd.Series(True, index=data.index)
+            out["rsi_hot"] = pd.Series(True, index=data.index)
+
+        # Volume surge.
+        vol_avg = data["volume"].rolling(params.vol_lookback).mean()
+        out["vol_surge"] = (data["volume"] > params.vol_multiplier * vol_avg).fillna(False)
+
+        # Key-levels filter: only the biggest structural pivots survive.
+        if params.enable_major_levels_only:
+            depth = atr * params.major_level_threshold
+            out["sig_high"] = out["is_new_high"] & ((data["high"] - roll_low) > depth)
+            out["sig_low"] = out["is_new_low"] & ((roll_high - data["low"]) > depth)
+        else:
+            out["sig_high"] = out["is_new_high"]
+            out["sig_low"] = out["is_new_low"]
+
+        return out
 
     def generate_signals(
         self,
