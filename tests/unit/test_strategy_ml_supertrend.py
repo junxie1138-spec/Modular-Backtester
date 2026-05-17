@@ -91,3 +91,36 @@ def test_smoothed_tr_rma_vs_ema():
     assert not np.allclose(rma.to_numpy(), ema.to_numpy())
     # All positive.
     assert (rma > 0).all() and (ema > 0).all()
+
+
+def test_supertrend_trend_range_and_start():
+    from strategies.ml_supertrend import _supertrend_trend
+
+    n = 60
+    close = np.full(n, 100.0)
+    src = close.copy()
+    atr = np.full(n, 2.0)
+    trend = _supertrend_trend(src, atr, close, multiplier=1.0)
+    assert trend.shape == (n,)
+    assert set(np.unique(trend)).issubset({-1, 1})
+    # On a flat series price never crosses a band, trend stays at its +1 start.
+    assert trend[0] == 1
+    assert (trend == 1).all()
+
+
+def test_supertrend_trend_flips_down_then_up():
+    from strategies.ml_supertrend import _supertrend_trend
+
+    # Rise for 30 bars, then a sharp sustained fall, then a sharp rise.
+    up = np.linspace(100.0, 130.0, 30)
+    down = np.linspace(130.0, 70.0, 30)
+    up2 = np.linspace(70.0, 110.0, 30)
+    close = np.concatenate([up, down, up2])
+    src = close.copy()
+    atr = np.full(close.shape[0], 2.0)
+    trend = _supertrend_trend(src, atr, close, multiplier=1.0)
+    assert trend[0] == 1
+    # Somewhere in the decline the trend must flip to -1.
+    assert (trend[30:60] == -1).any(), "expected a downtrend during the fall"
+    # And flip back to +1 during the final rise.
+    assert (trend[60:] == 1).any(), "expected an uptrend during the recovery"

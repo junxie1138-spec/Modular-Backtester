@@ -49,6 +49,42 @@ def _smoothed_tr(data: pd.DataFrame, period: int, use_atr: bool) -> pd.Series:
     return tr.ewm(alpha=alpha, adjust=False).mean()
 
 
+def _supertrend_trend(
+    src: np.ndarray,
+    atr: np.ndarray,
+    close: np.ndarray,
+    multiplier: float,
+) -> np.ndarray:
+    """SuperTrend trend state in {+1, -1}, faithful to Pine `getSupertrend_var`.
+
+    `support` is the band below price, `resistance` the band above. Bands
+    ratchet using the *previous* close vs the *previous* band; the trend flips
+    using the *current* close vs the *previous* band. Trend starts at +1.
+
+    (The Pine code names these `upper`/`lower` with swapped meanings — see spec
+    section 6.2. Behaviour here is identical.)
+    """
+    src = np.asarray(src, dtype=float)
+    atr = np.asarray(atr, dtype=float)
+    close = np.asarray(close, dtype=float)
+    n = src.shape[0]
+    support = src - multiplier * atr
+    resistance = src + multiplier * atr
+    trend = np.ones(n, dtype=np.int64)
+    for i in range(1, n):
+        if close[i - 1] > support[i - 1]:
+            support[i] = max(support[i], support[i - 1])
+        if close[i - 1] < resistance[i - 1]:
+            resistance[i] = min(resistance[i], resistance[i - 1])
+        if trend[i - 1] == -1 and close[i] > resistance[i - 1]:
+            trend[i] = 1
+        elif trend[i - 1] == 1 and close[i] < support[i - 1]:
+            trend[i] = -1
+        else:
+            trend[i] = trend[i - 1]
+    return trend
+
+
 @dataclass(slots=True)
 class MLSupertrendParams:
     # Group 1 — signal mode
