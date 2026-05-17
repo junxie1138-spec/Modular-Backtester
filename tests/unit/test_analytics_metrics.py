@@ -69,3 +69,60 @@ def test_summary_keys_present():
                 "n_round_trips", "win_rate", "avg_round_trip_pnl",
                 "time_in_market", "turnover", "final_equity"]:
         assert key in out, f"missing {key}"
+
+
+def test_periods_per_year_resolves_known_timeframes() -> None:
+    from backtester.analytics.metrics import periods_per_year
+    assert periods_per_year("1d") == 252
+    assert periods_per_year("1h") == 1638
+
+
+def test_periods_per_year_rejects_unknown_timeframe() -> None:
+    from backtester.analytics.metrics import periods_per_year
+    with pytest.raises(ValueError, match="unknown timeframe"):
+        periods_per_year("5m")
+
+
+def test_metrics_scale_with_hourly_timeframe() -> None:
+    """timeframe='1h' annualises sqrt-metrics by sqrt(1638); '1d' by sqrt(252)."""
+    rng = np.random.default_rng(0)
+    eq = pd.Series(100 * np.exp(np.cumsum(rng.normal(0.0003, 0.01, 800))))
+    ratio = math.sqrt(1638 / 252)
+    assert annualized_volatility(eq, "1h") == pytest.approx(
+        annualized_volatility(eq, "1d") * ratio, rel=1e-9)
+    assert sharpe_ratio(eq, timeframe="1h") == pytest.approx(
+        sharpe_ratio(eq, timeframe="1d") * ratio, rel=1e-9)
+    assert sortino_ratio(eq, timeframe="1h") == pytest.approx(
+        sortino_ratio(eq, timeframe="1d") * ratio, rel=1e-9)
+
+
+def test_annualized_return_uses_timeframe() -> None:
+    """A fixed equity span annualises higher under '1h' (more periods/year)."""
+    eq = pd.Series(np.linspace(100, 110, 500))
+    ar_d = annualized_return(eq, "1d")
+    ar_h = annualized_return(eq, "1h")
+    assert ar_h > ar_d > 0
+
+
+def test_compute_summary_metrics_threads_timeframe() -> None:
+    rng = np.random.default_rng(1)
+    vals = (100 * np.exp(np.cumsum(rng.normal(0.0003, 0.01, 600)))).tolist()
+    idx = pd.bdate_range("2024-01-02", periods=len(vals))
+    eq = pd.DataFrame({"equity": vals, "cash": vals,
+                       "position_value": [0] * len(vals)}, index=idx)
+    pos = pd.DataFrame({"qty": [0] * len(vals)}, index=idx)
+    out_d = compute_summary_metrics(eq, pd.DataFrame(), pos)
+    out_h = compute_summary_metrics(eq, pd.DataFrame(), pos, timeframe="1h")
+    assert out_h["sharpe"] == pytest.approx(
+        out_d["sharpe"] * math.sqrt(1638 / 252), rel=1e-9)
+
+
+def test_compute_summary_metrics_defaults_to_daily() -> None:
+    """No timeframe arg is identical to explicit '1d' (regression guard)."""
+    vals = np.linspace(100, 130, 252).tolist()
+    idx = pd.bdate_range("2024-01-02", periods=252)
+    eq = pd.DataFrame({"equity": vals, "cash": vals,
+                       "position_value": [0] * 252}, index=idx)
+    pos = pd.DataFrame({"qty": [0] * 252}, index=idx)
+    assert (compute_summary_metrics(eq, pd.DataFrame(), pos)["sharpe"]
+            == compute_summary_metrics(eq, pd.DataFrame(), pos, timeframe="1d")["sharpe"])

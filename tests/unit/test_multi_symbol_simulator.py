@@ -494,3 +494,16 @@ def test_portfolio_metrics_computed_from_equity_curve():
     )
     # Drawdown should be non-zero (price went up then down while we held).
     assert result.portfolio_max_drawdown < 0.0 or abs(result.portfolio_total_return) > 0
+
+
+def test_multi_portfolio_simulator_timeframe_field() -> None:
+    from backtester.engine.multi_portfolio import MultiSymbolPortfolioSimulator
+    sim = MultiSymbolPortfolioSimulator(
+        config=None, initial_cash=100000.0, broker_factory=lambda: None,
+    )
+    assert sim.timeframe == "1d"
+    sim_h = MultiSymbolPortfolioSimulator(
+        config=None, initial_cash=100000.0, broker_factory=lambda: None,
+        timeframe="1h",
+    )
+    assert sim_h.timeframe == "1h"

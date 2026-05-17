@@ -6,6 +6,7 @@ import numpy as np
 import pandas as pd
 
 from backtester.wfo.multi_runner import WindowResult
+from backtester.analytics.metrics import periods_per_year
 
 
 @dataclass
@@ -24,6 +25,7 @@ class MultiSymbolWFOStitcher:
     scales each subsequent window so that the first OOS bar of window N+1 picks up
     where the last bar of window N's OOS left off.
     """
+    timeframe: str = "1d"
 
     def stitch(self, window_results: list[WindowResult]) -> StitchedWFOResult:
         if not window_results:
@@ -50,7 +52,10 @@ class MultiSymbolWFOStitcher:
         # Compute oos summary.
         if len(oos_curve) > 1 and oos_curve.iloc[0] > 0:
             returns = oos_curve.pct_change().dropna()
-            sharpe = float(returns.mean() / returns.std() * np.sqrt(252)) if returns.std() > 0 else 0.0
+            sharpe = (
+                float(returns.mean() / returns.std() * np.sqrt(periods_per_year(self.timeframe)))
+                if returns.std() > 0 else 0.0
+            )
             peak = oos_curve.cummax()
             drawdown = (oos_curve - peak) / peak
             max_dd = float(drawdown.min()) if len(drawdown) > 0 else 0.0

@@ -111,6 +111,7 @@ def _run_multi_symbol(*, rc, cls, writer, log) -> int:
     sim = MultiSymbolPortfolioSimulator(
         config=rc.portfolio, initial_cash=rc.execution.initial_cash,
         broker_factory=lambda: Broker(rc.execution),
+        timeframe=rc.data.timeframe,
     )
     engine = MultiSymbolBacktestEngine(simulator=sim)
     optimizer = MultiSymbolGridSearchOptimizer(
