@@ -276,3 +276,47 @@ def test_reversal_signal_spacing_is_honoured():
     # gaps between successive signal bars must be >= min_bars_between_signals.
     gaps = np.diff(change_idx)
     assert np.all(gaps >= params.min_bars_between_signals)
+
+
+def test_breakout_emits_signals_and_is_stop_and_reverse():
+    from strategies.ml_supertrend import MLSupertrendStrategy, MLSupertrendParams
+
+    data = _swinging_ohlcv()
+    sigs = _run(MLSupertrendStrategy(), data,
+                MLSupertrendParams(signal_mode="breakout")).to_numpy()
+    assert set(np.unique(sigs)).issubset({-1, 0, 1})
+    nz = sigs[sigs != 0]
+    assert nz.size > 0, "expected at least one breakout signal"
+    collapsed = nz[np.insert(np.diff(nz) != 0, 0, True)]
+    assert np.all(np.abs(np.diff(collapsed)) == 2), "breakout signal must alternate +1/-1"
+
+
+def test_reversal_and_breakout_differ_on_same_series():
+    """Spec section 8.1: on the same series the two modes fire at different
+    times (Breakout fires on the fresh-extreme bar, Reversal later on the
+    confirmed trend flip), so the held-position series are not identical."""
+    from strategies.ml_supertrend import MLSupertrendStrategy, MLSupertrendParams
+
+    data = _swinging_ohlcv()
+    strat = MLSupertrendStrategy()
+    rev = _run(strat, data, MLSupertrendParams(signal_mode="reversal"))
+    brk = _run(strat, data, MLSupertrendParams(signal_mode="breakout"))
+    assert not rev.equals(brk), "reversal and breakout must not produce identical signals"
+
+
+def test_require_vol_spike_blocks_signals_without_surges():
+    """With constant volume there is never a surge, so require_vol_spike=True
+    blocks every signal. The same series without the gate still trades."""
+    from strategies.ml_supertrend import MLSupertrendStrategy, MLSupertrendParams
+
+    data = _swinging_ohlcv().copy()
+    data["volume"] = 1_000_000.0          # constant -> vol_surge is always False
+    strat = MLSupertrendStrategy()
+
+    gated = _run(strat, data,
+                 MLSupertrendParams(signal_mode="breakout", require_vol_spike=True))
+    assert (gated == 0).all(), "no surge -> require_vol_spike blocks every signal"
+
+    ungated = _run(strat, data,
+                   MLSupertrendParams(signal_mode="breakout", require_vol_spike=False))
+    assert (ungated != 0).any(), "without the vol gate the series still trades"
