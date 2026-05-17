@@ -5,8 +5,10 @@ from unittest import mock
 import pytest
 
 from factory.settings_loader import PromotionCfg
+from factory.settings_loader import load_settings
 from factory.sortino_migration import (
     _initial_state, _migrate_record, _needs_rerun, _read_bundle_sortino,
+    migrate_shard,
 )
 
 
@@ -173,3 +175,97 @@ def test_migrate_record_skips_failed_record() -> None:
 
 def test_migrate_record_skips_record_without_wfo() -> None:
     assert _migrate_record(_record(wfo=False), promotion_cfg=_promo_cfg()) is None
+
+
+def _settings(tmp_path: Path, *, promotion_enabled: bool, trigger_threshold: float):
+    """Write a complete settings.toml under tmp_path and load it. node_id
+    defaults to 'local', so the shard is results/local.jsonl.
+    """
+    toml = f"""
+[paths]
+backtester_root = "{tmp_path.as_posix()}"
+strategies_dir  = "strategies"
+configs_dir     = "configs/wfo"
+registry_file   = "backtester/strategies/registry.py"
+output_runs_dir = "output/runs"
+dedup_dir       = "factory/data/dedup"
+results_dir     = "factory/data/results"
+factory_log     = "factory/logs/factory.log"
+tmp_dir         = "factory/data/_tmp"
+
+[generation]
+claude_cmd = "claude"
+claude_flags = ["-p"]
+generation_timeout_sec = 60
+
+[stages]
+stage_timeout_sec = 300
+
+[alerts]
+alert_threshold_metric = "wfo.oos_sortino"
+alert_threshold = 1.0
+telegram_bot_token = ""
+telegram_chat_id = ""
+dashboard_base_url = "http://127.0.0.1:8787"
+
+[loop]
+mode = "continuous"
+inter_cycle_sleep_sec = 0
+max_cycles = 1
+
+[dashboard]
+host = "127.0.0.1"
+port = 8787
+auto_refresh_sec = 10
+
+[promotion]
+enabled = {str(promotion_enabled).lower()}
+tickers = ["AAPL", "QQQ", "DIA"]
+data_source = "yfinance"
+min_avg_sortino = 0.7
+trigger_metric = "wfo.oos_sortino"
+trigger_threshold = {trigger_threshold}
+""".strip()
+    p = tmp_path / "settings.toml"
+    p.write_text(toml, encoding="utf-8")
+    return load_settings(p)
+
+
+def _write_shard(shard: Path, records: list[dict]) -> None:
+    shard.parent.mkdir(parents=True, exist_ok=True)
+    shard.write_text(
+        "\n".join(json.dumps(r) for r in records) + "\n", encoding="utf-8",
+    )
+
+
+def test_migrate_shard_migrates_then_is_idempotent(tmp_path: Path) -> None:
+    settings = _settings(tmp_path, promotion_enabled=True, trigger_threshold=1.0)
+    bundle = _make_bundle(tmp_path, "bundle_gen_1", sortino=1.5)
+    shard = settings.paths.results_dir / f"{settings.node_id}.jsonl"
+    _write_shard(shard, [_record("gen_1", bundle_path=bundle.as_posix())])
+
+    n1 = migrate_shard(settings)
+    assert n1 == 1
+    migrated = json.loads(shard.read_text(encoding="utf-8").splitlines()[0])
+    assert migrated["wfo"]["oos_sortino"] == 1.5
+    assert migrated["sortino_migration"]["state"] == "pending"
+
+    # Second pass is a no-op — the record already carries oos_sortino.
+    assert migrate_shard(settings) == 0
+
+
+def test_migrate_shard_no_shard_returns_zero(tmp_path: Path) -> None:
+    settings = _settings(tmp_path, promotion_enabled=True, trigger_threshold=1.0)
+    assert migrate_shard(settings) == 0
+
+
+def test_migrate_shard_leaves_unbackfillable_record(tmp_path: Path) -> None:
+    settings = _settings(tmp_path, promotion_enabled=False, trigger_threshold=1.0)
+    shard = settings.paths.results_dir / f"{settings.node_id}.jsonl"
+    rec = _record("gen_x", bundle_path=(tmp_path / "gone").as_posix())
+    _write_shard(shard, [rec])
+    assert migrate_shard(settings) == 0
+    # Record is byte-unchanged: still no oos_sortino, no migration block.
+    after = json.loads(shard.read_text(encoding="utf-8").splitlines()[0])
+    assert "oos_sortino" not in after["wfo"]
+    assert "sortino_migration" not in after

@@ -134,3 +134,52 @@ def _migrate_record(record: Record, *, promotion_cfg: PromotionCfg) -> Record | 
         "state": state,
     }
     return migrated
+
+
+def _read_shard(shard: Path) -> list[Record]:
+    """Read one NDJSON shard into a list of records. [] if the shard is absent."""
+    if not shard.is_file():
+        return []
+    out: list[Record] = []
+    for line in shard.read_text(encoding="utf-8").splitlines():
+        if line.strip():
+            out.append(json.loads(line))
+    return out
+
+
+def _write_shard(shard: Path, records: list[Record]) -> None:
+    """Rewrite a shard from a record list, matching results.write_record's
+    line format (compact separators, ensure_ascii=False, trailing newline)."""
+    shard.parent.mkdir(parents=True, exist_ok=True)
+    lines = [
+        json.dumps(r, ensure_ascii=False, separators=(",", ":"))
+        for r in records
+    ]
+    shard.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
+def migrate_shard(settings: Settings) -> int:
+    """Migrate this machine's own results shard in place. Idempotent.
+
+    Returns the number of records migrated on this pass (0 on a no-op pass).
+    Runs regardless of sync mode — a standalone machine has a shard too.
+    Only ever reads and rewrites `results/<node_id>.jsonl`, so the
+    sole-writer-per-shard sync invariant is preserved.
+    """
+    shard = settings.paths.results_dir / f"{settings.node_id}.jsonl"
+    records = _read_shard(shard)
+    if not records:
+        return 0
+    migrated_count = 0
+    for i, record in enumerate(records):
+        migrated = _migrate_record(record, promotion_cfg=settings.promotion)
+        if migrated is not None:
+            records[i] = migrated
+            migrated_count += 1
+    if migrated_count:
+        _write_shard(shard, records)
+        log.info(
+            "sortino migration: migrated %d record(s) in %s",
+            migrated_count, shard.name,
+        )
+    return migrated_count
