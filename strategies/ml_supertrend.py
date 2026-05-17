@@ -9,6 +9,46 @@ from backtester.core.types import SignalFrame, StrategyContext
 from backtester.strategies.base import BaseStrategy
 
 
+def _resolve_source(data: pd.DataFrame, source_type: str) -> pd.Series:
+    """Resolve the Pine `sourceType` input to a price series."""
+    o, h, l, c = data["open"], data["high"], data["low"], data["close"]
+    if source_type == "open":
+        return o
+    if source_type == "high":
+        return h
+    if source_type == "low":
+        return l
+    if source_type == "close":
+        return c
+    if source_type == "hl2":
+        return (h + l) / 2.0
+    if source_type == "hlc3":
+        return (h + l + c) / 3.0
+    if source_type == "ohlc4":
+        return (o + h + l + c) / 4.0
+    if source_type == "hlcc4":
+        return (h + l + c + c) / 4.0
+    raise ValueError(f"Unknown source_type: {source_type!r}")
+
+
+def _smoothed_tr(data: pd.DataFrame, period: int, use_atr: bool) -> pd.Series:
+    """True Range smoothed by Wilder RMA (use_atr=True) or EMA (use_atr=False).
+
+    Mirrors the Pine `rma_var`/`ema_var` of `ta.tr`: TR[0] seeds with
+    high[0]-low[0], and the recurrence is seeded from that first value
+    (ewm adjust=False), so there are no NaN values.
+    """
+    high, low, close = data["high"], data["low"], data["close"]
+    prev_close = close.shift(1)
+    tr = pd.concat(
+        [high - low, (high - prev_close).abs(), (low - prev_close).abs()],
+        axis=1,
+    ).max(axis=1)
+    tr.iloc[0] = float(high.iloc[0] - low.iloc[0])
+    alpha = (1.0 / period) if use_atr else (2.0 / (period + 1.0))
+    return tr.ewm(alpha=alpha, adjust=False).mean()
+
+
 @dataclass(slots=True)
 class MLSupertrendParams:
     # Group 1 — signal mode
