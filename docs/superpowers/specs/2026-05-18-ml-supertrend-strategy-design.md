@@ -200,9 +200,14 @@ returned as a `SignalFrame` with `signal` ∈ {-1, 0, 1} and `size`.
 ### 6.4 Warmup and look-ahead
 
 - `warmup_bars = max(atr_period, sensitivity, rsi_len, vol_lookback) + 1`.
-- For bars before `warmup_bars`, `generate_signals()` emits `signal = 0` and
-  ignores any candidate events. The first non-zero signal may only appear once
-  every indicator column in §6.1 is valid (non-NaN) for that bar.
+- For bars before `warmup_bars`, `generate_signals()` emits no signal — the
+  held position stays `0`. The first non-zero signal may only appear once every
+  indicator column in §6.1 is valid (non-NaN) for that bar. Signal *emission* is
+  gated on `i >= warmup_bars`; the reversal-mode flag latches (`top_flag` /
+  `bot_flag`), like the indicators, warm up across the whole series and may
+  change state during the warmup region. This is intentional and Pine-faithful
+  (the Pine flags carry no warmup concept) and introduces no look-ahead, since
+  emission — not flag state — is what the warmup gate controls.
 - Look-ahead is prevented by a **single** `shift(1)` on the assembled position
   series — the entry lands on the bar *after* the signal bar. Individual
   indicators are computed on the current bar and are not separately lagged.
