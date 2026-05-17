@@ -68,6 +68,7 @@ def test_build_symbol_falls_back_when_seam_rejected(tmp_path, monkeypatch) -> No
     entry = bh.build_symbol("SPY", donor_dir=donor_dir, out_dir=tmp_path / "out")
     assert entry["source"] == "yfinance_only"
     assert "seam rejected" in entry["validation"]
+    assert (tmp_path / "out" / "SPY.csv").exists()
 
 
 def test_main_writes_build_report(tmp_path, monkeypatch) -> None:
