@@ -246,3 +246,33 @@ def test_promote_strategy_skips_insufficient_history_tickers(tmp_path: Path) -> 
     assert result.avg_sortino == pytest.approx(0.85)
     assert result.passed is True
     assert result.error is None
+
+
+def test_promote_strategy_skips_all_when_none_tradable(tmp_path: Path) -> None:
+    """Every ticker insufficient_history -> none run, no division by zero."""
+    canonical = tmp_path / "cfg.yaml"
+    canonical.write_text(_canonical_config("gen_x"), encoding="utf-8")
+    output_runs = tmp_path / "output" / "runs"
+    report = tmp_path / "_build_report.json"
+    _write_build_report(report, {
+        "AAPL": "insufficient_history", "QQQ": "insufficient_history",
+        "DIA": "insufficient_history",
+    })
+
+    fake_proc = mock.Mock(returncode=0, stdout="", stderr="")
+    with mock.patch("factory.promote.subprocess.run", return_value=fake_proc):
+        result = promote_strategy(
+            strategy_id="gen_x",
+            optimized_params={"size": 1.0},
+            canonical_config_path=canonical,
+            promotion_cfg=_cfg(min_avg_sortino=0.7),
+            tmp_dir=tmp_path / "_tmp",
+            output_runs_dir=output_runs,
+            stage_timeout_sec=60,
+            build_report_path=report,
+        )
+
+    assert result.ran is True
+    assert result.per_ticker == {}
+    assert result.avg_sortino is None
+    assert result.passed is False

@@ -130,10 +130,10 @@ def _tradable_tickers(
     `tradable` — a ticker that is missing or `insufficient_history` is dropped
     so promotion never runs a WFO on thin hourly data.
     """
-    if build_report_path is None or not Path(build_report_path).exists():
+    if build_report_path is None or not build_report_path.exists():
         return list(tickers)
     try:
-        report = json.loads(Path(build_report_path).read_text(encoding="utf-8"))
+        report = json.loads(build_report_path.read_text(encoding="utf-8"))
         symbols = report.get("symbols", {})
     except (json.JSONDecodeError, OSError):
         return list(tickers)
@@ -162,10 +162,11 @@ def promote_strategy(
     promotion_cfg.min_avg_sortino.
     """
     eligible = _tradable_tickers(promotion_cfg.tickers, build_report_path)
-    skipped = [t for t in promotion_cfg.tickers if t not in eligible]
+    eligible_set = set(eligible)
+    skipped = [t for t in promotion_cfg.tickers if t not in eligible_set]
     if skipped:
         log.info(
-            "promotion %s skipping insufficient-history tickers: %s",
+            "promotion %s skipping non-tradable tickers: %s",
             strategy_id, ", ".join(skipped),
         )
     per_ticker: dict[str, dict[str, Any]] = {}
