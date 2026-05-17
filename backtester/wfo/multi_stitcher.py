@@ -19,13 +19,13 @@ class StitchedWFOResult:
 
 @dataclass(slots=True)
 class MultiSymbolWFOStitcher:
-    timeframe: str = "1d"
     """Combine per-window OOS equity curves into a single continuous portfolio equity series.
 
     Each window's OOS equity curve starts at some initial cash value. The stitcher
     scales each subsequent window so that the first OOS bar of window N+1 picks up
     where the last bar of window N's OOS left off.
     """
+    timeframe: str = "1d"
 
     def stitch(self, window_results: list[WindowResult]) -> StitchedWFOResult:
         if not window_results:
@@ -52,7 +52,10 @@ class MultiSymbolWFOStitcher:
         # Compute oos summary.
         if len(oos_curve) > 1 and oos_curve.iloc[0] > 0:
             returns = oos_curve.pct_change().dropna()
-            sharpe = float(returns.mean() / returns.std() * np.sqrt(periods_per_year(self.timeframe))) if returns.std() > 0 else 0.0
+            sharpe = (
+                float(returns.mean() / returns.std() * np.sqrt(periods_per_year(self.timeframe)))
+                if returns.std() > 0 else 0.0
+            )
             peak = oos_curve.cummax()
             drawdown = (oos_curve - peak) / peak
             max_dd = float(drawdown.min()) if len(drawdown) > 0 else 0.0
