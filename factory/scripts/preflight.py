@@ -138,6 +138,41 @@ def _check_sync_enabled(settings) -> tuple[str, str]:
     )
 
 
+def _check_hourly_dataset(settings) -> tuple[str, str]:
+    """Gate a factory batch on SPY's hourly dataset coverage.
+
+    Absent build report -> WARN: the factory is on daily data, or the hourly
+    dataset has not been built yet. Present report -> SPY must be classified
+    `tradable`, otherwise FAIL: a batch must not start generating against an
+    under-covered SPY (SPY is the factory's generation symbol).
+    """
+    root = settings.paths.backtester_root if settings else Path.cwd()
+    report_path = root / "data" / "raw_hourly" / "_build_report.json"
+    if not report_path.exists():
+        return WARN, (
+            "no hourly build report at data/raw_hourly/_build_report.json "
+            "- factory is on daily data, or run scripts/build_hourly_dataset.py"
+        )
+    try:
+        report = json.loads(report_path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError) as exc:
+        return FAIL, f"hourly build report unreadable: {exc}"
+    spy = report.get("symbols", {}).get("SPY")
+    if spy is None:
+        return FAIL, "hourly build report has no SPY entry - SPY is mandatory"
+    classification = spy.get("classification")
+    if classification != "tradable":
+        return FAIL, (
+            f"SPY hourly dataset classified {classification!r} (need "
+            f"'tradable'); bar_count={spy.get('bar_count')} - a batch must "
+            "not start"
+        )
+    return PASS, (
+        f"SPY hourly dataset tradable ({spy.get('bar_count')} bars, "
+        f"source={spy.get('source')})"
+    )
+
+
 def _check_claude(settings, *, probe: bool) -> tuple[str, str]:
     cmd = settings.generation.claude_cmd if settings else "claude"
     resolved = shutil.which(cmd)
@@ -271,6 +306,7 @@ def main(argv: Optional[list[str]] = None) -> int:
         record("node_id", _check_node_id(settings))
         record("Data directories", _check_writable(settings))
         record("[sync] config", _check_sync_enabled(settings))
+        record("Hourly dataset", _check_hourly_dataset(settings))
 
     record("claude CLI", _check_claude(settings, probe=not args.skip_claude_probe))
     record("git version", _check_git_version())
