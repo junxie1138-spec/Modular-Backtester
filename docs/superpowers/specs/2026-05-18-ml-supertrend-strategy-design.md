@@ -137,7 +137,7 @@ config-layer requirement is `allow_short: true`. There is therefore no
 |---|---|
 | `atr` | True Range smoothed: RMA (`alpha = 1/atr_period`) when `use_atr`, else EMA (`alpha = 2/(atr_period+1)`). The suite's `compute_atr` uses SMA smoothing and is **not** used — Pine's signal path uses RMA/EMA, so smoothing is computed inline to stay faithful. |
 | `st_trend` | SuperTrend trend state in {+1, -1}. Bands and the trend flip are a sequential recurrence (see §6.2) — computed with a single numpy loop. |
-| `rsi` | Wilder RSI over `rsi_len`. RSI uses **Wilder smoothing** (`alpha = 1 / rsi_len`), matching the Pine script and the `rsi_long_short.py` implementation — not a generic library RSI. |
+| `rsi` | Wilder RSI over `rsi_len`. RSI uses **Wilder smoothing** (`alpha = 1 / rsi_len`), matching the Pine `ta.rsi` — Wilder smoothing as in `rsi_long_short.py`, not a generic library RSI. One refinement over `rsi_long_short.py`: a window with no down moves yields `RSI = 100` (the Pine convention) instead of `NaN`, so the RSI filter is not silently disabled during a strong rally. |
 | `roll_high` / `roll_low` | Rolling max(high) / min(low) over `sensitivity` bars. |
 | `is_new_high` / `is_new_low` | A fresh extreme: `roll_high` differs from its value `lookback` bars ago **and** `close` exceeds that prior value. `lookback = max(1, round(sensitivity / 10))`. Mirror for lows. |
 | `rsi_cold` / `rsi_hot` | `rsi < rsi_bot` (resp. `> rsi_top`) was true on at least one of the last `rsi_lookback_bot` (resp. `_top`) bars — a rolling-window "any" over the boolean. When `enable_rsi` is false both are constant `True`. |
