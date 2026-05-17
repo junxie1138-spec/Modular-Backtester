@@ -69,3 +69,15 @@ def test_summary_keys_present():
                 "n_round_trips", "win_rate", "avg_round_trip_pnl",
                 "time_in_market", "turnover", "final_equity"]:
         assert key in out, f"missing {key}"
+
+
+def test_periods_per_year_resolves_known_timeframes() -> None:
+    from backtester.analytics.metrics import periods_per_year
+    assert periods_per_year("1d") == 252
+    assert periods_per_year("1h") == 1638
+
+
+def test_periods_per_year_rejects_unknown_timeframe() -> None:
+    from backtester.analytics.metrics import periods_per_year
+    with pytest.raises(ValueError, match="unknown timeframe"):
+        periods_per_year("5m")
