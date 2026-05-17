@@ -239,6 +239,25 @@ Integration: the strategy runs end-to-end via
 `python -m backtester.runners.run_backtest --config configs/backtests/ml_supertrend_spy.yaml`
 and produces a normal artifact bundle.
 
+### 8.1 Illustrative case — reversal vs breakout
+
+The mode-difference test builds one hand-crafted OHLCV series and runs it
+through both modes. Construct a sequence where price climbs to a fresh high
+(`sig_high` true) while `st_trend == +1`, then rolls over so `st_trend` flips
+`+1 → -1` a few bars later:
+
+- **Breakout mode** fires a **Sell on the fresh-high bar itself**
+  (`sig_high and st_trend == +1`).
+- **Reversal mode** fires **nothing on that bar** — it only latches
+  `top_flag = 1`. The Sell fires **later**, on the bar where `st_trend` flips
+  `+1 → -1` (`top_flag` falls `1 → 0`).
+
+So on the *same* series Breakout enters earlier (at the extreme) and Reversal
+enters later (at the confirmed flip). The test asserts the Sell signal bar
+index differs between the two modes by exactly the gap between the fresh-high
+bar and the trend-flip bar. (Stated qualitatively in trend-state terms; the
+test fixture pins the exact bar indices.)
+
 ## 9. Risks and notes
 
 - **Contrarian polarity.** A new *high* yields a *Sell*. This is faithful to the
