@@ -33,6 +33,7 @@ df = load_symbol("SPY", source="csv", root="data/raw", start="2020-01-01", end="
 ```python
 from backtester.data.validators import validate_ohlcv
 validate_ohlcv(df)  # raises DataError on any violation
+```
 
 ## Hourly datasets (`data/raw_hourly/`)
 
@@ -58,4 +59,3 @@ python -m scripts.build_hourly_dataset --symbols SPY AAPL QQQ
 A symbol with fewer than `MIN_HOURLY_BARS` (7000) built bars is classified
 `insufficient_history` — a thin yfinance-only fallback is not automatically
 tradable.
-```
