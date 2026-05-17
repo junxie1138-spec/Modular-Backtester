@@ -404,7 +404,7 @@ class MultiSymbolPortfolioSimulator:
         # Compute portfolio metrics from the equity curve.
         if len(equity_curve) > 0 and equity_curve.iloc[0] > 0:
             returns = equity_curve.pct_change().dropna()
-            # Sharpe: annualized, 252-day convention, zero risk-free.
+            # Sharpe: annualized via periods_per_year(timeframe), zero risk-free.
             sharpe = 0.0
             if len(returns) > 1 and returns.std() > 0:
                 sharpe = float(returns.mean() / returns.std() * np.sqrt(periods_per_year(self.timeframe)))
