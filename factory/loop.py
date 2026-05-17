@@ -13,6 +13,7 @@ from typing import Optional
 from factory.cycle import run_cycle
 from factory.settings_loader import Settings, load_settings
 from factory.sync import bootstrap, sync_pull, sync_push
+from factory.sortino_migration import drain_one_retro_promotion, migrate_shard
 
 log = logging.getLogger(__name__)
 
@@ -105,6 +106,11 @@ def run_loop(
     except Exception as exc:
         log.exception("sync bootstrap failed (continuing): %s", exc)
 
+    try:
+        migrate_shard(settings)
+    except Exception as exc:
+        log.exception("sortino migration failed (continuing): %s", exc)
+
     completed = 0
     while not flag.is_set():
         try:
@@ -120,6 +126,10 @@ def run_loop(
             # (run_cycle is supposed to never raise on expected failures, so
             # reaching here means a bug — but the loop must not die.)
             log.exception("unexpected exception in run_cycle: %s", exc)
+        try:
+            drain_one_retro_promotion(settings)
+        except Exception as exc:
+            log.exception("retro-promotion drain failed (continuing): %s", exc)
         try:
             sync_push(settings)
         except Exception as exc:

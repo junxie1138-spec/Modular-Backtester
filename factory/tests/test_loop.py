@@ -71,3 +71,19 @@ def test_run_loop_stops_on_sigint(tmp_settings_file: Path) -> None:
     # The flag is checked AFTER each cycle, so cycle 2 runs to completion
     # and then the loop breaks.
     assert completed == 2
+
+
+def test_run_loop_runs_sortino_migration_and_drain(tmp_settings_file: Path) -> None:
+    s = load_settings(tmp_settings_file)
+    assert s.loop.max_cycles == 1   # from the test fixture
+
+    from factory.cycle import CycleOutcome
+    fake_outcome = CycleOutcome(status="failed", failed_stage="generation",
+                                strategy_id=None, record={"status": "failed"})
+    with mock.patch("factory.loop.run_cycle", return_value=fake_outcome), \
+         mock.patch("factory.loop.migrate_shard") as migrate, \
+         mock.patch("factory.loop.drain_one_retro_promotion") as drain:
+        run_loop(s, rng=random.Random(0))
+
+    assert migrate.call_count == 1   # once, at startup
+    assert drain.call_count == 1     # once per cycle (max_cycles=1)
