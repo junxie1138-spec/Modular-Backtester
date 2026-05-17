@@ -218,10 +218,21 @@ def drain_one_retro_promotion(settings: Settings) -> bool:
         _write_shard(shard, records)
         return True
 
+    optimize = record.get("optimize")
+    best_params = optimize.get("best_params") if isinstance(optimize, dict) else None
+    if best_params is None:
+        log.warning(
+            "retro-promotion: record %s has no optimize.best_params; "
+            "marking state=n/a", strategy_id,
+        )
+        record["sortino_migration"]["state"] = "n/a"
+        _write_shard(shard, records)
+        return True
+
     log.info("retro-promotion: running held-out promotion for %s", strategy_id)
     promo = promote_strategy(
         strategy_id=strategy_id,
-        optimized_params=record["optimize"]["best_params"],
+        optimized_params=best_params,
         canonical_config_path=canonical,
         promotion_cfg=settings.promotion,
         tmp_dir=settings.paths.tmp_dir,

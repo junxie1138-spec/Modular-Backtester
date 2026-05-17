@@ -335,3 +335,22 @@ def test_drain_noop_when_nothing_pending(tmp_path: Path) -> None:
 def test_drain_noop_on_empty_shard(tmp_path: Path) -> None:
     settings = _settings(tmp_path, promotion_enabled=True, trigger_threshold=1.0)
     assert drain_one_retro_promotion(settings) is False
+
+
+def test_drain_marks_na_when_best_params_missing(tmp_path: Path) -> None:
+    settings = _settings(tmp_path, promotion_enabled=True, trigger_threshold=1.0)
+    cfg = settings.paths.configs_dir / "gen_1.yaml"
+    cfg.parent.mkdir(parents=True, exist_ok=True)
+    cfg.write_text("run_name: gen_1\n", encoding="utf-8")
+    shard = settings.paths.results_dir / f"{settings.node_id}.jsonl"
+    rec = _pending_record("gen_1")
+    rec["optimize"] = None   # a complete record may carry optimize: None
+    _write_shard(shard, [rec])
+
+    with mock.patch("factory.sortino_migration.promote_strategy") as ps:
+        handled = drain_one_retro_promotion(settings)
+
+    assert handled is True
+    ps.assert_not_called()
+    out = json.loads(shard.read_text(encoding="utf-8").splitlines()[0])
+    assert out["sortino_migration"]["state"] == "n/a"
