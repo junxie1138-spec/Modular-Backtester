@@ -61,3 +61,29 @@ def _initial_state(
     if promotion_enabled and oos_sortino >= trigger_threshold:
         return "pending"
     return "n/a"
+
+
+def _read_bundle_sortino(bundle_path: str | Path) -> float | None:
+    """Read `oos_summary.sortino` from a WFO bundle's summary.json.
+
+    Returns None when the bundle directory, its summary.json, or the
+    oos_summary.sortino value is missing or unreadable — the caller then
+    leaves the record untouched (no recompute).
+    """
+    summary = Path(bundle_path) / "summary.json"
+    if not summary.is_file():
+        return None
+    try:
+        data = json.loads(summary.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return None
+    oos = data.get("oos_summary")
+    if not isinstance(oos, dict):
+        return None
+    sortino = oos.get("sortino")
+    if sortino is None:
+        return None
+    try:
+        return float(sortino)
+    except (TypeError, ValueError):
+        return None
