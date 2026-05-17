@@ -134,3 +134,24 @@ def test_validate_seam_tail_disagreement_aborts_on_agreement() -> None:
     donor_close[: n // 8] = 102.0   # ~12% of bars off by 2% (MAD stays ~0)
     rep = validate_seam(_ohlcv(idx, donor_close), recent)
     assert not rep.ok and "agreement" in rep.reason
+
+
+def test_validate_seam_empty_frame_aborts() -> None:
+    idx = _session_index("2024-01-02", 10)
+    recent = _ohlcv(idx, np.full(len(idx), 100.0))
+    empty = recent.iloc[:0]
+    assert not validate_seam(empty, recent).ok
+    assert not validate_seam(recent, empty).ok
+    assert "empty" in validate_seam(empty, recent).reason
+
+
+def test_validate_seam_pre_open_stamped_donor_detected_and_passes() -> None:
+    recent_idx = _session_index("2024-01-02", 40)
+    close = 100.0 + np.arange(len(recent_idx)) * 0.01
+    recent = _ohlcv(recent_idx, close)
+    # A pre-open-stamped donor: every bar stamped one hour earlier than the
+    # 09:30 grid -> validate_seam corrects it with a +1h offset.
+    donor = _ohlcv(recent_idx - pd.Timedelta(hours=1), close)
+    rep = validate_seam(donor, recent)
+    assert rep.ok
+    assert rep.offset_hours == 1
