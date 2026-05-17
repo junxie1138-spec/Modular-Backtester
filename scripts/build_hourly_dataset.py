@@ -189,6 +189,7 @@ def main(argv: list[str] | None = None) -> int:
     insufficient = [
         s for s, e in symbols.items()
         if e.get("classification") == "insufficient_history"
+        and e.get("source") != "failed"
     ]
     print(
         f"\n  build complete: {len(symbols)} symbols, {len(failed)} failed, "
