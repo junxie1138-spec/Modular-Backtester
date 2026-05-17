@@ -4,7 +4,10 @@ from unittest import mock
 
 import pytest
 
-from factory.sortino_migration import _initial_state, _needs_rerun, _read_bundle_sortino
+from factory.settings_loader import PromotionCfg
+from factory.sortino_migration import (
+    _initial_state, _migrate_record, _needs_rerun, _read_bundle_sortino,
+)
 
 
 def test_needs_rerun_same_side_is_false() -> None:
@@ -85,3 +88,88 @@ def test_read_bundle_sortino_non_dict_oos_summary_returns_none(tmp_path: Path) -
         json.dumps({"oos_summary": None, "n_windows": 6}), encoding="utf-8",
     )
     assert _read_bundle_sortino(bundle) is None
+
+
+def _promo_cfg(*, enabled: bool = True, trigger_threshold: float = 1.0) -> PromotionCfg:
+    return PromotionCfg(
+        enabled=enabled, tickers=("AAPL", "QQQ", "DIA"), data_source="yfinance",
+        min_avg_sortino=0.7, trigger_metric="wfo.oos_sortino",
+        trigger_threshold=trigger_threshold,
+    )
+
+
+def _record(
+    strategy_id: str = "gen_1", *, status: str = "complete", wfo: bool = True,
+    oos_sharpe: float = 0.5, bundle_path: str = "MISSING_BUNDLE",
+    oos_sortino: float | None = None, promotion: dict | None = None,
+) -> dict:
+    """Build a results record. `wfo=False` produces a record with `wfo: None`."""
+    rec: dict = {
+        "strategy_id": strategy_id, "timestamp": "2026-05-15T00:00:00Z",
+        "status": status, "failed_stage": None, "error": None,
+        "slots": {}, "idea": {}, "generation_cost_usd": 0.1,
+        "backtest": {"sharpe": 0.2}, "optimize": {"best_params": {"x": 1}},
+        "promotion": promotion, "alerted": False,
+    }
+    if wfo:
+        w: dict = {
+            "oos_sharpe": oos_sharpe, "oos_total_return": 0.1,
+            "oos_max_drawdown": -0.05, "oos_n_trades": 12,
+            "parameter_stability": {}, "n_windows": 6,
+            "run_bundle_path": bundle_path,
+        }
+        if oos_sortino is not None:
+            w["oos_sortino"] = oos_sortino
+        rec["wfo"] = w
+    else:
+        rec["wfo"] = None
+    return rec
+
+
+def test_migrate_record_backfills_sortino_and_block(tmp_path: Path) -> None:
+    bundle = _make_bundle(tmp_path, "b_ok", sortino=0.42)
+    rec = _record(bundle_path=bundle.as_posix(), oos_sharpe=0.5)
+    out = _migrate_record(rec, promotion_cfg=_promo_cfg())
+    assert out is not None
+    assert out["wfo"]["oos_sortino"] == 0.42
+    assert out["sortino_migration"]["state"] == "n/a"   # 0.42 < threshold 1.0
+    assert out["sortino_migration"]["needs_rerun"] is False
+    assert out["sortino_migration"]["migrated_at"].endswith("Z")
+    # The original record is not mutated.
+    assert "oos_sortino" not in rec["wfo"]
+    assert "sortino_migration" not in rec
+
+
+def test_migrate_record_pending_when_clears_threshold(tmp_path: Path) -> None:
+    bundle = _make_bundle(tmp_path, "b_high", sortino=1.5)
+    rec = _record(bundle_path=bundle.as_posix(), oos_sharpe=0.5)
+    out = _migrate_record(rec, promotion_cfg=_promo_cfg())
+    assert out is not None
+    # Sortino 1.5 >= 1.0 but Sharpe 0.5 < 1.0 -> opposite sides -> needs_rerun.
+    assert out["sortino_migration"]["state"] == "pending"
+    assert out["sortino_migration"]["needs_rerun"] is True
+
+
+def test_migrate_record_missing_bundle_returns_none(tmp_path: Path) -> None:
+    rec = _record(bundle_path=(tmp_path / "absent").as_posix())
+    assert _migrate_record(rec, promotion_cfg=_promo_cfg()) is None
+
+
+def test_migrate_record_bundle_without_sortino_returns_none(tmp_path: Path) -> None:
+    bundle = _make_bundle(tmp_path, "b_blank", sortino=None)
+    rec = _record(bundle_path=bundle.as_posix())
+    assert _migrate_record(rec, promotion_cfg=_promo_cfg()) is None
+
+
+def test_migrate_record_already_has_sortino_returns_none(tmp_path: Path) -> None:
+    bundle = _make_bundle(tmp_path, "b_done", sortino=0.4)
+    rec = _record(bundle_path=bundle.as_posix(), oos_sortino=0.9)
+    assert _migrate_record(rec, promotion_cfg=_promo_cfg()) is None
+
+
+def test_migrate_record_skips_failed_record() -> None:
+    assert _migrate_record(_record(status="failed"), promotion_cfg=_promo_cfg()) is None
+
+
+def test_migrate_record_skips_record_without_wfo() -> None:
+    assert _migrate_record(_record(wfo=False), promotion_cfg=_promo_cfg()) is None

@@ -87,3 +87,50 @@ def _read_bundle_sortino(bundle_path: str | Path) -> float | None:
         return float(sortino)
     except (TypeError, ValueError):
         return None
+
+
+def _migrate_record(record: Record, *, promotion_cfg: PromotionCfg) -> Record | None:
+    """Return a migrated copy of `record`, or None to leave it untouched.
+
+    None is returned for records that need no migration (not `complete`, no
+    `wfo` block, or already carrying `wfo.oos_sortino`) and for records whose
+    WFO-bundle sortino cannot be recovered.
+    """
+    if record.get("status") != "complete":
+        return None
+    wfo = record.get("wfo")
+    if not isinstance(wfo, dict):
+        return None
+    if "oos_sortino" in wfo:
+        return None  # already migrated, or natively sortino — idempotency key
+
+    bundle_path = wfo.get("run_bundle_path")
+    sortino = _read_bundle_sortino(bundle_path) if bundle_path else None
+    if sortino is None:
+        log.warning(
+            "sortino migration: cannot recover oos_sortino for %s "
+            "(bundle missing or incomplete: %s); leaving record untouched",
+            record.get("strategy_id"), bundle_path,
+        )
+        return None
+
+    oos_sharpe = wfo.get("oos_sharpe")
+    needs_rerun = (
+        _needs_rerun(float(oos_sharpe), sortino, promotion_cfg.trigger_threshold)
+        if isinstance(oos_sharpe, (int, float)) and not isinstance(oos_sharpe, bool)
+        else False
+    )
+    state = _initial_state(
+        has_promotion_block=record.get("promotion") is not None,
+        oos_sortino=sortino,
+        promotion_enabled=promotion_cfg.enabled,
+        trigger_threshold=promotion_cfg.trigger_threshold,
+    )
+    migrated: Record = dict(record)
+    migrated["wfo"] = {**wfo, "oos_sortino": sortino}
+    migrated["sortino_migration"] = {
+        "migrated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "needs_rerun": needs_rerun,
+        "state": state,
+    }
+    return migrated
