@@ -235,6 +235,14 @@ An upgrade discards no generated work:
 - **Strategy and config files** (`strategies/gen_*.py`, `configs/wfo/gen_*.yaml`) are plain files on disk — untouched. The registry auto-discovers them, including older `gen_<timestamp>.py` ids minted before the `gen_<node_id>_<timestamp>` scheme.
 - **Results records are forward-compatible.** Token tracking adds a `generation_tokens` field to *new* records only; older records have no such field and are read as "no token data" — the detail view shows `n/a` for them and they contribute `0` to the cumulative-tokens total. No migration, no data loss.
 
+### Archived strategies are migrated to OOS Sortino automatically
+
+The alert and promotion gates key on **OOS Sortino**, but records produced before that switch carry only `oos_sharpe` — an archived strategy and a new one were not judged by the same field. The loop closes that gap with no operator step.
+
+At startup it runs one idempotent pass over this machine's own results shard. For each archived `complete` record it recovers `oos_sortino` from the run's existing WFO bundle — a pure read, no re-backtest or re-optimise — and stores it alongside the `oos_sharpe` already there, so a migrated record is indistinguishable from a natively-Sortino one. A record whose promote/no-promote verdict would flip under the new metric is flagged `needs_rerun` (advisory only — nothing re-optimises automatically). Archived strategies that now clear the promotion threshold are retroactively sent through the held-out promotion gate, one per cycle so the compute spreads alongside normal generation.
+
+The pass is per-shard and pool-safe: each machine migrates only its own `results/<node_id>.jsonl`, preserving the sole-writer invariant and conflict-free sync. A record whose WFO bundle was pruned from the gitignored, local-only `output/runs/` is skipped and logged, not recomputed — it is simply re-examined on the next startup.
+
 ### If you ran a much older (single-file) version
 
 A pre-distributed factory kept one `factory/data/results.json` and one `factory/data/dedup_log.txt`. The current factory uses per-machine shard directories — `factory/data/results/<node_id>.jsonl` and `factory/data/dedup/<node_id>.txt`.
@@ -267,4 +275,5 @@ The factory has a fast unit suite plus slower integration tests. Slow tests (Tie
 
 - Distributed factory — [`docs/superpowers/specs/2026-05-16-distributed-factory-design.md`](../docs/superpowers/specs/2026-05-16-distributed-factory-design.md)
 - Token tracking — [`docs/superpowers/specs/2026-05-16-factory-token-tracking-design.md`](../docs/superpowers/specs/2026-05-16-factory-token-tracking-design.md)
+- Sortino archive migration — [`docs/superpowers/specs/2026-05-17-sortino-archive-migration-design.md`](../docs/superpowers/specs/2026-05-17-sortino-archive-migration-design.md)
 - Original factory build — [`docs/superpowers/plans/2026-05-15-strategy-factory-v020.md`](../docs/superpowers/plans/2026-05-15-strategy-factory-v020.md)
