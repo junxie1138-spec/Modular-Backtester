@@ -85,6 +85,24 @@ def _supertrend_trend(
     return trend
 
 
+def _wilder_rsi(close: pd.Series, length: int) -> pd.Series:
+    """Wilder RSI (alpha = 1/length), matching Pine `ta.rsi`. Wilder smoothing
+    as in `rsi_long_short.py`; the first `length` values are NaN. A window with
+    no down moves yields RSI = 100 (the Pine convention) rather than NaN, so the
+    RSI filter is not silently disabled during strong rallies."""
+    delta = close.diff()
+    gain = delta.clip(lower=0.0)
+    loss = -delta.clip(upper=0.0)
+    avg_gain = gain.ewm(alpha=1.0 / length, adjust=False, min_periods=length).mean()
+    avg_loss = loss.ewm(alpha=1.0 / length, adjust=False, min_periods=length).mean()
+    rs = avg_gain / avg_loss.replace(0.0, np.nan)
+    rsi = 100.0 - (100.0 / (1.0 + rs))
+    # avg_loss == 0 with gains present -> rs is +inf -> RSI = 100. The replace()
+    # above turned that into NaN; restore 100 explicitly.
+    no_loss = (avg_loss == 0.0) & (avg_gain > 0.0)
+    return rsi.mask(no_loss, 100.0)
+
+
 @dataclass(slots=True)
 class MLSupertrendParams:
     # Group 1 — signal mode
