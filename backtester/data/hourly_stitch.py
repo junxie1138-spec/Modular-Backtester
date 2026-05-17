@@ -75,3 +75,94 @@ def load_donor(path: str | Path) -> pd.DataFrame:
     times = df.index.time
     in_session = (times >= _SESSION_OPEN) & (times <= _SESSION_CLOSE)
     return df[in_session]
+
+
+def validate_seam(donor: pd.DataFrame, recent: pd.DataFrame) -> SeamReport:
+    """Run the five seam checks on the donor/recent overlap window.
+
+    `donor` is a load_donor() output; `recent` is a normalized yfinance 1h
+    frame (tz-naive US/Eastern, regular session, open-stamped). The five
+    checks run in order: (1) overlap exists, (2) donor is regular-session,
+    (3) donor is open-stamped on the 09:30 grid, (4) the donor/yfinance close
+    ratio has a trustworthy median (MAD dispersion), (5) post-scale closes
+    agree (95th-pct relative error). Returns a SeamReport; makes no
+    tradability claim.
+    """
+    def _fail(reason: str) -> SeamReport:
+        return SeamReport(
+            ok=False, scale=1.0, offset_hours=0, overlap_bars=0,
+            scale_dispersion=float("nan"), agreement_error=float("nan"),
+            reason=reason,
+        )
+
+    if len(donor) == 0 or len(recent) == 0:
+        return _fail("donor or recent frame is empty")
+
+    # Check 1: overlap exists — the donor must reach into yfinance's window.
+    if donor.index.max() < recent.index.min():
+        return _fail("no overlap: donor ends before yfinance coverage begins")
+
+    # Check 2: regular session — the donor must average ~7 bars/day.
+    n_days = max(1, donor.index.normalize().nunique())
+    bars_per_day = len(donor) / n_days
+    if bars_per_day > _MAX_BARS_PER_DAY:
+        return _fail(
+            f"donor averages {bars_per_day:.1f} bars/day — extended hours "
+            "not cleanly filtered"
+        )
+
+    # Check 3: timestamp convention — donor open-stamped on the 09:30 grid.
+    # A close-stamped donor is offset a uniform +1h; correct it with -1h.
+    recent_times = set(pd.Series(recent.index.time).unique())
+    offset_hours: int | None = None
+    for cand in (0, -1, 1):
+        shifted = set(
+            pd.Series((donor.index + pd.Timedelta(hours=cand)).time).unique()
+        )
+        if shifted <= recent_times:
+            offset_hours = cand
+            break
+    if offset_hours is None:
+        return _fail("donor intraday timestamps do not align to the 09:30 grid")
+
+    aligned = donor.copy()
+    if offset_hours != 0:
+        aligned.index = aligned.index + pd.Timedelta(hours=offset_hours)
+
+    overlap = aligned.index.intersection(recent.index)
+    if len(overlap) < MIN_OVERLAP_BARS:
+        return _fail(
+            f"only {len(overlap)} overlapping bars (need >= {MIN_OVERLAP_BARS})"
+        )
+
+    d_close = aligned.loc[overlap, "close"].astype(float)
+    r_close = recent.loc[overlap, "close"].astype(float)
+    ratio = (d_close / r_close).replace([np.inf, -np.inf], np.nan).dropna()
+    if len(ratio) < MIN_OVERLAP_BARS:
+        return _fail("overlap closes are not comparable (zero/NaN closes)")
+    scale = float(ratio.median())
+    if not np.isfinite(scale) or scale <= 0:
+        return _fail(f"robust scale is non-finite or non-positive ({scale})")
+
+    # Check 4: robust dispersion — MAD of the ratio about its median. A
+    # constant offset is fine (scale absorbs it); a drift is not.
+    scale_dispersion = float((ratio - scale).abs().median() / scale)
+    if scale_dispersion > SCALE_DISPERSION_TOL:
+        return _fail(
+            f"scale dispersion {scale_dispersion:.4f} exceeds "
+            f"{SCALE_DISPERSION_TOL} — donor adjustment basis drifts"
+        )
+
+    # Check 5: post-scale agreement — 95th-pct absolute relative close error.
+    agreement_error = float((ratio / scale - 1.0).abs().quantile(0.95))
+    if agreement_error > AGREEMENT_TOL:
+        return _fail(
+            f"post-scale agreement error {agreement_error:.4f} exceeds "
+            f"{AGREEMENT_TOL}"
+        )
+
+    return SeamReport(
+        ok=True, scale=scale, offset_hours=offset_hours,
+        overlap_bars=int(len(overlap)), scale_dispersion=scale_dispersion,
+        agreement_error=agreement_error, reason="",
+    )
