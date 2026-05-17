@@ -70,6 +70,7 @@ from strategies.breakout_20d import Breakout20DStrategy  # noqa: E402
 from strategies.rsi_long_short import RSILongShortStrategy  # noqa: E402
 from strategies.momentum_streak import MomentumStreakStrategy  # noqa: E402
 from strategies.mean_reversion_atr import MeanReversionAtrStrategy  # noqa: E402
+from strategies.ml_supertrend import MLSupertrendStrategy  # noqa: E402
 
 register_strategy(SMACrossStrategy)
 register_strategy(RSIMeanReversionStrategy)
@@ -77,6 +78,7 @@ register_strategy(Breakout20DStrategy)
 register_strategy(RSILongShortStrategy)
 register_strategy(MomentumStreakStrategy)
 register_strategy(MeanReversionAtrStrategy)
+register_strategy(MLSupertrendStrategy)
 
 # --- Generated strategies: auto-discovered from strategies/gen_*.py ---
 discover_generated_strategies()

@@ -320,3 +320,10 @@ def test_require_vol_spike_blocks_signals_without_surges():
     ungated = _run(strat, data,
                    MLSupertrendParams(signal_mode="breakout", require_vol_spike=False))
     assert (ungated != 0).any(), "without the vol gate the series still trades"
+
+
+def test_ml_supertrend_is_registered():
+    from backtester.strategies.registry import get_strategy_class
+    from strategies.ml_supertrend import MLSupertrendStrategy
+
+    assert get_strategy_class("ml_supertrend") is MLSupertrendStrategy
