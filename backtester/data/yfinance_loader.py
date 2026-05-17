@@ -6,12 +6,19 @@ import pandas as pd
 from backtester.core.exceptions import DataError
 
 
-def _yfinance_download(symbol: str, *, auto_adjust: bool, period: str, progress: bool) -> pd.DataFrame:
+def _yfinance_download(
+    symbol: str, *, auto_adjust: bool, period: str, progress: bool,
+    interval: str = "1d", prepost: bool = False,
+) -> pd.DataFrame:
     """Thin indirection around yfinance.download for monkeypatching in tests.
 
     The yfinance package is an OPTIONAL dependency (only required for the actual
     network fetch path). The import is LOCAL so unit tests that monkeypatch
     this function don't trigger the import.
+
+    `interval` / `prepost` default to daily, regular-session behaviour — the
+    same call the existing daily cache path makes. The hourly build script
+    passes interval="1h", prepost=False to fetch the regular-session 1h feed.
     """
     import yfinance  # local import: optional extras dependency
     return yfinance.download(
@@ -19,6 +26,8 @@ def _yfinance_download(symbol: str, *, auto_adjust: bool, period: str, progress:
         period=period,
         auto_adjust=auto_adjust,
         progress=progress,
+        interval=interval,
+        prepost=prepost,
     )
 
 
