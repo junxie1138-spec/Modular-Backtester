@@ -101,6 +101,14 @@ realtime/snapshot features is dropped, not represented as a parameter.
 `hl2 = (h+l)/2`; `hlc3 = (h+l+c)/3`; `ohlc4 = (o+h+l+c)/4`;
 `hlcc4 = (h+l+c+c)/4`.
 
+`size` is a **constant scalar**, not varied per bar — the strategy emits one
+fixed value into the `size` column for every bar (matching `rsi_long_short.py`).
+The engine reads it as a per-signal weight and multiplies it into the
+config-level position-sizing rules (`portfolio.sizing_mode` / `portfolio.size`).
+There is no regime-based or adaptive sizing — that would be part of the dropped
+adaptive engine. The field is kept so a future variant could vary it, but for
+this strategy it is always `params.size`.
+
 ## 5. Position model — stop-and-reverse (long/short)
 
 The Pine `indicator()` only paints Buy/Sell arrows; it never defines an exit.
@@ -114,6 +122,13 @@ We map the Buy/Sell event stream to an always-in-the-market position:
 This requires `execution.allow_short: true` in the config. With it absent the
 portfolio simulator raises `ShortNotAllowedError` on the first `-1`.
 
+**Stop-and-reverse is realized entirely strategy-side.** The engine has no
+"position model" config knob — it simply treats the `signal` series as the
+target position each bar ({-1, 0, +1}). The always-in-the-market behaviour is
+produced by `generate_signals()` emitting a never-flat held series; the *only*
+config-layer requirement is `allow_short: true`. There is therefore no
+`position_model:` key to set in the YAML.
+
 ## 6. Computation
 
 ### 6.1 `indicators()` — vectorized
@@ -122,12 +137,19 @@ portfolio simulator raises `ShortNotAllowedError` on the first `-1`.
 |---|---|
 | `atr` | True Range smoothed: RMA (`alpha = 1/atr_period`) when `use_atr`, else EMA (`alpha = 2/(atr_period+1)`). The suite's `compute_atr` uses SMA smoothing and is **not** used — Pine's signal path uses RMA/EMA, so smoothing is computed inline to stay faithful. |
 | `st_trend` | SuperTrend trend state in {+1, -1}. Bands and the trend flip are a sequential recurrence (see §6.2) — computed with a single numpy loop. |
-| `rsi` | Wilder RSI over `rsi_len` (same EWM form as `rsi_long_short.py`). |
+| `rsi` | Wilder RSI over `rsi_len`. RSI uses **Wilder smoothing** (`alpha = 1 / rsi_len`), matching the Pine script and the `rsi_long_short.py` implementation — not a generic library RSI. |
 | `roll_high` / `roll_low` | Rolling max(high) / min(low) over `sensitivity` bars. |
 | `is_new_high` / `is_new_low` | A fresh extreme: `roll_high` differs from its value `lookback` bars ago **and** `close` exceeds that prior value. `lookback = max(1, round(sensitivity / 10))`. Mirror for lows. |
 | `rsi_cold` / `rsi_hot` | `rsi < rsi_bot` (resp. `> rsi_top`) was true on at least one of the last `rsi_lookback_bot` (resp. `_top`) bars — a rolling-window "any" over the boolean. When `enable_rsi` is false both are constant `True`. |
 | `vol_surge` | `volume > vol_multiplier * SMA(volume, vol_lookback)`. |
-| `sig_high` / `sig_low` | `is_new_high` and, when `enable_major_levels_only`, also `high - roll_low > atr * major_level_threshold` (mirror for lows). When the filter is off, `sig_high == is_new_high`. |
+| `sig_high` / `sig_low` | `sig_high = is_new_high`, and when `enable_major_levels_only` also `high - roll_low > atr * major_level_threshold`. `sig_low = is_new_low`, and when the filter is on also `roll_high - low > atr * major_level_threshold`. When the filter is off, `sig_high == is_new_high` and `sig_low == is_new_low`. |
+
+**Major-levels filter — exact formula.** The depth is measured from the *same*
+`roll_high` / `roll_low` windows used for extreme detection (rolling max(high) /
+min(low) over `sensitivity` bars) — no separate baseline. The `atr` term is the
+**current bar's** smoothed ATR column, not a lagged ATR; using the current bar
+is safe because look-ahead is prevented by the single `shift(1)` applied to the
+final signal series (§6.4), not by lagging individual indicators.
 
 ### 6.2 SuperTrend recurrence (faithful port)
 
@@ -175,13 +197,27 @@ The loop emits the buy/sell event stream, then carries the held position
 per §5. The result is `shift(1)`-ed (enter on the bar after the signal) and
 returned as a `SignalFrame` with `signal` ∈ {-1, 0, 1} and `size`.
 
+### 6.4 Warmup and look-ahead
+
+- `warmup_bars = max(atr_period, sensitivity, rsi_len, vol_lookback) + 1`.
+- For bars before `warmup_bars`, `generate_signals()` emits `signal = 0` and
+  ignores any candidate events. The first non-zero signal may only appear once
+  every indicator column in §6.1 is valid (non-NaN) for that bar.
+- Look-ahead is prevented by a **single** `shift(1)` on the assembled position
+  series — the entry lands on the bar *after* the signal bar. Individual
+  indicators are computed on the current bar and are not separately lagged.
+
 ## 7. Deliverables and registration
 
 - `strategies/ml_supertrend.py` — `MLSupertrendParams` + `MLSupertrendStrategy`.
 - `backtester/strategies/registry.py` — add the import and
   `register_strategy(MLSupertrendStrategy)` line in the curated block.
 - `configs/backtests/ml_supertrend_spy.yaml` — SPY, `1d`, modelled on
-  `sma_cross_spy.yaml`, with `execution.allow_short: true`.
+  `sma_cross_spy.yaml`, with `execution.allow_short: true`. Its
+  `strategy_params` block uses the **Pine-default values verbatim** (the §4
+  defaults) and a header comment labels it the *"TradingView-parity baseline"*.
+  Any future tuned config (grid-search / WFO output) is named distinctly so a
+  reader can always tell a TV-parity run from an optimized one.
 - `tests/unit/test_strategy_ml_supertrend.py` — modelled on
   `test_strategy_rsi_long_short.py`.
 
