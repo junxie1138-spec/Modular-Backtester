@@ -88,9 +88,9 @@ def validate_seam(donor: pd.DataFrame, recent: pd.DataFrame) -> SeamReport:
     agree (95th-pct relative error). Returns a SeamReport; makes no
     tradability claim.
     """
-    def _fail(reason: str) -> SeamReport:
+    def _fail(reason: str, overlap_bars: int = 0) -> SeamReport:
         return SeamReport(
-            ok=False, scale=1.0, offset_hours=0, overlap_bars=0,
+            ok=False, scale=1.0, offset_hours=0, overlap_bars=overlap_bars,
             scale_dispersion=float("nan"), agreement_error=float("nan"),
             reason=reason,
         )
@@ -98,7 +98,7 @@ def validate_seam(donor: pd.DataFrame, recent: pd.DataFrame) -> SeamReport:
     if len(donor) == 0 or len(recent) == 0:
         return _fail("donor or recent frame is empty")
 
-    # Check 1: overlap exists — the donor must reach into yfinance's window.
+    # Check 1: the donor must not end before yfinance's coverage begins.
     if donor.index.max() < recent.index.min():
         return _fail("no overlap: donor ends before yfinance coverage begins")
 
@@ -113,12 +113,10 @@ def validate_seam(donor: pd.DataFrame, recent: pd.DataFrame) -> SeamReport:
 
     # Check 3: timestamp convention — donor open-stamped on the 09:30 grid.
     # A close-stamped donor is offset a uniform +1h; correct it with -1h.
-    recent_times = set(pd.Series(recent.index.time).unique())
+    recent_times = set(recent.index.time)
     offset_hours: int | None = None
     for cand in (0, -1, 1):
-        shifted = set(
-            pd.Series((donor.index + pd.Timedelta(hours=cand)).time).unique()
-        )
+        shifted = set((donor.index + pd.Timedelta(hours=cand)).time)
         if shifted <= recent_times:
             offset_hours = cand
             break
@@ -132,17 +130,18 @@ def validate_seam(donor: pd.DataFrame, recent: pd.DataFrame) -> SeamReport:
     overlap = aligned.index.intersection(recent.index)
     if len(overlap) < MIN_OVERLAP_BARS:
         return _fail(
-            f"only {len(overlap)} overlapping bars (need >= {MIN_OVERLAP_BARS})"
+            f"only {len(overlap)} overlapping bars (need >= {MIN_OVERLAP_BARS})",
+            len(overlap),
         )
 
     d_close = aligned.loc[overlap, "close"].astype(float)
     r_close = recent.loc[overlap, "close"].astype(float)
     ratio = (d_close / r_close).replace([np.inf, -np.inf], np.nan).dropna()
     if len(ratio) < MIN_OVERLAP_BARS:
-        return _fail("overlap closes are not comparable (zero/NaN closes)")
+        return _fail("overlap closes are not comparable (zero/NaN closes)", len(overlap))
     scale = float(ratio.median())
     if not np.isfinite(scale) or scale <= 0:
-        return _fail(f"robust scale is non-finite or non-positive ({scale})")
+        return _fail(f"robust scale is non-finite or non-positive ({scale})", len(overlap))
 
     # Check 4: robust dispersion — MAD of the ratio about its median. A
     # constant offset is fine (scale absorbs it); a drift is not.
@@ -150,7 +149,8 @@ def validate_seam(donor: pd.DataFrame, recent: pd.DataFrame) -> SeamReport:
     if scale_dispersion > SCALE_DISPERSION_TOL:
         return _fail(
             f"scale dispersion {scale_dispersion:.4f} exceeds "
-            f"{SCALE_DISPERSION_TOL} — donor adjustment basis drifts"
+            f"{SCALE_DISPERSION_TOL} — donor adjustment basis drifts",
+            len(overlap),
         )
 
     # Check 5: post-scale agreement — 95th-pct absolute relative close error.
@@ -158,7 +158,8 @@ def validate_seam(donor: pd.DataFrame, recent: pd.DataFrame) -> SeamReport:
     if agreement_error > AGREEMENT_TOL:
         return _fail(
             f"post-scale agreement error {agreement_error:.4f} exceeds "
-            f"{AGREEMENT_TOL}"
+            f"{AGREEMENT_TOL}",
+            len(overlap),
         )
 
     return SeamReport(
