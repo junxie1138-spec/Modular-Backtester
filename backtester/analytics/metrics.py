@@ -9,6 +9,24 @@ from backtester.analytics.trades import extract_round_trips
 from backtester.core.constants import TRADING_DAYS_PER_YEAR
 
 
+PERIODS_PER_YEAR: dict[str, int] = {"1d": 252, "1h": 1638}
+
+
+def periods_per_year(timeframe: str) -> int:
+    """Annualisation factor — the number of bars in one year for `timeframe`.
+
+    `1d` -> 252 trading days. `1h` -> 1638 = 252 x 6.5 regular-session hours;
+    the 6.5 is an approximation (each session's 7th bar is the half-length
+    15:30-16:00 bar) — adequate for v1 and tunable here.
+    """
+    try:
+        return PERIODS_PER_YEAR[timeframe]
+    except KeyError:
+        raise ValueError(
+            f"unknown timeframe {timeframe!r}; known: {sorted(PERIODS_PER_YEAR)}"
+        ) from None
+
+
 def _returns(equity: pd.Series) -> pd.Series:
     return equity.pct_change().dropna()
 
