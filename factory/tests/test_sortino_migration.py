@@ -8,7 +8,7 @@ from factory.settings_loader import PromotionCfg
 from factory.settings_loader import load_settings
 from factory.sortino_migration import (
     _initial_state, _migrate_record, _needs_rerun, _read_bundle_sortino,
-    migrate_shard,
+    drain_one_retro_promotion, migrate_shard,
 )
 
 
@@ -269,3 +269,69 @@ def test_migrate_shard_leaves_unbackfillable_record(tmp_path: Path) -> None:
     after = json.loads(shard.read_text(encoding="utf-8").splitlines()[0])
     assert "oos_sortino" not in after["wfo"]
     assert "sortino_migration" not in after
+
+
+def _pending_record(strategy_id: str = "gen_1") -> dict:
+    """A complete, already-backfilled record queued for retro-promotion."""
+    rec = _record(strategy_id, oos_sortino=1.5)
+    rec["sortino_migration"] = {
+        "migrated_at": "2026-05-17T00:00:00Z", "needs_rerun": True,
+        "state": "pending",
+    }
+    return rec
+
+
+def test_drain_runs_promotion_for_pending_record(tmp_path: Path) -> None:
+    settings = _settings(tmp_path, promotion_enabled=True, trigger_threshold=1.0)
+    cfg = settings.paths.configs_dir / "gen_1.yaml"
+    cfg.parent.mkdir(parents=True, exist_ok=True)
+    cfg.write_text("run_name: gen_1\n", encoding="utf-8")
+    shard = settings.paths.results_dir / f"{settings.node_id}.jsonl"
+    _write_shard(shard, [_pending_record("gen_1")])
+
+    from factory.promote import PromotionResult
+    fake = PromotionResult(
+        ran=True, tickers=("AAPL", "QQQ", "DIA"), per_ticker={},
+        avg_sortino=1.2, min_avg_sortino_threshold=0.7, passed=True, error=None,
+    )
+    with mock.patch(
+        "factory.sortino_migration.promote_strategy", return_value=fake,
+    ) as ps:
+        handled = drain_one_retro_promotion(settings)
+
+    assert handled is True
+    assert ps.call_count == 1
+    out = json.loads(shard.read_text(encoding="utf-8").splitlines()[0])
+    assert out["sortino_migration"]["state"] == "done"
+    assert out["promotion"]["passed"] is True
+
+
+def test_drain_marks_na_when_canonical_config_missing(tmp_path: Path) -> None:
+    settings = _settings(tmp_path, promotion_enabled=True, trigger_threshold=1.0)
+    shard = settings.paths.results_dir / f"{settings.node_id}.jsonl"
+    _write_shard(shard, [_pending_record("gen_no_config")])
+
+    with mock.patch("factory.sortino_migration.promote_strategy") as ps:
+        handled = drain_one_retro_promotion(settings)
+
+    assert handled is True
+    ps.assert_not_called()
+    out = json.loads(shard.read_text(encoding="utf-8").splitlines()[0])
+    assert out["sortino_migration"]["state"] == "n/a"
+
+
+def test_drain_noop_when_nothing_pending(tmp_path: Path) -> None:
+    settings = _settings(tmp_path, promotion_enabled=True, trigger_threshold=1.0)
+    shard = settings.paths.results_dir / f"{settings.node_id}.jsonl"
+    rec = _record("gen_1", oos_sortino=0.5)
+    rec["sortino_migration"] = {
+        "migrated_at": "2026-05-17T00:00:00Z", "needs_rerun": False,
+        "state": "n/a",
+    }
+    _write_shard(shard, [rec])
+    assert drain_one_retro_promotion(settings) is False
+
+
+def test_drain_noop_on_empty_shard(tmp_path: Path) -> None:
+    settings = _settings(tmp_path, promotion_enabled=True, trigger_threshold=1.0)
+    assert drain_one_retro_promotion(settings) is False

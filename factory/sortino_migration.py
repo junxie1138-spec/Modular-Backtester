@@ -183,3 +183,59 @@ def migrate_shard(settings: Settings) -> int:
             migrated_count, shard.name,
         )
     return migrated_count
+
+
+def drain_one_retro_promotion(settings: Settings) -> bool:
+    """Run at most one queued retro-promotion against this machine's shard.
+
+    Finds the first record with sortino_migration.state == "pending", runs the
+    held-out promotion stage for it (or marks it "n/a" if its canonical config
+    is gone), writes the result back, and rewrites the shard. Returns True if a
+    pending record was processed, False if there was nothing pending.
+    """
+    shard = settings.paths.results_dir / f"{settings.node_id}.jsonl"
+    records = _read_shard(shard)
+    idx = next(
+        (
+            i for i, r in enumerate(records)
+            if isinstance(r.get("sortino_migration"), dict)
+            and r["sortino_migration"].get("state") == "pending"
+        ),
+        None,
+    )
+    if idx is None:
+        return False
+
+    record = records[idx]
+    strategy_id = record["strategy_id"]
+    canonical = settings.paths.configs_dir / f"{strategy_id}.yaml"
+    if not canonical.is_file():
+        log.warning(
+            "retro-promotion: canonical config missing for %s (%s); "
+            "marking state=n/a", strategy_id, canonical,
+        )
+        record["sortino_migration"]["state"] = "n/a"
+        _write_shard(shard, records)
+        return True
+
+    log.info("retro-promotion: running held-out promotion for %s", strategy_id)
+    promo = promote_strategy(
+        strategy_id=strategy_id,
+        optimized_params=record["optimize"]["best_params"],
+        canonical_config_path=canonical,
+        promotion_cfg=settings.promotion,
+        tmp_dir=settings.paths.tmp_dir,
+        output_runs_dir=settings.paths.output_runs_dir,
+        stage_timeout_sec=settings.stages.stage_timeout_sec,
+        backtester_root=settings.paths.backtester_root,
+        build_report_path=(
+            settings.paths.backtester_root / "data" / "raw_hourly" / "_build_report.json"
+        ),
+    )
+    record["promotion"] = asdict(promo)
+    record["sortino_migration"]["state"] = "done"
+    _write_shard(shard, records)
+    log.info(
+        "retro-promotion: %s complete passed=%s", strategy_id, promo.passed,
+    )
+    return True
