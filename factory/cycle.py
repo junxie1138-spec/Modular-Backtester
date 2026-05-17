@@ -229,6 +229,9 @@ def run_cycle(settings: Settings, *, rng: random.Random) -> CycleOutcome:
                 output_runs_dir=paths.output_runs_dir,
                 stage_timeout_sec=s.stages.stage_timeout_sec,
                 backtester_root=paths.backtester_root,
+                build_report_path=(
+                    paths.backtester_root / "data" / "raw_hourly" / "_build_report.json"
+                ),
             )
             promotion_dict = asdict(promo)
             log.info(

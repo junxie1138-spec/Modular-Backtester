@@ -192,3 +192,57 @@ def test_promote_strategy_fails_when_subprocess_nonzero(tmp_path: Path) -> None:
     assert result.per_ticker == {}
     assert result.avg_sortino is None
     assert "AAPL" in result.error and "exit=1" in result.error
+
+
+def _write_build_report(path: Path, classifications: dict[str, str]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps({
+        "min_hourly_bars": 7000,
+        "symbols": {s: {"classification": c} for s, c in classifications.items()},
+    }), encoding="utf-8")
+
+
+def test_tradable_tickers_no_report_keeps_all() -> None:
+    from factory.promote import _tradable_tickers
+    assert _tradable_tickers(("AAPL", "QQQ", "DIA"), None) == ["AAPL", "QQQ", "DIA"]
+
+
+def test_tradable_tickers_filters_insufficient(tmp_path: Path) -> None:
+    from factory.promote import _tradable_tickers
+    report = tmp_path / "_build_report.json"
+    _write_build_report(report, {
+        "AAPL": "tradable", "QQQ": "insufficient_history", "DIA": "tradable",
+    })
+    assert _tradable_tickers(("AAPL", "QQQ", "DIA"), report) == ["AAPL", "DIA"]
+
+
+def test_promote_strategy_skips_insufficient_history_tickers(tmp_path: Path) -> None:
+    canonical = tmp_path / "cfg.yaml"
+    canonical.write_text(_canonical_config("gen_x"), encoding="utf-8")
+    output_runs = tmp_path / "output" / "runs"
+    # Only AAPL and DIA are tradable; QQQ is insufficient and must be skipped.
+    _seed_promotion_bundle(output_runs, "gen_x_promo_AAPL_wfo", 0.9)
+    _seed_promotion_bundle(output_runs, "gen_x_promo_DIA_wfo", 0.8)
+    report = tmp_path / "_build_report.json"
+    _write_build_report(report, {
+        "AAPL": "tradable", "QQQ": "insufficient_history", "DIA": "tradable",
+    })
+
+    fake_proc = mock.Mock(returncode=0, stdout="", stderr="")
+    with mock.patch("factory.promote.subprocess.run", return_value=fake_proc):
+        result = promote_strategy(
+            strategy_id="gen_x",
+            optimized_params={"size": 1.0},
+            canonical_config_path=canonical,
+            promotion_cfg=_cfg(min_avg_sortino=0.7),
+            tmp_dir=tmp_path / "_tmp",
+            output_runs_dir=output_runs,
+            stage_timeout_sec=60,
+            build_report_path=report,
+        )
+
+    # QQQ never ran; passing is judged over the two eligible tickers only.
+    assert set(result.per_ticker.keys()) == {"AAPL", "DIA"}
+    assert result.avg_sortino == pytest.approx(0.85)
+    assert result.passed is True
+    assert result.error is None
