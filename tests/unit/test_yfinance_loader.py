@@ -1,5 +1,6 @@
 from pathlib import Path
 from unittest.mock import MagicMock, patch
+import sys
 
 import pandas as pd
 import pytest
@@ -100,3 +101,40 @@ def test_loader_require_volume_false_keeps_zero_volume(tmp_path: Path) -> None:
             require_volume=False,
         )
     assert (df["volume"] == 0).all()
+
+
+def test_yfinance_download_forwards_interval_and_prepost(monkeypatch) -> None:
+    import backtester.data.yfinance_loader as yl
+    captured: dict = {}
+
+    class _FakeYF:
+        @staticmethod
+        def download(symbol, **kwargs):
+            captured.update(symbol=symbol, **kwargs)
+            return pd.DataFrame()
+
+    monkeypatch.setitem(sys.modules, "yfinance", _FakeYF)
+    yl._yfinance_download(
+        "SPY", auto_adjust=True, period="730d", progress=False,
+        interval="1h", prepost=False,
+    )
+    assert captured["interval"] == "1h"
+    assert captured["prepost"] is False
+    assert captured["period"] == "730d"
+
+
+def test_yfinance_download_defaults_preserve_daily(monkeypatch) -> None:
+    """Omitting interval/prepost keeps the existing daily fetch behaviour."""
+    import backtester.data.yfinance_loader as yl
+    captured: dict = {}
+
+    class _FakeYF:
+        @staticmethod
+        def download(symbol, **kwargs):
+            captured.update(kwargs)
+            return pd.DataFrame()
+
+    monkeypatch.setitem(sys.modules, "yfinance", _FakeYF)
+    yl._yfinance_download("SPY", auto_adjust=True, period="max", progress=False)
+    assert captured["interval"] == "1d"
+    assert captured["prepost"] is False
