@@ -1,6 +1,10 @@
 from __future__ import annotations
 
+import math
+
+import numpy as np
 import pandas as pd
+import pytest
 
 from backtester.core.types import BacktestResult
 from backtester.wfo.stitcher import WalkForwardStitcher
@@ -96,3 +100,24 @@ def test_stitcher_skips_non_numeric_is_summary_keys_without_warning():
     assert "params" not in is_avg
     assert "symbol" not in is_avg
     assert "timeframe" not in is_avg
+
+
+def test_combine_threads_timeframe_into_oos_summary() -> None:
+    from types import SimpleNamespace
+    from backtester.wfo.stitcher import WalkForwardStitcher
+    rng = np.random.default_rng(2)
+    vals = 100 * np.exp(np.cumsum(rng.normal(0.0003, 0.01, 400)))
+    idx = pd.bdate_range("2024-01-02", periods=400)
+    eq = pd.DataFrame({"equity": vals}, index=idx)
+    test_result = SimpleNamespace(
+        equity_curve=eq, trades=pd.DataFrame(),
+        positions=pd.DataFrame({"qty": [0] * 400}, index=idx),
+    )
+    window = {
+        "window_index": 0, "test_result": test_result,
+        "train_summary": {"sharpe": 1.0}, "best_params": {"fast": 10},
+    }
+    st = WalkForwardStitcher()
+    sh_d = st.combine([window], timeframe="1d")["oos_summary"]["sharpe"]
+    sh_h = st.combine([window], timeframe="1h")["oos_summary"]["sharpe"]
+    assert sh_h == pytest.approx(sh_d * math.sqrt(1638 / 252), rel=1e-6)

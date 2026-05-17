@@ -17,6 +17,7 @@ from backtester.engine.regime import RegimePolicy
 from backtester.engine.risk_budget import RiskBudgetEnforcer
 from backtester.engine.sector_cap import SectorCapEnforcer
 from backtester.engine.tranche_stop import TrancheStopState, TSPhase
+from backtester.analytics.metrics import periods_per_year
 
 
 @dataclass
@@ -36,6 +37,7 @@ class MultiSymbolPortfolioSimulator:
     config: Any  # PortfolioConfig
     initial_cash: float
     broker_factory: Callable[[], Broker]
+    timeframe: str = "1d"
 
     def _vol_targeted_dollars(
         self,
@@ -54,7 +56,7 @@ class MultiSymbolPortfolioSimulator:
         closes = data_panel[symbol]["close"].iloc[: bar_idx + 1]
         if len(closes) < 21:
             return 0.0  # warmup defer
-        realized_vol = closes.pct_change().rolling(20).std().iloc[-1] * np.sqrt(252)
+        realized_vol = closes.pct_change().rolling(20).std().iloc[-1] * np.sqrt(periods_per_year(self.timeframe))
         if pd.isna(realized_vol) or realized_vol <= 0:
             return 0.0
         target_pct = self.config.vol_target / realized_vol
@@ -405,7 +407,7 @@ class MultiSymbolPortfolioSimulator:
             # Sharpe: annualized, 252-day convention, zero risk-free.
             sharpe = 0.0
             if len(returns) > 1 and returns.std() > 0:
-                sharpe = float(returns.mean() / returns.std() * np.sqrt(252))
+                sharpe = float(returns.mean() / returns.std() * np.sqrt(periods_per_year(self.timeframe)))
             # Max drawdown: minimum of (equity - cummax) / cummax across the curve.
             peak = equity_curve.cummax()
             drawdown = (equity_curve - peak) / peak

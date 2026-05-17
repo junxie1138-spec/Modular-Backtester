@@ -82,4 +82,4 @@ class WalkForwardRunner:
             log.info("window %d: best=%s test_sharpe=%.3f",
                      i, window_results[-1]["best_params"], test_result.summary.get("sharpe", 0.0))
 
-        return self.stitcher.combine(window_results)
+        return self.stitcher.combine(window_results, timeframe=timeframe)
