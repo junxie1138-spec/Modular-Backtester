@@ -124,3 +124,25 @@ def test_supertrend_trend_flips_down_then_up():
     assert (trend[30:60] == -1).any(), "expected a downtrend during the fall"
     # And flip back to +1 during the final rise.
     assert (trend[60:] == 1).any(), "expected an uptrend during the recovery"
+
+
+def test_wilder_rsi_range_and_warmup():
+    from strategies.ml_supertrend import _wilder_rsi
+
+    data = _ohlcv(n=60, seed=3)
+    rsi = _wilder_rsi(data["close"], length=14)
+    valid = rsi.dropna()
+    # First `length` values are NaN (min_periods=length).
+    assert rsi.iloc[:13].isna().all()
+    assert not rsi.iloc[14:].isna().any()
+    # RSI is bounded to [0, 100].
+    assert (valid >= 0).all() and (valid <= 100).all()
+
+
+def test_wilder_rsi_all_gains_is_100():
+    from strategies.ml_supertrend import _wilder_rsi
+
+    # Monotonically rising close -> no losses -> RSI saturates at 100.
+    close = pd.Series(np.linspace(100.0, 160.0, 40))
+    rsi = _wilder_rsi(close, length=14)
+    assert rsi.dropna().iloc[-1] == pytest.approx(100.0)
