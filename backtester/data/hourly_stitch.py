@@ -167,3 +167,42 @@ def validate_seam(donor: pd.DataFrame, recent: pd.DataFrame) -> SeamReport:
         overlap_bars=int(len(overlap)), scale_dispersion=scale_dispersion,
         agreement_error=agreement_error, reason="",
     )
+
+
+def splice(
+    donor: pd.DataFrame,
+    recent: pd.DataFrame,
+    seam_ts: pd.Timestamp,
+    scale: float,
+) -> pd.DataFrame:
+    """Join the donor (before the seam) to recent yfinance (from the seam on).
+
+    The donor supplies every bar strictly before `seam_ts`; yfinance supplies
+    every bar from `seam_ts` onward — so the live edge is always pure
+    yfinance. Donor OHLC prices are divided by `scale` (the median
+    donor/yfinance close ratio) to align the donor to yfinance's adjustment
+    basis; volume is left unscaled. The result is verified monotonic, free of
+    duplicate timestamps, and free of an oversized gap straddling the seam.
+
+    `donor` must already carry any timestamp-offset correction from
+    SeamReport.offset_hours — splice does not re-apply it.
+    """
+    if not np.isfinite(scale) or scale <= 0:
+        raise DataError(f"splice: invalid scale {scale!r}")
+    price_cols = ["open", "high", "low", "close"]
+    donor_part = donor[donor.index < seam_ts].copy()
+    donor_part[price_cols] = donor_part[price_cols] / scale
+    recent_part = recent[recent.index >= seam_ts].copy()
+
+    out = pd.concat([donor_part, recent_part]).sort_index()
+    out = out[~out.index.duplicated(keep="last")]
+    if not out.index.is_monotonic_increasing:
+        raise DataError("splice: result index is not monotonic increasing")
+
+    before = out.index[out.index < seam_ts]
+    after = out.index[out.index >= seam_ts]
+    if len(before) and len(after):
+        gap = after[0] - before[-1]
+        if gap > MAX_SEAM_GAP:
+            raise DataError(f"splice: seam gap {gap} exceeds {MAX_SEAM_GAP}")
+    return out

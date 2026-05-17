@@ -5,7 +5,7 @@ import pandas as pd
 import pytest
 
 from backtester.core.exceptions import DataError
-from backtester.data.hourly_stitch import SeamReport, load_donor, validate_seam
+from backtester.data.hourly_stitch import SeamReport, load_donor, splice, validate_seam
 
 _HOURS = [9.5, 10.5, 11.5, 12.5, 13.5, 14.5, 15.5]
 
@@ -155,3 +155,31 @@ def test_validate_seam_pre_open_stamped_donor_detected_and_passes() -> None:
     rep = validate_seam(donor, recent)
     assert rep.ok
     assert rep.offset_hours == 1
+
+
+def test_splice_cuts_at_seam_and_scales_donor() -> None:
+    idx = _session_index("2024-01-02", 30)
+    donor = _ohlcv(idx, np.full(len(idx), 200.0))
+    recent = _ohlcv(idx, np.full(len(idx), 100.0))
+    seam = idx[7 * 10]   # the start of business day 11
+    out = splice(donor, recent, seam, scale=2.0)
+    assert out.index.is_monotonic_increasing
+    assert not out.index.duplicated().any()
+    # The donor side is divided by scale 2.0 -> 100; the recent side is 100.
+    assert (out["close"].round(6) == 100.0).all()
+    assert out.index.min() == idx[0]
+    assert out.index.max() == idx[-1]
+
+
+def test_splice_rejects_oversized_seam_gap() -> None:
+    donor = _ohlcv(_session_index("2024-01-02", 10), np.full(10 * 7, 100.0))
+    recent = _ohlcv(_session_index("2024-03-01", 10), np.full(10 * 7, 100.0))
+    with pytest.raises(DataError, match="seam gap"):
+        splice(donor, recent, recent.index[0], scale=1.0)
+
+
+def test_splice_rejects_invalid_scale() -> None:
+    idx = _session_index("2024-01-02", 5)
+    frame = _ohlcv(idx, np.full(len(idx), 100.0))
+    with pytest.raises(DataError, match="invalid scale"):
+        splice(frame, frame, idx[0], scale=0.0)
