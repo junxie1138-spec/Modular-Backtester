@@ -194,3 +194,85 @@ def test_indicators_major_levels_filter_is_subset():
     # When the filter is off, sig_* equals is_new_* exactly.
     assert base["sig_high"].equals(base["is_new_high"])
     assert base["sig_low"].equals(base["is_new_low"])
+
+
+def _swinging_ohlcv(n=300, seed=11):
+    """Trend-swinging series: repeated up/down legs so SuperTrend flips
+    multiple times and fresh highs/lows occur in both directions."""
+    rng = np.random.default_rng(seed)
+    idx = pd.date_range("2020-01-02", periods=n, freq="B")
+    close = np.empty(n)
+    p = 100.0
+    for i in range(n):
+        leg = (i // 25) % 2          # alternate 25-bar up / down legs
+        drift = 0.6 if leg == 0 else -0.6
+        p = max(5.0, p + drift + rng.normal(0.0, 0.4))
+        close[i] = p
+    high = close + np.abs(rng.normal(0.0, 0.4, n)) + 0.3
+    low = close - np.abs(rng.normal(0.0, 0.4, n)) - 0.3
+    open_ = close + rng.normal(0.0, 0.2, n)
+    return pd.DataFrame(
+        {"open": open_, "high": high, "low": low, "close": close,
+         "volume": rng.integers(800_000, 1_200_000, n).astype(float)},
+        index=idx,
+    )
+
+
+def _run(strat, data, params):
+    ind = strat.indicators(data, params)
+    ctx = StrategyContext(symbol="SYN", timeframe="1d",
+                          warmup_bars=strat.warmup_bars(params))
+    return strat.generate_signals(data, ind, ctx, params).data["signal"]
+
+
+def test_reversal_signal_values_and_first_bar_flat():
+    from strategies.ml_supertrend import MLSupertrendStrategy, MLSupertrendParams
+
+    data = _swinging_ohlcv()
+    sigs = _run(MLSupertrendStrategy(), data, MLSupertrendParams(signal_mode="reversal"))
+    assert set(sigs.unique()).issubset({-1, 0, 1})
+    assert sigs.iloc[0] == 0          # shift(1) leaves the first bar flat
+    assert len(sigs) == len(data)
+
+
+def test_reversal_no_signal_in_warmup():
+    from strategies.ml_supertrend import MLSupertrendStrategy, MLSupertrendParams
+
+    data = _swinging_ohlcv()
+    strat = MLSupertrendStrategy()
+    params = MLSupertrendParams(signal_mode="reversal")
+    sigs = _run(strat, data, params)
+    # Every bar up to and including warmup index is flat.
+    assert (sigs.iloc[: strat.warmup_bars(params) + 1] == 0).all()
+
+
+def test_reversal_is_stop_and_reverse():
+    """Once trading starts the position is never flat again, and consecutive
+    distinct non-zero values alternate +1 / -1 (stop-and-reverse)."""
+    from strategies.ml_supertrend import MLSupertrendStrategy, MLSupertrendParams
+
+    data = _swinging_ohlcv()
+    sigs = _run(MLSupertrendStrategy(), data,
+                MLSupertrendParams(signal_mode="reversal")).to_numpy()
+    nz = sigs[sigs != 0]
+    assert nz.size > 0, "expected at least one signal on a swinging series"
+    # Collapse runs of equal values; the distinct sequence must alternate.
+    collapsed = nz[np.insert(np.diff(nz) != 0, 0, True)]
+    assert np.all(np.abs(np.diff(collapsed)) == 2), "non-zero signal must alternate +1/-1"
+    # After the first signal there is no return to flat.
+    first = np.argmax(sigs != 0)
+    assert np.all(sigs[first:] != 0)
+
+
+def test_reversal_signal_spacing_is_honoured():
+    from strategies.ml_supertrend import MLSupertrendStrategy, MLSupertrendParams
+
+    data = _swinging_ohlcv()
+    params = MLSupertrendParams(signal_mode="reversal", min_bars_between_signals=20)
+    sigs = _run(MLSupertrendStrategy(), data, params).to_numpy()
+    # A "new signal bar" is where the held position changes value.
+    change_idx = np.where(np.diff(sigs) != 0)[0] + 1
+    # Drop the initial 0 -> first-signal transition is still a real signal;
+    # gaps between successive signal bars must be >= min_bars_between_signals.
+    gaps = np.diff(change_idx)
+    assert np.all(gaps >= params.min_bars_between_signals)

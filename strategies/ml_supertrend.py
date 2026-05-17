@@ -244,7 +244,78 @@ class MLSupertrendStrategy(BaseStrategy[MLSupertrendParams]):
         ctx: StrategyContext,
         params: MLSupertrendParams,
     ) -> SignalFrame:
+        n = len(data)
+        st = indicators["st_trend"].to_numpy()
+        sig_high = indicators["sig_high"].to_numpy(dtype=bool)
+        sig_low = indicators["sig_low"].to_numpy(dtype=bool)
+        rsi_cold = indicators["rsi_cold"].to_numpy(dtype=bool)
+        rsi_hot = indicators["rsi_hot"].to_numpy(dtype=bool)
+        vol_surge = indicators["vol_surge"].to_numpy(dtype=bool)
+
+        warmup = self.warmup_bars(params)
+
+        position = np.zeros(n, dtype=np.int64)
+        held = 0
+        last_signal_bar = 0          # matches Pine `var int lastSignalBar = 0`
+        top_flag = 0
+        bot_flag = 0
+
+        for i in range(n):
+            buy = False
+            sell = False
+            prev_top = top_flag
+            prev_bot = bot_flag
+            spaced = (i - last_signal_bar) >= params.min_bars_between_signals
+
+            # Reversal-mode flag latches update whenever spacing allows
+            # (faithful to Pine: flags live inside `if enableReversal and canSignal`).
+            if params.signal_mode == "reversal" and spaced:
+                if st[i] == -1:
+                    top_flag = 0
+                elif sig_high[i] and st[i] == 1:
+                    top_flag = 1
+                if st[i] == 1:
+                    bot_flag = 0
+                elif sig_low[i] and st[i] == -1:
+                    bot_flag = 1
+
+            if i >= warmup and spaced:
+                buy_filters = rsi_cold[i] and (
+                    not params.require_vol_spike or vol_surge[i]
+                )
+                sell_filters = rsi_hot[i] and (
+                    not params.require_vol_spike or vol_surge[i]
+                )
+                if params.signal_mode == "reversal":
+                    flip_down = i > 0 and st[i - 1] == 1 and st[i] == -1
+                    flip_up = i > 0 and st[i - 1] == -1 and st[i] == 1
+                    rev_sell = (prev_top == 1 and top_flag == 0) or (
+                        not params.require_new_extreme and flip_down
+                    )
+                    rev_buy = (prev_bot == 1 and bot_flag == 0) or (
+                        not params.require_new_extreme and flip_up
+                    )
+                    if rev_sell and sell_filters:
+                        sell = True
+                    elif rev_buy and buy_filters:
+                        buy = True
+                else:  # breakout
+                    if sig_high[i] and st[i] == 1 and sell_filters:
+                        sell = True
+                    elif sig_low[i] and st[i] == -1 and buy_filters:
+                        buy = True
+
+            if buy:
+                held = 1
+                last_signal_bar = i
+            elif sell:
+                held = -1
+                last_signal_bar = i
+            position[i] = held
+
         df = pd.DataFrame(index=data.index)
-        df["signal"] = 0
+        df["signal"] = (
+            pd.Series(position, index=data.index).shift(1).fillna(0).astype(int)
+        )
         df["size"] = params.size
         return SignalFrame(data=df, signal_column="signal", size_column="size")
