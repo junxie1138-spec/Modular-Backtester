@@ -33,4 +33,29 @@ df = load_symbol("SPY", source="csv", root="data/raw", start="2020-01-01", end="
 ```python
 from backtester.data.validators import validate_ohlcv
 validate_ohlcv(df)  # raises DataError on any violation
+
+## Hourly datasets (`data/raw_hourly/`)
+
+`data/raw_hourly/{SYMBOL}.csv` holds the same OHLCV schema as `data/raw/`,
+but on an hourly index (tz-naive US/Eastern, regular session, 7 bars/day
+open-stamped 09:30..15:30). It is read by the same `CSVDataLoader` — the
+loader is unchanged.
+
+These files are *built*, not fetched directly. `scripts/build_hourly_dataset.py`
+stitches a deep-history Kaggle donor CSV (`data/donor_hourly/{SYMBOL}.csv`,
+manually placed, unverified provenance) with a recent yfinance `1h` fetch:
+
+```bash
+python -m scripts.build_hourly_dataset --symbols SPY AAPL QQQ
+```
+
+| Path | Role |
+|------|------|
+| `data/donor_hourly/{SYMBOL}.csv` | Kaggle donor CSVs — deep history, manually placed. |
+| `data/raw_hourly/{SYMBOL}.csv` | Built hourly OHLCV output. |
+| `data/raw_hourly/_build_report.json` | Per-symbol audit trail: `source` (`stitched` / `yfinance_only` / `failed`), donor date range, seam date, robust scale factor, validation verdict, bar count, date span, and the tradability `classification` (`tradable` / `insufficient_history`). |
+
+A symbol with fewer than `MIN_HOURLY_BARS` (7000) built bars is classified
+`insufficient_history` — a thin yfinance-only fallback is not automatically
+tradable.
 ```
