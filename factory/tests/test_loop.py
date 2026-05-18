@@ -5,7 +5,7 @@ from unittest import mock
 
 import pytest
 
-from factory.loop import _model_from_flags, configure_logging, run_loop
+from factory.loop import _model_from_flags, configure_logging, main, run_loop
 from factory.settings_loader import load_settings
 
 
@@ -76,7 +76,6 @@ def test_run_loop_stops_on_sigint(tmp_settings_file: Path) -> None:
 def test_main_passes_max_cycles_override(tmp_settings_file: Path) -> None:
     with mock.patch("factory.loop.run_loop") as rl, \
          mock.patch("factory.loop.configure_logging"):
-        from factory.loop import main
         rc = main(["--settings", str(tmp_settings_file), "--max-cycles", "3"])
     assert rc == 0
     assert rl.call_args.kwargs["max_cycles_override"] == 3
@@ -85,6 +84,11 @@ def test_main_passes_max_cycles_override(tmp_settings_file: Path) -> None:
 def test_main_max_cycles_defaults_to_none(tmp_settings_file: Path) -> None:
     with mock.patch("factory.loop.run_loop") as rl, \
          mock.patch("factory.loop.configure_logging"):
-        from factory.loop import main
         main(["--settings", str(tmp_settings_file)])
     assert rl.call_args.kwargs["max_cycles_override"] is None
+
+
+def test_main_rejects_negative_max_cycles(tmp_settings_file: Path) -> None:
+    with pytest.raises(SystemExit) as exc:
+        main(["--settings", str(tmp_settings_file), "--max-cycles", "-1"])
+    assert exc.value.code != 0
