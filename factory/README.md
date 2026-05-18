@@ -52,7 +52,7 @@ You also need the **`claude` CLI** authenticated on this machine and on `PATH`. 
    ```
 5. Open <http://127.0.0.1:8787>.
 
-The loop runs until `Ctrl-C` (graceful — it finishes the current cycle), or until `[loop] max_cycles` is reached. `python -m factory.loop --seed 42` makes idea-slot draws reproducible; `--settings <path>` points at an alternate settings file.
+The loop runs until `Ctrl-C` (graceful — it finishes the current cycle), or until `[loop] max_cycles` is reached. `python -m factory.loop --max-cycles 10` stops after 10 cycles (strategy attempts), overriding `[loop] max_cycles` without editing settings (`0` = unlimited). `python -m factory.loop --seed 42` makes idea-slot draws reproducible; `--settings <path>` points at an alternate settings file.
 
 With distributed mode off (the default), this is the whole factory — the per-machine ID scheme and sharded storage described below are still used, they are simply harmless on one machine.
 
