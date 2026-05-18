@@ -150,6 +150,11 @@ def main(argv: Optional[list[str]] = None) -> int:
     )
     parser.add_argument("--seed", type=int, default=None,
                         help="Optional random seed for slot pulls")
+    parser.add_argument(
+        "--max-cycles", type=int, default=None,
+        help="Stop after N cycles (strategy attempts). 0 = unlimited. "
+             "Overrides [loop] max_cycles in settings.toml.",
+    )
     args = parser.parse_args(argv)
 
     s = load_settings(args.settings)
@@ -157,7 +162,8 @@ def main(argv: Optional[list[str]] = None) -> int:
     flag = _ShutdownFlag()
     _install_signal_handlers(flag)
     rng = random.Random(args.seed) if args.seed is not None else random.Random()
-    run_loop(s, rng=rng, shutdown_flag=flag)
+    run_loop(s, rng=rng, shutdown_flag=flag,
+             max_cycles_override=args.max_cycles)
     return 0
 
 

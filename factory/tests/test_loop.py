@@ -71,3 +71,20 @@ def test_run_loop_stops_on_sigint(tmp_settings_file: Path) -> None:
     # The flag is checked AFTER each cycle, so cycle 2 runs to completion
     # and then the loop breaks.
     assert completed == 2
+
+
+def test_main_passes_max_cycles_override(tmp_settings_file: Path) -> None:
+    with mock.patch("factory.loop.run_loop") as rl, \
+         mock.patch("factory.loop.configure_logging"):
+        from factory.loop import main
+        rc = main(["--settings", str(tmp_settings_file), "--max-cycles", "3"])
+    assert rc == 0
+    assert rl.call_args.kwargs["max_cycles_override"] == 3
+
+
+def test_main_max_cycles_defaults_to_none(tmp_settings_file: Path) -> None:
+    with mock.patch("factory.loop.run_loop") as rl, \
+         mock.patch("factory.loop.configure_logging"):
+        from factory.loop import main
+        main(["--settings", str(tmp_settings_file)])
+    assert rl.call_args.kwargs["max_cycles_override"] is None
