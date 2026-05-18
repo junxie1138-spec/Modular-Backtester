@@ -52,7 +52,23 @@ You also need the **`claude` CLI** authenticated on this machine and on `PATH`. 
    ```
 5. Open <http://127.0.0.1:8787>.
 
-The loop runs until `Ctrl-C` (graceful — it finishes the current cycle), or until `[loop] max_cycles` is reached. `python -m factory.loop --max-cycles 10` stops after 10 cycles (strategy attempts), overriding `[loop] max_cycles` without editing settings (`0` = unlimited). `python -m factory.loop --seed 42` makes idea-slot draws reproducible; `--settings <path>` points at an alternate settings file.
+The loop runs until `Ctrl-C` (graceful — it finishes the current cycle), or until a cycle limit is reached. `python -m factory.loop --seed 42` makes idea-slot draws reproducible; `--settings <path>` points at an alternate settings file.
+
+### Choosing how many strategies to generate
+
+Each cycle is one strategy attempt, so the cycle count *is* how many strategies a run generates. By default the loop runs forever (`[loop] max_cycles = 0` in `settings.toml`). To cap a run, pass `--max-cycles`:
+
+```bash
+python -m factory.loop --max-cycles 25   # run 25 cycles, then exit cleanly
+```
+
+- `--max-cycles N` runs **exactly N cycles** — N strategy attempts, whether each one ends `complete`, `complete (screened)`, or `failed` — and then the loop exits.
+- `--max-cycles 0` means unlimited (the same as the default).
+- The flag **overrides `[loop] max_cycles`** for that run only. Prefer it over editing `settings.toml` — `settings.toml` is tracked, and a modified tracked file makes distributed `sync_pull` skip every cycle (see [Troubleshooting](#troubleshooting)).
+- A negative value is rejected before the loop starts.
+- Omit the flag and the `[loop] max_cycles` setting applies instead.
+
+`Ctrl-C` still stops a run early at any point — gracefully, after the current cycle finishes — regardless of `--max-cycles`.
 
 With distributed mode off (the default), this is the whole factory — the per-machine ID scheme and sharded storage described below are still used, they are simply harmless on one machine.
 
