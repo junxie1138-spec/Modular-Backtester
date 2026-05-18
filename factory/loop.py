@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import argparse
 import logging
 import logging.handlers
 import random
@@ -79,7 +80,6 @@ def _install_signal_handlers(flag: _ShutdownFlag) -> None:
 
 def _nonneg_int(value: str) -> int:
     """argparse `type` for --max-cycles: a non-negative integer."""
-    import argparse
     try:
         n = int(value)
     except ValueError:
@@ -152,7 +152,6 @@ def run_loop(
 
 
 def main(argv: Optional[list[str]] = None) -> int:
-    import argparse
     parser = argparse.ArgumentParser("factory.loop")
     parser.add_argument(
         "--settings",
