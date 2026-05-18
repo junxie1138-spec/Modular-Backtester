@@ -78,6 +78,18 @@ def _install_signal_handlers(flag: _ShutdownFlag) -> None:
         signal.signal(signal.SIGTERM, _handler)
 
 
+def _nonneg_int(value: str) -> int:
+    """argparse `type` for --max-cycles: a non-negative integer."""
+    import argparse
+    try:
+        n = int(value)
+    except ValueError:
+        raise argparse.ArgumentTypeError(f"invalid int value: {value!r}")
+    if n < 0:
+        raise argparse.ArgumentTypeError("must be >= 0 (0 = unlimited)")
+    return n
+
+
 def run_loop(
     settings: Settings,
     *,
@@ -161,7 +173,7 @@ def main(argv: Optional[list[str]] = None) -> int:
     parser.add_argument("--seed", type=int, default=None,
                         help="Optional random seed for slot pulls")
     parser.add_argument(
-        "--max-cycles", type=int, default=None,
+        "--max-cycles", type=_nonneg_int, default=None,
         help="Stop after N cycles (strategy attempts). 0 = unlimited. "
              "Overrides [loop] max_cycles in settings.toml.",
     )
