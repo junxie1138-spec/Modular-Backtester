@@ -1,0 +1,62 @@
+# Walk-forward optimization for the ml_supertrend strategy on SPY.
+#
+# Re-optimizes on each rolling 3-year in-sample window and validates on the
+# next 1-year out-of-sample window; only OOS results are stitched into the
+# headline summary. This is the intended way to tune ml_supertrend — it
+# replaces the Pine Script's (in-sample, overfitting-prone) self-tuner.
+#
+# The grid sweeps the three parameters the Pine author flags as most
+# impactful: Band Width (multiplier), Smoothing Period (atr_period), and
+# Lookback Window (sensitivity). 3 x 3 x 3 = 27 combos per training window.
+# All other parameters stay at the TradingView-parity defaults.
+run_name: ml_supertrend_spy_wfo
+strategy: ml_supertrend
+strategy_params:
+  signal_mode: "reversal"
+  require_new_extreme: true
+  min_bars_between_signals: 10
+  sensitivity: 30
+  atr_period: 24
+  multiplier: 1.4
+  source_type: "hlcc4"
+  use_atr: true
+  enable_rsi: true
+  rsi_len: 14
+  rsi_lookback_top: 50
+  rsi_lookback_bot: 50
+  rsi_top: 70
+  rsi_bot: 30
+  vol_lookback: 3
+  vol_multiplier: 1.2
+  require_vol_spike: false
+  enable_major_levels_only: false
+  major_level_threshold: 4.5
+  size: 1.0
+data:
+  symbols: ["SPY"]
+  timeframe: "1d"
+  start: "2015-01-02"
+  end: "2024-12-31"
+  source: "csv"
+  root: "data/raw"
+execution:
+  initial_cash: 100000
+  commission_bps: 2
+  slippage_bps: 5
+  allow_fractional: false
+  allow_short: true
+portfolio:
+  sizing_mode: "percent_equity"
+  size: 0.95
+optimization:
+  objective: sharpe
+  param_space:
+    multiplier: [1.0, 1.4, 2.0]
+    atr_period: [14, 24, 40]
+    sensitivity: [20, 30, 45]
+wfo:
+  enabled: true
+  train_bars: 756
+  test_bars: 252
+  step_bars: 252
+output_root: "output/runs"
