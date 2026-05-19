@@ -1,0 +1,100 @@
+1779145113	Rolling return autocorrelation switches between momentum and contrarian regimes; conviction-scaled sizing, profit-target/time-stop exit
+1779145193	Long-only reversal when a sharp down close-to-close return AND a down-open gap both fire; fixed-bar exit with post-trade refractory cooldown.
+1779145370	Adaptive day-of-month seasonality: trade phases whose signal-to-noise ranks in rolling percentile extremes, two-bar confirmed
+1779145493	Long when a multi-bar return shockwave AND relative position both hit rolling low-percentile thresholds; fixed ATR stop plus time exit
+1779145614	Signed consecutive-return run-length streaks trigger contrarian entries with Schmitt-trigger hysteresis re-arming; profit-target/time-stop exit
+1779145730	Trade breakout from return-dispersion compression in the direction of latent drift, sized by compression depth, trailing-ATR stop
+1779145835	Regime-gated up-streak momentum: enter long only when an up-close streak fires inside a confirmed plastic uptrend; ATR trailing-high stop
+1779145931	Long-only momentum on a Hooke's-law spring-displacement z-score crossing up, profit-target/time-stop exit
+1779146028	Count consecutive bars price is pinned at its rolling-range floor/ceiling; fade the compression, regime-gated by 200-day MA
+1779146139	Lag-1 autocorrelation of the high-low range gates contagious wide-bar breakouts, traded in the bar's close direction with a fixed-bar exit
+1779146237	Buy turn-of-month weakness: enter long on low close-percentile-rank dips inside the calendar turn-of-month window, fixed-bar exit
+1779146324	Arm on deep drawdown via Schmitt thresholds, fire when ROC acceleration turns, side chosen by 200-day MA regime
+1779146417	Fade channel extremes only when high-low range amplitude collapses (standing-wave node); profit-target/time-stop exit
+1779146563	Volatility-targeted long/short reversal on distance-from-MA z-score, two-bar confirmed, holding until the opposite extreme fires
+1779146636	Buy when an in-uptrend pullback's drawdown has been underwater long enough and the short-return tide turns positive
+1779146742	Capacity-limited queue of percentile-extreme bars flips between momentum and exhaustion-reversal regimes, two-bar confirmed
+1779146858	Long absorbed down-gaps contained inside prior range during range compression; tension-scaled sizing, profit-target/time-stop exit
+1779146977	Long into monthly options-expiration week when realized volatility is seasonally compressed and price is above the 200-day MA
+1779147083	Long when rolling autocorrelation of intrabar close-location-value turns persistently positive; fixed-ATR volatility stop
+1779147195	Long moderate up-gaps (gap z-score inside a band), vol-targeted size, fixed-ATR stop, spike refractory, 200-MA regime gate
+1779147305	Recovery long when deep drawdown meets high-low range collapse and an upper close; symmetric short on exhausted rallies, fixed-bar exit
+1779147424	Enter long after N consecutive bars each close above the prior bar's high; fixed-ATR volatility stop, 2-bar time cap.
+1779147502	Buy shallow within-elastic-limit drawdowns the moment close-to-close return turns positive; reject deep plastic drawdowns; fixed-bar exit
+1779147593	Epidemic-style volatility breakout: enter on two consecutive ATR-scaled new-high 'spark' bars, sized by the susceptible (un-sparked) pool
+1779147717	Long when normalized signed-volume money-flow tide rises above a threshold on a volume-surged up bar; vol-targeted size, profit-target/time-stop exit
+1779147841	Buy the narrowest-range bar in N (fully coiled elastic spring) with an upper close; fixed ATR stop, 2-bar cap
+1779147947	Long-only buy of a distance-from-MA z-score recovering up through -1 out of a susceptible below-MA pool; vol-targeted size, rolling-high ATR trailing stop
+1779148058	Traffic-shockwave regime switch: ROC-acceleration alignment picks momentum vs reversal side, two-bar confirmed, held until side flips
+1779148196	Fade the direction of a streak of consecutive range-expanding bars; flip-only signal-reversal exit
+1779148301	Symmetric mirror band: enter long on capacity-bounded drawdown depth from rolling peak, exit on equal run-up from rolling trough
+1779148406	Fade deep drawdown depth only when daily-range volatility has compressed; symmetric short on compressed run-ups, fixed-ATR stop
+1779148520	Fade range-unit displacement extremes that occur during range expansion, regime-aligned, exit on restoration to equilibrium
+1779148654	Trade only the seasonally top-ranked weekday, entered on two consecutive volume-confirmed up bars, profit-target/time-stop exit
+1779148765	Long when close holds in top trailing percentile-rank for two bars; fixed-bar exit with post-trade refractory cooldown
+1779148873	Long when volume-return coherence crosses up inside an uptrend; coherence-scaled size, rolling-high ATR trailing stop
+1779148982	Long ROC-acceleration cross-ups only during a favorable trading-day-of-month tidal phase, fixed-bar exit
+1779149085	Trade the sign of Kaufman path-efficiency ratio when it crosses a strength threshold; 200-MA regime gate, spike refractory, signal-reversal exit
+1779149212	Enter long when an epidemic infected-fraction regime AND a fresh volume-confirmed up bar both agree; vol-targeted size, breakeven-then-trail exit
+1779149337	During hysteresis-armed range compression, trade the two-bar-confirmed drift of close's percentile rank; fixed-bar exit
+1779149456	Long when close-rank is top-band AND multi-bar true-range sum rank is bottom-band; breakeven-then-trail exit
+1779149537	Buy Donchian channel breakouts confirmed two bars running by accelerating rate-of-change; fixed ATR volatility stop
+1779149643	Long on the regime transition from range-compression to range-expansion, two-bar upper-close confirmed; fixed-ATR volatility stop
+1779149824	Epidemic SI regime switch on gap behavior: ride held up-gaps when infected, buy healed down-gaps when susceptible
+1779149966	Long the release of a loaded spring: ROC-acceleration cross-up after sustained negative-acceleration compression, tension-sized, profit-target/time-stop exit
+1779150095	Long held unfilled up-gaps whose day never traded back to prior close, sized by ATR-normalized gap buffer
+1779150211	Long when an up-gap AND a fresh Donchian resistance breakout agree on the same bar; breakeven-then-trail exit
+1779150314	Long when daily-range coefficient-of-variation sits in its bottom historical percentile (uniform ranges) with an upper close; fixed-bar exit
+1779150410	Trade the roll-over of volatility-of-volatility out of its top percentile while price sits in a deep percentile-ranked drawdown or drawup
+1779150544	Trade only when ROC sign and smoothed ROC-acceleration sign agree (trend actively strengthening); fixed-ATR stop, post-stop refractory
+1779150668	Long the volume-confirmed range-expansion thrust bar where heavy-volume up move AND strong wide-range close both agree; breakeven-then-trail exit
+1779150796	Breakout when a capacity-clamped buying-pressure queue overflows into its top rolling percentile rank
+1779150929	Trade the calendar-month seasonal close-location-value bias, triggered by a true-range expansion bar, fixed-ATR stop
+1779151041	Buy moderate drawdowns on an intraday-absorbed down-gap (gapped down, closed above prior close); fixed-bar exit
+1779151141	Trade crossings of the return-mass position ratio (upside vs downside return energy) over a short window; profit-target/time-stop exit
+1779151292	Trade range-engulfing outside bars in the direction of their close location; breakeven-then-trail ATR exit.
+1779151373	Return z-score breakout: trade single-bar close-return spikes through a hysteresis-armed Schmitt gate, fixed-bar exit
+1779151454	Trade two-bar-confirmed acceleration of close's position inside its Donchian channel; profit-target/time-stop exit
+1779151585	Enter drawdown/run-up recoveries when a rolling net-gap-pressure accumulator flips, two-bar confirmed; breakeven-then-trail exit
+1779151773	Buy the first green bar when close sits in its bottom percentile rank inside a compression-gated box; breakeven-then-trail exit
+1779151873	Hysteresis-latched deep-drawdown-rank arm AND momentum-rank cross-up confirm recovery entry; fixed-bar exit
+1779151972	Long when moderate drawdown depth AND an overflowing time-underwater queue both agree; breakeven-then-trail exit
+1779152081	Trade fresh percentile-rank crossings of risk-adjusted momentum, regime-gated by 200-MA, vol-targeted size, profit/time exit
+1779152209	Long when drawdown-depth rank is deep AND drawdown-improvement-velocity rank is top-band; signal-reversal exit, post-spike refractory
+1779152311	Fade overnight gaps that displace price into an MA distance z-score extreme; hysteresis re-arm, profit-target/time-stop exit
+1779152377	Buy moderate drawdowns only in a negatively-autocorrelated 'elastic' return regime after two-bar recovery confirmation; fixed-bar exit
+1779152522	Buy when the drawdown series' own rolling percentile rank heals past its median after a recent deep low, spike-refractory gated, fixed-ATR stop
+1779152624	Long when the percentile rank of the up-day hit-rate sits in its top band on two consecutive bars; fixed ATR stop
+1779152720	Long when an up-gap is large relative to recently compressed intraday ranges; ATR rolling-high trailing stop
+1779152832	Long when volume-confirmed close-location-value crosses up into its top rolling percentile band; ATR rolling-high trailing stop
+1779152922	Trade two consecutive up-gaps only while the rolling lag-1 autocorrelation of overnight gaps is in a positive (hysteresis-latched) regime; fixed-bar exit
+1779153048	Long fresh up-gaps only during the Lotka-Volterra prey-rebound regime when down-gap predator pressure has crashed
+1779153186	Long the recovery shockwave: armed by deep MA-distance z-score, entered when the front passes, vol-and-strength-scaled, signal-reversal exit
+1779153300	Long the turn-of-month window only when daily high-low range has contracted into a coiled-spring state
+1779153381	Spring-tide gaps: trade gaps exceeding their own rolling amplitude envelope with volume confirmation, fixed-bar exit
+1779153458	Trade overnight-gap information ratio (mean/std of gaps); regime-gated by 200-MA, ATR rolling-high trailing exit
+1779153559	Long deep percentile-ranked drawdowns once a capacity-limited no-new-low drought queue overflows; profit-target/time-stop exit
+1779153657	Autocorrelation sign of overnight gaps flips between fade and follow; gap-triggered entry, 200-MA regime gate, fixed-bar exit
+1779153771	Enter long when an SI-epidemic gap-contagion transmission rank AND a cumulative gap viral-load rank both peak; fixed-ATR stop
+1779153898	SI-epidemic recovery: z-score cross-up from deep displacement AND transmission-rate rank both agree, vol-targeted, ATR rolling-high trailing stop
+1779154021	Buy elastic-zone (moderate, non-deep) drawdowns only on early-week days (Mon/Tue); fixed-bar exit after N bars
+1779154122	Fade extreme MA-distance z-scores only after the displacement 'epidemic' peaks and begins receding; fixed-ATR stop
+1779154248	Buy first green bar after a volume-flushed stretch below rolling VWAP; displacement-scaled size, breakeven-then-trail ATR exit
+1779154374	Long when MA-distance z-score crosses up through its rolling percentile band; vol-targeted size, ATR rolling-high trailing stop, post-spike refractory gate
+1779154479	Buy MA-distance z-score springs releasing during the first-half-of-month seasonal window, two-bar confirmed; profit-target/time-stop exit
+1779154602	Donchian new-high breakout gated by a recent deep-drawdown scar; breakeven-then-trail ATR exit
+1779154701	Enter long when rolling range is compressed AND rate-of-change acceleration freshly flips positive; profit-target/time-stop exit
+1779154827	Yield-point splits drawdowns into elastic (long the snap-back) vs plastic (short the dead-cat bounce); ATR trailing stop
+1779154945	Leaky-integrator return-tension state machine: enter at extreme percentile band, exit when tension relaxes to its median percentile
+1779155056	Enter long when a consecutive compressed-range streak AND a consecutive higher-low streak both fire; breakeven-then-trail ATR exit
+1779155190	Long the volatility decompression front when the recent regime is density-saturated with range compression; fixed-bar exit
+1779155315	Trade the release after a long consecutive streak stuck in one relative-position channel band; size scales with streak length
+1779155415	Enter long on fresh upside crossings of the close-return variance ratio above 1 (momentum regime onset); ATR rolling-high trailing exit
+1779155518	Trade direction of an SI-epidemic trend-infection fraction that is high AND still spreading, two-bar confirmed, flip-only exit
+1779155608	Long the drawdown-depth peak: enter when depth velocity flips from deepening to healing while depth is elevated; fixed-bar exit
+1779155709	Long when a capacity-limited calm-accumulation queue overflows after persistent low realized-vol percentile; vol-targeted size, fixed ATR vol-stop
+1779155797	Long price z-score breakout gated by a plastic-deformation yield-point test on the moving average itself; two-bar confirmed, fixed-bar exit
+1779155976	Long volume-confirmed up-moves only in calendar months whose causal seasonal-return percentile rank sits in the top band; breakeven-then-trail ATR exit
+1779156128	Long when rolling overnight-gap pressure AND rolling intraday-session pressure are both bullish; hysteresis signal-reversal exit
+1779156265	Long when lag-1 autocorrelation of absolute returns crosses positive (vol-clustering 'plastic' regime onset) in an uptrend; ATR rolling-high trailing stop
+1779180206	Long when signed efficiency ratio of close-to-close returns confirms a clean uptrend for two bars under a hysteresis-latched trending regime; profit-target/time-stop exit
