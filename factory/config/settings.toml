@@ -46,7 +46,7 @@ trigger_threshold = 1.0
 
 [screening]
 enabled            = true
-min_optimize_score = 1.3
+min_optimize_score = 1.0   # in-sample optimize-objective (Sortino) floor to enter WFO
 
 [sync]
 enabled      = false          # master switch for distributed multi-machine sync
