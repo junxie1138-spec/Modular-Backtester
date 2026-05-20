@@ -11,9 +11,8 @@ line for each, then a final verdict:
 - node_id                   (set, and not the single-machine default)
 - Data directories          (results / dedup / log / tmp are writable)
 - [sync] config             (distributed mode enabled)
-- claude CLI                (resolvable on PATH and - unless
-                             --skip-claude-probe - authenticated, via a
-                             trivial live `claude -p` call)
+- Generation provider       (resolvable on PATH and - unless skipped -
+                             authenticated/responding via a trivial live call)
 - git version               (>= 2.28, required by factory/sync.py)
 - Remote access             (the [sync] remote is reachable and the
                              stored credentials authenticate without a
@@ -21,7 +20,7 @@ line for each, then a final verdict:
 
 USAGE:
     python -m factory.scripts.preflight
-    python -m factory.scripts.preflight --skip-claude-probe   # no token spend
+    python -m factory.scripts.preflight --skip-generation-probe  # no token spend
     python -m factory.scripts.preflight --skip-remote         # offline
     python -m factory.scripts.preflight --settings path/to/settings.toml
 
@@ -50,7 +49,7 @@ MIN_PYTHON = (3, 11)
 MIN_GIT = (2, 28)
 # A trivial "ok" generation returns in seconds; cap the probe well short of
 # the factory's real generation_timeout so a hung CLI fails fast.
-_CLAUDE_PROBE_TIMEOUT_SEC = 120
+_GENERATION_PROBE_TIMEOUT_SEC = 120
 
 
 def _check_python() -> tuple[str, str]:
@@ -138,15 +137,19 @@ def _check_sync_enabled(settings) -> tuple[str, str]:
     )
 
 
-def _check_claude(settings, *, probe: bool) -> tuple[str, str]:
-    cmd = settings.generation.claude_cmd if settings else "claude"
+def _check_generation_provider(settings, *, probe: bool) -> tuple[str, str]:
+    provider = (settings.generation.provider if settings else "claude").lower()
+    cmd = settings.generation.cmd if settings else "claude"
     resolved = shutil.which(cmd)
     if resolved is None:
-        return FAIL, f"claude CLI not found on PATH (claude_cmd={cmd!r})"
+        return FAIL, f"{provider} CLI not found on PATH (cmd={cmd!r})"
     if not probe:
-        return WARN, f"claude resolved at {resolved}; live auth probe skipped (--skip-claude-probe)"
+        return WARN, (
+            f"{provider} resolved at {resolved}; live auth probe skipped "
+            "(--skip-generation-probe)"
+        )
     flags = (
-        list(settings.generation.claude_flags)
+        list(settings.generation.flags)
         if settings else ["-p", "--output-format", "json"]
     )
     try:
@@ -154,16 +157,20 @@ def _check_claude(settings, *, probe: bool) -> tuple[str, str]:
             [resolved, *flags],
             input="Reply with exactly the single word: ok",
             capture_output=True, text=True, encoding="utf-8",
-            timeout=_CLAUDE_PROBE_TIMEOUT_SEC,
+            timeout=_GENERATION_PROBE_TIMEOUT_SEC,
         )
     except subprocess.TimeoutExpired:
-        return FAIL, f"claude probe timed out after {_CLAUDE_PROBE_TIMEOUT_SEC}s"
+        return FAIL, f"{provider} probe timed out after {_GENERATION_PROBE_TIMEOUT_SEC}s"
     except OSError as exc:
-        return FAIL, f"claude probe failed to start: {exc}"
+        return FAIL, f"{provider} probe failed to start: {exc}"
     if proc.returncode != 0:
         tail = (proc.stderr or proc.stdout or "").strip()[-300:]
-        return FAIL, f"claude exited {proc.returncode}: {tail}"
+        return FAIL, f"{provider} exited {proc.returncode}: {tail}"
     out = proc.stdout.strip()
+    if provider != "claude":
+        if out:
+            return PASS, f"{provider} CLI authenticated and responding"
+        return FAIL, f"{provider} produced no output"
     try:
         envelope = json.loads(out)
     except json.JSONDecodeError:
@@ -175,6 +182,11 @@ def _check_claude(settings, *, probe: bool) -> tuple[str, str]:
     if isinstance(envelope, dict) and "result" in envelope:
         return PASS, "claude CLI authenticated and responding"
     return WARN, "claude responded, but the JSON envelope shape was unexpected"
+
+
+def _check_claude(settings, *, probe: bool) -> tuple[str, str]:
+    """Backward-compatible alias for older tests/scripts importing this helper."""
+    return _check_generation_provider(settings, probe=probe)
 
 
 def _check_git_version() -> tuple[str, str]:
@@ -248,7 +260,11 @@ def main(argv: Optional[list[str]] = None) -> int:
     )
     parser.add_argument(
         "--skip-claude-probe", action="store_true",
-        help="skip the live `claude -p` auth probe (no token spend)",
+        help="deprecated alias for --skip-generation-probe",
+    )
+    parser.add_argument(
+        "--skip-generation-probe", action="store_true",
+        help="skip the live generation-provider auth probe (no token spend)",
     )
     parser.add_argument(
         "--skip-remote", action="store_true",
@@ -272,7 +288,11 @@ def main(argv: Optional[list[str]] = None) -> int:
         record("Data directories", _check_writable(settings))
         record("[sync] config", _check_sync_enabled(settings))
 
-    record("claude CLI", _check_claude(settings, probe=not args.skip_claude_probe))
+    skip_generation_probe = args.skip_generation_probe or args.skip_claude_probe
+    record(
+        "Generation provider",
+        _check_generation_provider(settings, probe=not skip_generation_probe),
+    )
     record("git version", _check_git_version())
     if args.skip_remote:
         results.append(("Remote access", WARN, "skipped (--skip-remote)"))

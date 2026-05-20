@@ -14,7 +14,7 @@ from factory.filesystem import (
     write_strategy_artifacts,
 )
 from dataclasses import asdict
-from factory.generate import GenerationError, GenerationResult, call_claude
+from factory.generate import GenerationError, GenerationResult, call_generator
 from factory.notify import NotifyConfig, extract_metric, maybe_send_alert
 from factory.promote import PromotionResult, promote_strategy
 from factory.prompt import build_prompt
@@ -84,10 +84,11 @@ def run_cycle(settings: Settings, *, rng: random.Random) -> CycleOutcome:
 
     # Step 4-5: generate + parse.
     try:
-        gen: GenerationResult = call_claude(
+        gen: GenerationResult = call_generator(
             prompt=prompt,
-            claude_cmd=s.generation.claude_cmd,
-            claude_flags=s.generation.claude_flags,
+            provider=s.generation.provider,
+            cmd=s.generation.cmd,
+            flags=s.generation.flags,
             timeout_sec=s.generation.generation_timeout_sec,
         )
     except GenerationError as exc:
@@ -229,6 +230,9 @@ def run_cycle(settings: Settings, *, rng: random.Random) -> CycleOutcome:
                 output_runs_dir=paths.output_runs_dir,
                 stage_timeout_sec=s.stages.stage_timeout_sec,
                 backtester_root=paths.backtester_root,
+                build_report_path=(
+                    paths.backtester_root / "data" / "raw_hourly" / "_build_report.json"
+                ),
             )
             promotion_dict = asdict(promo)
             log.info(

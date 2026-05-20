@@ -25,6 +25,9 @@ class Paths:
 
 @dataclass(slots=True, frozen=True)
 class GenerationCfg:
+    provider: str
+    cmd: str
+    flags: tuple[str, ...]
     claude_cmd: str
     claude_flags: tuple[str, ...]
     generation_timeout_sec: int
@@ -134,6 +137,11 @@ def load_settings(path: Path) -> Settings:
         tmp_dir=_under_root(p["tmp_dir"]),
     )
     g = raw["generation"]
+    legacy_claude_cmd = str(g.get("claude_cmd", "claude"))
+    legacy_claude_flags = tuple(g.get("claude_flags", ("-p",)))
+    provider = str(g.get("provider", "claude")).lower()
+    cmd = str(g.get("cmd", legacy_claude_cmd))
+    flags = tuple(g.get("flags", legacy_claude_flags))
     s = raw["stages"]
     a = raw["alerts"]
     lp = raw["loop"]
@@ -145,8 +153,11 @@ def load_settings(path: Path) -> Settings:
         node_id=node_id,
         paths=paths,
         generation=GenerationCfg(
-            claude_cmd=g["claude_cmd"],
-            claude_flags=tuple(g["claude_flags"]),
+            provider=provider,
+            cmd=cmd,
+            flags=flags,
+            claude_cmd=legacy_claude_cmd,
+            claude_flags=legacy_claude_flags,
             generation_timeout_sec=int(g["generation_timeout_sec"]),
         ),
         stages=StagesCfg(stage_timeout_sec=int(s["stage_timeout_sec"])),

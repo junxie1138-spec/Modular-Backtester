@@ -147,7 +147,7 @@ def main(argv: list[str] | None = None) -> int:
     completed = 0
     counter = {"n": 0}
 
-    def fake_call_claude(**kwargs):
+    def fake_call_generator(**kwargs):
         counter["n"] += 1
         scenario = SCENARIOS[counter["n"] % len(SCENARIOS)]
         sid = f"gen_endurance_{counter['n']}"
@@ -156,12 +156,12 @@ def main(argv: list[str] | None = None) -> int:
 
     # We also need to mock pick_unused_strategy_id so the cycle locks in
     # the scenario-generated id (not the gen_<time> default). pick_unused_strategy_id
-    # runs BEFORE call_claude in the cycle, so we look ahead by +1 to match
-    # the id that fake_call_claude will embed in the file.
+    # runs BEFORE call_generator in the cycle, so we look ahead by +1 to match
+    # the id that fake_call_generator will embed in the file.
     def fake_pick_id(base, *, strategies_dir):
         return f"gen_endurance_{counter['n'] + 1}"
 
-    with mock.patch("factory.cycle.call_claude", side_effect=fake_call_claude), \
+    with mock.patch("factory.cycle.call_generator", side_effect=fake_call_generator), \
          mock.patch("factory.cycle.pick_unused_strategy_id", side_effect=fake_pick_id):
         for i in range(args.cycles):
             outcome = run_cycle(s, rng=rng)

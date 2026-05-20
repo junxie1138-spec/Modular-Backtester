@@ -60,7 +60,7 @@ def test_generation_timeout_records_failed_stage_generation(
     from factory.results import read_records
     from factory.settings_loader import load_settings
     s = load_settings(tmp_settings_file)
-    with mock.patch("factory.cycle.call_claude",
+    with mock.patch("factory.cycle.call_generator",
                     side_effect=GenerationError("claude -p timed out after 120s")):
         run_cycle(s, rng=random.Random(0))
     rec = read_records(s.paths.results_dir)[0]
@@ -91,7 +91,7 @@ def test_validation_failure_keeps_dedup_no_files(
         "strategy_file": "not even python",
         "config_file": "run_name: gen_xx\n",
     }, cost_usd=0.01, raw_stdout="{}")
-    with mock.patch("factory.cycle.call_claude", return_value=fake), \
+    with mock.patch("factory.cycle.call_generator", return_value=fake), \
          mock.patch("factory.cycle._now_unix_int", return_value=42), \
          mock.patch("factory.cycle.pick_unused_strategy_id", return_value="gen_xx"):
         run_cycle(s, rng=random.Random(0))
@@ -131,7 +131,7 @@ def _run_with_stage_failure(s, strategy_id, failed_stage):
             # Stages after the failure should not be called, but stub defensively.
             stage_patches[target] = mock.patch(target, return_value=_stub_stage_result(stage))
 
-    with mock.patch("factory.cycle.call_claude", return_value=fake), \
+    with mock.patch("factory.cycle.call_generator", return_value=fake), \
          mock.patch("factory.cycle._now_unix_int", return_value=42), \
          mock.patch("factory.cycle.pick_unused_strategy_id", return_value=strategy_id):
         for ctx in stage_patches.values():
