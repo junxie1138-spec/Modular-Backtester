@@ -49,11 +49,18 @@ telegram_chat_id   = ""        # e.g. "-1001234567890"
 enabled = false                # set to true to join the distributed pool
 
 # --- generation (optional) --------------------------------------------------
-# Override the model used by `claude -p` for strategy generation. settings.toml
-# passes no --model flag, so the factory defaults to your Claude Code default
-# (Opus). Uncomment to use a cheaper/faster model -- "sonnet" or "haiku".
+# The default provider is Claude Code via `claude -p`. Override the model with
+# the provider-neutral flags key. settings.toml passes no --model flag, so the
+# factory defaults to your Claude Code default (Opus). Uncomment to use a
+# cheaper/faster model -- "sonnet" or "haiku".
 #
 # IMPORTANT: --model must come BEFORE --allowedTools. --allowedTools is variadic
 # and would otherwise swallow the model name as a tool name.
 # [generation]
-# claude_flags = ["-p", "--output-format", "json", "--model", "sonnet", "--allowedTools", "Read"]
+# flags = ["-p", "--output-format", "json", "--model", "sonnet", "--allowedTools", "Read"]
+#
+# To use OpenAI Codex CLI instead, use stdin mode:
+# [generation]
+# provider = "codex"
+# cmd = "codex"
+# flags = ["exec", "-"]

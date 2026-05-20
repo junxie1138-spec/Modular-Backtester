@@ -70,6 +70,16 @@ def _model_from_flags(claude_flags: tuple[str, ...]) -> str:
     return "(Claude Code default)"
 
 
+def _generation_display(provider: str, flags: tuple[str, ...]) -> str:
+    """Human-readable provider/model label for startup logs."""
+    model = _model_from_flags(flags)
+    if provider == "claude":
+        return model
+    if model == "(Claude Code default)":
+        return f"{provider} default"
+    return f"{provider} {model}"
+
+
 def _install_signal_handlers(flag: _ShutdownFlag) -> None:
     def _handler(signum, frame):  # noqa: ARG001
         log.info("received signal %s; requesting graceful shutdown", signum)
@@ -107,7 +117,7 @@ def run_loop(
     sleep_sec = settings.loop.inter_cycle_sleep_sec
 
     mode = "distributed" if settings.sync.enabled else "standalone"
-    model = _model_from_flags(settings.generation.claude_flags)
+    model = _generation_display(settings.generation.provider, settings.generation.flags)
     log.info(
         "factory loop starting: node=%s mode=%s model=%s",
         settings.node_id, mode, model,

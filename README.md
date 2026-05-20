@@ -48,7 +48,7 @@ The backtester and the Strategy Factory both run on macOS unchanged — all file
 
 - **git 2.28+** is required for the distributed factory — `factory/sync.py` uses `git init -b`. The git bundled with current macOS / Xcode Command Line Tools is new enough; `brew install git` also works. Check with `git --version`.
 
-- **The `claude` CLI** is just `claude` on the `PATH` on macOS, so the factory's default `claude_cmd = "claude"` works as-is — the Windows `claude.CMD` wrinkle does not apply.
+- **The generation CLI** is just `claude` or `codex` on the `PATH` on macOS, so the factory's default `cmd = "claude"` works as-is — the Windows `.CMD` shim wrinkle does not apply.
 
 Everything else is identical: `python -m pytest -q` runs the full suite, and the factory dashboard still serves on `http://127.0.0.1:8787`.
 
@@ -311,7 +311,7 @@ docs/                      # contracts, runbook, and design specs/plans under su
 tests/                     # unit + integration tests
 scripts/                   # sample data generator + screen_universe.py
 factory/                   # Strategy Factory v0.2.0 — unattended loop that generates
-                           # strategies via `claude -p` and runs them through the pipeline
+                           # strategies via Claude/Codex CLI and runs them through the pipeline
 ```
 
 ---
@@ -337,7 +337,7 @@ The test suite is **352 passing + 5 xfail-by-default** strategy-performance gate
 
 ## Strategy Factory
 
-A separate, opt-in subsystem that lives at `factory/` and wraps the backtester. It is an unattended loop that mass-produces SPY strategy ideas via `claude -p`, validates each one (static AST checks + functional smoke test against the real backtester package), writes it to disk, and runs the full backtest → optimize → WFO pipeline. Generated strategies are auto-discovered from `strategies/gen_*.py` at registry import time — the factory does not edit any backtester source file. A configurable screening gate (the `[screening]` section in `factory/config/settings.toml`) skips the expensive WFO stage when a strategy's best in-sample optimize score falls below a floor — OOS Sharpe is almost always below the best in-sample score, so a hopeless optimize would not clear the shortlist anyway. Screened cycles are recorded as `complete` with `screened_out=true` and shown as `complete (screened)` on the dashboard. Strategies that clear WFO are re-run through a held-out promotion gate on alternate tickers before being flagged. Hits are surfaced via a local Flask dashboard and Telegram alerts.
+A separate, opt-in subsystem that lives at `factory/` and wraps the backtester. It is an unattended loop that mass-produces SPY strategy ideas via a configured LLM CLI provider (`claude -p` by default, or `codex exec -`), validates each one (static AST checks + functional smoke test against the real backtester package), writes it to disk, and runs the full backtest → optimize → WFO pipeline. Generated strategies are auto-discovered from `strategies/gen_*.py` at registry import time — the factory does not edit any backtester source file. A configurable screening gate (the `[screening]` section in `factory/config/settings.toml`) skips the expensive WFO stage when a strategy's best in-sample optimize score falls below a floor — OOS Sharpe is almost always below the best in-sample score, so a hopeless optimize would not clear the shortlist anyway. Screened cycles are recorded as `complete` with `screened_out=true` and shown as `complete (screened)` on the dashboard. Strategies that clear WFO are re-run through a held-out promotion gate on alternate tickers before being flagged. Hits are surfaced via a local Flask dashboard and Telegram alerts.
 
 **Critical context**: at ~24 strategies/day on one asset over one historical path, some strategies will post OOS Sharpe > 1.0 on luck alone. WFO mitigates but does not eliminate multiple-comparisons risk. The dashboard's "good" flag and the Telegram alert are explicitly labelled **shortlist signals, not verdicts** — a held-out gate (different symbol or fully unseen period) is required before treating any row as a real candidate. The held-out promotion gate now runs automatically on every strategy that clears WFO.
 

@@ -12,6 +12,10 @@ factory_log      = "factory/logs/factory.log"
 tmp_dir          = "factory/data/_tmp"
 
 [generation]
+provider               = "claude"  # "claude" or "codex"; override per machine in settings.local.toml
+cmd                    = "claude"
+flags                  = ["-p", "--output-format", "json", "--allowedTools", "Read"]
+# Legacy aliases kept so older machines/configs keep working during rollout.
 claude_cmd             = "claude"
 claude_flags           = ["-p", "--output-format", "json", "--allowedTools", "Read"]
 generation_timeout_sec = 3000

@@ -1,6 +1,6 @@
 # Strategy Factory
 
-An unattended loop that mass-produces trading-strategy ideas with `claude -p`, validates each one, runs it through the full backtest → optimize → WFO pipeline, and surfaces the survivors on a local dashboard and via Telegram. It wraps the Modular-Backtester and edits no backtester source file — generated strategies are picked up by registry auto-discovery.
+An unattended loop that mass-produces trading-strategy ideas with a configured LLM CLI provider (`claude -p` by default, or `codex exec -`), validates each one, runs it through the full backtest → optimize → WFO pipeline, and surfaces the survivors on a local dashboard and via Telegram. It wraps the Modular-Backtester and edits no backtester source file — generated strategies are picked up by registry auto-discovery.
 
 This README covers running the factory on **one machine** and, in detail, running it as a **distributed multi-machine pool** coordinated through git.
 
@@ -9,7 +9,7 @@ This README covers running the factory on **one machine** and, in detail, runnin
 ## What one cycle does
 
 ```
-pull pool  →  draw idea slots  →  claude -p generates a strategy
+pull pool  →  draw idea slots  →  configured LLM CLI generates a strategy
            →  static + functional validation
            →  write strategy .py + config .yaml
            →  backtest  →  optimize  →  (screen?)  →  WFO
@@ -34,7 +34,7 @@ pip install -e .[data]    # yfinance — needed by held-out promotion's default 
 pip install Flask         # the dashboard's only extra runtime dependency
 ```
 
-You also need the **`claude` CLI** authenticated on this machine and on `PATH`. The factory invokes it as a subprocess; `claude_cmd` defaults to `"claude"` (on Windows the `claude.CMD` npm shim is resolved automatically). Verify with `claude --version`.
+You also need a supported **generation CLI** authenticated on this machine and on `PATH`. The default is Claude Code (`claude -p`); OpenAI Codex CLI can be used with `codex exec -`. The factory invokes the CLI as a subprocess and pipes the prompt through stdin.
 
 ---
 
@@ -91,7 +91,7 @@ At load time `settings.local.toml` is **merged over** `settings.toml`, section b
 |---|---|
 | *(top level)* | `node_id` — this machine's identity (see distributed mode). Default `"local"`. |
 | `[paths]` | `backtester_root` and the repo-relative dirs for strategies, configs, results shards, dedup shards, logs, tmp. |
-| `[generation]` | `claude_cmd`, `claude_flags`, `generation_timeout_sec`. |
+| `[generation]` | `provider`, `cmd`, `flags`, `generation_timeout_sec`. Legacy `claude_cmd` / `claude_flags` are still accepted. |
 | `[stages]` | `stage_timeout_sec` — per-stage subprocess timeout. |
 | `[alerts]` | `alert_threshold_metric` / `alert_threshold` (default `wfo.oos_sortino` > 1.0), Telegram credentials, `dashboard_base_url`. |
 | `[loop]` | `inter_cycle_sleep_sec`, `max_cycles` (`0` = unlimited). |
@@ -119,6 +119,17 @@ telegram_chat_id   = "-100..."
 [sync]
 enabled = true
 ```
+
+To use Codex on a specific machine, put this in `settings.local.toml`:
+
+```toml
+[generation]
+provider = "codex"
+cmd = "codex"
+flags = ["exec", "-"]
+```
+
+Older Claude-only configs remain valid. If `provider` / `cmd` / `flags` are absent, the loader falls back to `claude_cmd` / `claude_flags` and behaves as before.
 
 `node_id` lives here precisely because it differs per machine and the file is already gitignored and per-machine. **`node_id` must be a top-level key, above every `[section]`** — in TOML a key written after a `[header]` belongs to that table, so a misplaced `node_id` is silently ignored. It must also match `^[a-z0-9][a-z0-9-]*$` (lowercase letters, digits, hyphens) or startup fails with a clear error.
 
@@ -154,7 +165,7 @@ push_retries = 5               # bounded retry on a non-fast-forward push
 
 ### One-time setup, on each machine
 
-1. **Clone the repo and install** (see [Install](#install)). Each machine is a *full* factory — it needs the repo, an authenticated `claude` CLI, and market data. Market data ships committed (the OHLCV fixtures under `data/raw/`), so a fresh clone is self-sufficient.
+1. **Clone the repo and install** (see [Install](#install)). Each machine is a *full* factory — it needs the repo, an authenticated generation CLI, and market data. Market data ships committed (the OHLCV fixtures under `data/raw/`), so a fresh clone is self-sufficient.
 2. **Give the machine a unique `node_id`.** Copy the committed template, then edit it:
    ```bash
    cp factory/config/settings.local.toml.example factory/config/settings.local.toml
@@ -176,7 +187,7 @@ push_retries = 5               # bounded retry on a non-fast-forward push
    ```bash
    python -m factory.scripts.preflight
    ```
-   It verifies Python version, factory dependencies, settings + `node_id`, writable data dirs, the `[sync]` config, the `claude` CLI (resolvable *and* authenticated, via a trivial live call), git ≥ 2.28, and that the `[sync]` remote is reachable with non-interactive credentials. It exits `0` only when no check fails — review any `WARN`/`FAIL` lines before continuing. Use `--skip-claude-probe` to skip the live (token-spending) `claude` call, or `--skip-remote` when offline.
+   It verifies Python version, factory dependencies, settings + `node_id`, writable data dirs, the `[sync]` config, the configured generation CLI (resolvable *and* authenticated/responding, via a trivial live call), git ≥ 2.28, and that the `[sync]` remote is reachable with non-interactive credentials. It exits `0` only when no check fails — review any `WARN`/`FAIL` lines before continuing. Use `--skip-generation-probe` to skip the live token-spending call, or `--skip-remote` when offline.
 6. **Start the loop:** `python -m factory.loop`.
 
 On the **first** machine to start, the loop's one-time `bootstrap()` step creates the `factory-pool` branch off `master` and **publishes it to the remote** (the one intentional remote-mutating bootstrap action — the pool cannot work until the branch is visible). Every machine after that simply tracks the existing remote branch. `bootstrap()` is idempotent and also folds any pre-existing single-file `results.json` / `dedup_log.txt` into this machine's shards.
@@ -228,7 +239,7 @@ python -m factory.scripts.endurance_check --cycles 100   # validate N unattended
 python -m factory.scripts.telegram_smoke                 # verify Telegram credentials send
 ```
 
-`preflight` is the readiness gate for the distributed factory — run it on each machine before enabling `[sync]`. `endurance_check` runs real backtest/optimize/WFO cycles with a stubbed `claude -p`, exercising the heavy local pipeline. Neither touches the network destructively: `preflight`'s remote check is a read-only `git ls-remote`, and all sync *tests* use a throwaway local repo.
+`preflight` is the readiness gate for the distributed factory — run it on each machine before enabling `[sync]`. `endurance_check` runs real backtest/optimize/WFO cycles with a stubbed generation provider, exercising the heavy local pipeline. Neither touches the network destructively: `preflight`'s remote check is a read-only `git ls-remote`, and all sync *tests* use a throwaway local repo.
 
 Logs rotate under `factory/logs/factory.log` (10 MB × 5 backups) and also mirror to stderr for interactive runs.
 
@@ -250,6 +261,7 @@ An upgrade discards no generated work:
 
 - **Strategy and config files** (`strategies/gen_*.py`, `configs/wfo/gen_*.yaml`) are plain files on disk — untouched. The registry auto-discovers them, including older `gen_<timestamp>.py` ids minted before the `gen_<node_id>_<timestamp>` scheme.
 - **Results records are forward-compatible.** Token tracking adds a `generation_tokens` field to *new* records only; older records have no such field and are read as "no token data" — the detail view shows `n/a` for them and they contribute `0` to the cumulative-tokens total. No migration, no data loss.
+- **Generation-provider settings are backward-compatible.** Existing `claude_cmd` / `claude_flags` configs keep working. Codex machines only need a local `[generation]` override; no archived strategy, dedup, or results data changes format.
 
 ### Archived strategies are migrated to OOS Sortino automatically
 
