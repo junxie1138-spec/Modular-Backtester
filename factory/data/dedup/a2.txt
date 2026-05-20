@@ -99,3 +99,4 @@
 1779156265	Long when lag-1 autocorrelation of absolute returns crosses positive (vol-clustering 'plastic' regime onset) in an uptrend; ATR rolling-high trailing stop
 1779180206	Long when signed efficiency ratio of close-to-close returns confirms a clean uptrend for two bars under a hysteresis-latched trending regime; profit-target/time-stop exit
 1779183645	Long when the MA-distance z-score climbs along a high signal-to-noise (efficient) path; breakeven-then-trail ATR exit
+1779316183	Long the shockwave release: enter on the bar that breaks a long consecutive return-sign-agreement up-streak
