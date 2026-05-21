@@ -453,9 +453,10 @@ def test_sync_pull_raises_on_unreachable_remote(tmp_path: Path) -> None:
 def test_run_loop_swallows_sync_failure(
     tmp_path: Path, caplog: pytest.LogCaptureFixture,
 ) -> None:
-    """With sync enabled but the remote unreachable, run_loop calls the sync
-    hooks, logs each failure, and still completes its cycles — sync failure
-    never aborts the loop."""
+    """With sync enabled but the remote unreachable, run_loop must NOT abort:
+    bootstrap's SyncError is caught and logged, then the readiness gate blocks
+    the cycle (no run_cycle, sync_pull, sync_push, or drain), and the loop
+    still completes its iterations cleanly."""
     repo = tmp_path / "node"
     repo.mkdir()
     _git(["init", "-b", "master"], repo)
@@ -470,19 +471,25 @@ def test_run_loop_swallows_sync_failure(
     fake = CycleOutcome(status="failed", failed_stage="generation",
                         strategy_id=None, record={"status": "failed"})
     with mock.patch("factory.loop.run_cycle", return_value=fake) as rc, \
-         mock.patch("factory.loop.sync_push", wraps=sync_push) as sp, \
-         caplog.at_level("ERROR"):
+         mock.patch("factory.loop.sync_pull") as spull, \
+         mock.patch("factory.loop.sync_push", wraps=sync_push) as spush, \
+         mock.patch("factory.loop.drain_one_retro_promotion") as drain, \
+         caplog.at_level("WARNING"):
         completed = run_loop(s, rng=random.Random(0), max_cycles_override=1)
 
-    # The cycle ran and the loop returned normally — no SyncError escaped.
-    assert rc.call_count == 1
+    # The loop returned normally — no SyncError escaped.
     assert completed == 1
-    # sync_push was wired into the loop and invoked once.
-    assert sp.call_count == 1
-    # bootstrap and sync_pull both hit the unreachable remote, raised
-    # SyncError, and were caught + logged by run_loop (not propagated).
+    # The readiness gate blocked the cycle: none of the hooks ran.
+    assert rc.call_count == 0
+    assert spull.call_count == 0
+    assert spush.call_count == 0
+    assert drain.call_count == 0
+    # bootstrap hit the unreachable remote, raised SyncError, and was caught
+    # + logged by run_loop (not propagated).
     assert "sync bootstrap failed" in caplog.text
-    assert "sync_pull failed" in caplog.text
+    # The gate logged the block reason — the remote was unreachable for the
+    # pre-cycle fetch in check_sync_ready.
+    assert "sync gate blocked:" in caplog.text
 
 
 def test_run_loop_blocks_cycle_when_sync_not_ready(
