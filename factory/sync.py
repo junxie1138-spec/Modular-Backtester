@@ -248,6 +248,10 @@ def _trailing_pool_update_subjects(*, root: Path, limit: int) -> list[str]:
     return trailing
 
 
+def _pool_update_commit_message(settings: Settings) -> str:
+    return f"factory({settings.node_id}): pool update"
+
+
 def sync_push(settings: Settings) -> None:
     """Commit + push this cycle's output. No-op when disabled or nothing staged.
 
@@ -309,6 +313,8 @@ def maybe_compact_pool_history(settings: Settings) -> None:
 
     root = settings.paths.backtester_root
     branch = settings.sync.branch
+    remote = settings.sync.remote
+    threshold = settings.sync.auto_compact_min_commits
 
     if _current_branch(root) != branch:
         log.info("sync compact: skipping because current branch is not %s", branch)
@@ -319,14 +325,27 @@ def maybe_compact_pool_history(settings: Settings) -> None:
         log.info("sync compact: skipping because working tree has dirty tracked tree: %s", dirt)
         return
 
-    trailing = _trailing_pool_update_subjects(
-        root=root,
-        limit=settings.sync.auto_compact_min_commits,
-    )
-    if len(trailing) < settings.sync.auto_compact_min_commits:
+    ok, detail = _fetch_pool_branch(root=root, remote=remote, branch=branch)
+    if not ok:
+        log.warning("sync compact: skipping because fetch failed: %s", detail)
+        return
+
+    trailing = _trailing_pool_update_subjects(root=root, limit=threshold)
+    if len(trailing) < threshold:
         log.info(
             "sync compact: trailing pool-update run too short (%d < %d)",
             len(trailing),
-            settings.sync.auto_compact_min_commits,
+            threshold,
         )
         return
+
+    original_head = _git_stdout(["rev-parse", "HEAD"], cwd=root)
+    parent = _git_stdout(["rev-parse", f"HEAD~{len(trailing)}"], cwd=root)
+    try:
+        _git(["reset", "--soft", parent], cwd=root)
+        _git(["commit", "-m", _pool_update_commit_message(settings)], cwd=root)
+        _git(["push", "--force-with-lease", remote, branch], cwd=root)
+        log.info("sync compact: compacted %d trailing pool-update commits", len(trailing))
+    except SyncError as exc:
+        _git(["reset", "--hard", original_head], cwd=root)
+        log.warning("sync compact: failed; restored original HEAD: %s", exc)

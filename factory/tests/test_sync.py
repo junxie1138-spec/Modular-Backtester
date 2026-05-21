@@ -89,10 +89,12 @@ port             = 8787
 auto_refresh_sec = 10
 
 [sync]
-enabled      = {enabled}
-branch       = "factory-pool"
-remote       = "{remote}"
-push_retries = 5
+enabled                  = {enabled}
+branch                   = "factory-pool"
+remote                   = "{remote}"
+push_retries             = 5
+auto_compact_enabled     = true
+auto_compact_min_commits = 10
 """
 
 
@@ -552,3 +554,137 @@ def test_maybe_compact_pool_history_skips_dirty_tree(
         maybe_compact_pool_history(s)
 
     assert "dirty tracked tree" in caplog.text.lower()
+
+
+def test_maybe_compact_pool_history_rewrites_trailing_run(tmp_path: Path) -> None:
+    remote = _init_bare_remote(tmp_path / "remote.git")
+    repo = _clone(remote, tmp_path / "node")
+    _seed_master(repo)
+    s = _node_settings(repo, "desk")
+    bootstrap(s)
+    _git(["checkout", "factory-pool"], repo)
+
+    settings_path = repo / "settings.toml"
+    settings_path.write_text(
+        settings_path.read_text(encoding="utf-8").replace(
+            "auto_compact_min_commits = 10",
+            "auto_compact_min_commits = 3",
+        ),
+        encoding="utf-8",
+    )
+    s = load_settings(settings_path)
+
+    for ts in (1000, 1001, 1002):
+        _produce_strategy(repo, "desk", ts)
+        _git(["add", "--", "strategies", "factory/data/results"], repo)
+        _git(["commit", "-m", "factory(desk): pool update"], repo)
+
+    from factory.sync import maybe_compact_pool_history
+
+    maybe_compact_pool_history(s)
+
+    subjects = subprocess.run(
+        ["git", "log", "--format=%s", "-4"],
+        cwd=str(repo), capture_output=True, text=True, check=True,
+    ).stdout.splitlines()
+    assert subjects[0] == "factory(desk): pool update"
+    assert subjects.count("factory(desk): pool update") == 1
+
+
+
+def test_maybe_compact_pool_history_stops_at_user_commit_boundary(tmp_path: Path) -> None:
+    remote = _init_bare_remote(tmp_path / "remote.git")
+    repo = _clone(remote, tmp_path / "node")
+    _seed_master(repo)
+    s = _node_settings(repo, "desk")
+    bootstrap(s)
+    _git(["checkout", "factory-pool"], repo)
+
+    settings_path = repo / "settings.toml"
+    settings_path.write_text(
+        settings_path.read_text(encoding="utf-8").replace(
+            "auto_compact_min_commits = 10",
+            "auto_compact_min_commits = 2",
+        ),
+        encoding="utf-8",
+    )
+    s = load_settings(settings_path)
+
+    _produce_strategy(repo, "desk", 1000)
+    _git(["add", "--", "strategies", "factory/data/results"], repo)
+    _git(["commit", "-m", "factory(desk): pool update"], repo)
+
+    (repo / "README.md").write_text("user change\n", encoding="utf-8")
+    _git(["add", "README.md"], repo)
+    _git(["commit", "-m", "docs: user boundary"], repo)
+
+    _produce_strategy(repo, "desk", 1001)
+    _git(["add", "--", "strategies", "factory/data/results"], repo)
+    _git(["commit", "-m", "factory(desk): pool update"], repo)
+
+    from factory.sync import maybe_compact_pool_history
+
+    maybe_compact_pool_history(s)
+
+    subjects = subprocess.run(
+        ["git", "log", "--format=%s", "-3"],
+        cwd=str(repo), capture_output=True, text=True, check=True,
+    ).stdout.splitlines()
+    assert subjects == [
+        "factory(desk): pool update",
+        "docs: user boundary",
+        "factory(desk): pool update",
+    ]
+
+
+
+def test_maybe_compact_pool_history_logs_and_keeps_history_on_lease_failure(
+    tmp_path: Path, caplog: pytest.LogCaptureFixture,
+) -> None:
+    remote = _init_bare_remote(tmp_path / "remote.git")
+    repo = _clone(remote, tmp_path / "node")
+    _seed_master(repo)
+    s = _node_settings(repo, "desk")
+    bootstrap(s)
+    _git(["checkout", "factory-pool"], repo)
+
+    settings_path = repo / "settings.toml"
+    settings_path.write_text(
+        settings_path.read_text(encoding="utf-8").replace(
+            "auto_compact_min_commits = 10",
+            "auto_compact_min_commits = 2",
+        ),
+        encoding="utf-8",
+    )
+    s = load_settings(settings_path)
+
+    for ts in (1000, 1001):
+        _produce_strategy(repo, "desk", ts)
+        _git(["add", "--", "strategies", "factory/data/results"], repo)
+        _git(["commit", "-m", "factory(desk): pool update"], repo)
+
+    before = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        cwd=str(repo), capture_output=True, text=True, check=True,
+    ).stdout.strip()
+
+    from factory.sync import maybe_compact_pool_history, SyncError
+
+    def fake_git(args, *, cwd, check=True):
+        if args[:2] == ["push", "--force-with-lease"]:
+            raise SyncError("lease rejected")
+        return _real_git(args, cwd=cwd, check=check)
+
+    from factory import sync as sync_mod
+    _real_git = sync_mod._git
+
+    with mock.patch("factory.sync._git", side_effect=fake_git), \
+         caplog.at_level("WARNING"):
+        maybe_compact_pool_history(s)
+
+    after = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        cwd=str(repo), capture_output=True, text=True, check=True,
+    ).stdout.strip()
+    assert before == after
+    assert "lease rejected" in caplog.text
