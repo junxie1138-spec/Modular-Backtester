@@ -21,8 +21,10 @@ and generation continues — sync failure never aborts the factory.
 from __future__ import annotations
 
 import logging
+import re
 import shutil
 import subprocess
+from dataclasses import dataclass
 from pathlib import Path
 
 from factory.settings_loader import Settings
@@ -35,6 +37,16 @@ _SCRATCH_GITIGNORE_ENTRIES = (
     "factory/logs/",
     "output/runs/",
 )
+
+
+_POOL_UPDATE_RE = re.compile(r"^factory\([^)]*\): pool update$")
+
+
+@dataclass(slots=True, frozen=True)
+class SyncReadiness:
+    ready: bool
+    reason: str
+    detail: str | None = None
 
 
 class SyncError(RuntimeError):
@@ -122,6 +134,13 @@ def _commit_paths(settings: Settings) -> list[str]:
     return [d.relative_to(root).as_posix() for d in dirs if d.exists()]
 
 
+def _fetch_pool_branch(*, root: Path, remote: str, branch: str) -> tuple[bool, str | None]:
+    proc = _git(["fetch", remote, branch], cwd=root, check=False)
+    if proc.returncode == 0:
+        return True, None
+    return False, (proc.stderr or proc.stdout or "").strip()
+
+
 def bootstrap(settings: Settings) -> None:
     """One-time, idempotent distributed-sync setup. No-op when disabled."""
     if not settings.sync.enabled:
@@ -150,6 +169,42 @@ def bootstrap(settings: Settings) -> None:
     _git(["branch", branch, "master"], cwd=root)
     _git(["push", "-u", remote, branch], cwd=root)
     log.info("sync bootstrap: created and published branch %s", branch)
+
+
+def check_sync_ready(settings: Settings) -> SyncReadiness:
+    """Return whether a distributed cycle may safely proceed right now."""
+    if not settings.sync.enabled:
+        return SyncReadiness(ready=True, reason="sync_disabled")
+
+    root = settings.paths.backtester_root
+    branch = settings.sync.branch
+    remote = settings.sync.remote
+
+    current = _current_branch(root)
+    if current != branch:
+        return SyncReadiness(
+            ready=False,
+            reason="wrong_branch",
+            detail=f"current branch is {current!r}, expected {branch!r}",
+        )
+
+    dirt = _tracked_dirt(root)
+    if dirt:
+        return SyncReadiness(
+            ready=False,
+            reason="dirty_tracked_files",
+            detail="; ".join(dirt),
+        )
+
+    ok, detail = _fetch_pool_branch(root=root, remote=remote, branch=branch)
+    if not ok:
+        return SyncReadiness(
+            ready=False,
+            reason="remote_unreachable",
+            detail=detail,
+        )
+
+    return SyncReadiness(ready=True, reason="ready")
 
 
 def sync_pull(settings: Settings) -> None:

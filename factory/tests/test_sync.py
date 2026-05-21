@@ -345,6 +345,93 @@ def test_sync_pull_skips_on_dirty_tree(tmp_path: Path, caplog: pytest.LogCapture
     assert "skipping" in caplog.text.lower()
 
 
+def test_check_sync_ready_returns_ready_when_sync_disabled(tmp_path: Path) -> None:
+    repo = _clone(_init_bare_remote(tmp_path / "remote.git"), tmp_path / "node")
+    _seed_master(repo)
+    s = _node_settings(repo, "desk", enabled=False)
+
+    from factory.sync import check_sync_ready
+
+    ready = check_sync_ready(s)
+    assert ready.ready is True
+    assert ready.reason == "sync_disabled"
+    assert ready.detail is None
+
+
+
+def test_check_sync_ready_blocks_wrong_branch(tmp_path: Path) -> None:
+    remote = _init_bare_remote(tmp_path / "remote.git")
+    repo = _clone(remote, tmp_path / "node")
+    _seed_master(repo)
+    s = _node_settings(repo, "desk")
+    bootstrap(s)
+
+    from factory.sync import check_sync_ready
+
+    ready = check_sync_ready(s)
+    assert ready.ready is False
+    assert ready.reason == "wrong_branch"
+    assert "master" in (ready.detail or "")
+
+
+
+def test_check_sync_ready_blocks_dirty_tracked_files(tmp_path: Path) -> None:
+    remote = _init_bare_remote(tmp_path / "remote.git")
+    repo = _clone(remote, tmp_path / "node")
+    _seed_master(repo)
+    s = _node_settings(repo, "desk")
+    bootstrap(s)
+    _git(["checkout", "factory-pool"], repo)
+    (repo / "README.md").write_text("dirty\n", encoding="utf-8")
+
+    from factory.sync import check_sync_ready
+
+    ready = check_sync_ready(s)
+    assert ready.ready is False
+    assert ready.reason == "dirty_tracked_files"
+    assert "README.md" in (ready.detail or "")
+
+
+
+def test_check_sync_ready_blocks_unreachable_remote(tmp_path: Path) -> None:
+    repo = tmp_path / "lonely"
+    repo.mkdir()
+    _git(["init", "-b", "master"], repo)
+    _git(["config", "user.email", "n@example.com"], repo)
+    _git(["config", "user.name", "N"], repo)
+    (repo / "README.md").write_text("x\n", encoding="utf-8")
+    _git(["add", "-A"], repo)
+    _git(["commit", "-m", "init"], repo)
+    _git(["branch", "factory-pool"], repo)
+    _git(["checkout", "factory-pool"], repo)
+    _git(["remote", "add", "origin", str(tmp_path / "missing.git")], repo)
+    s = _node_settings(repo, "desk")
+
+    from factory.sync import check_sync_ready
+
+    ready = check_sync_ready(s)
+    assert ready.ready is False
+    assert ready.reason == "remote_unreachable"
+    assert ready.detail is not None
+
+
+
+def test_check_sync_ready_returns_ready_for_clean_pool_branch(tmp_path: Path) -> None:
+    remote = _init_bare_remote(tmp_path / "remote.git")
+    repo = _clone(remote, tmp_path / "node")
+    _seed_master(repo)
+    s = _node_settings(repo, "desk")
+    bootstrap(s)
+    _git(["checkout", "factory-pool"], repo)
+
+    from factory.sync import check_sync_ready
+
+    ready = check_sync_ready(s)
+    assert ready.ready is True
+    assert ready.reason == "ready"
+    assert ready.detail is None
+
+
 def test_sync_pull_raises_on_unreachable_remote(tmp_path: Path) -> None:
     repo = tmp_path / "lonely"
     repo.mkdir()
