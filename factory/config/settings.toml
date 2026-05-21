@@ -53,7 +53,9 @@ enabled            = true
 min_optimize_score = 1.0   # in-sample optimize-objective (Sortino) floor to enter WFO
 
 [sync]
-enabled      = false          # master switch for distributed multi-machine sync
-branch       = "factory-pool" # shared pool branch
-remote       = "origin"
-push_retries = 5
+enabled                  = false          # master switch for distributed multi-machine sync
+branch                   = "factory-pool" # shared pool branch
+remote                   = "origin"
+push_retries             = 5
+auto_compact_enabled     = true
+auto_compact_min_commits = 10

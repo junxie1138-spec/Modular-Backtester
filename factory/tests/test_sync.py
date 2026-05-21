@@ -108,6 +108,68 @@ def _node_settings(repo: Path, node_id: str, *, enabled: bool = True,
     return load_settings(p)
 
 
+def test_sync_settings_load_auto_compact_fields(tmp_path: Path) -> None:
+    remote = _init_bare_remote(tmp_path / "remote.git")
+    repo = _clone(remote, tmp_path / "node")
+    _seed_master(repo)
+
+    p = repo / "settings.toml"
+    p.write_text(textwrap.dedent(f"""\
+    node_id = "desk"
+
+    [paths]
+    backtester_root  = "{repo.as_posix()}"
+    strategies_dir   = "strategies"
+    configs_dir      = "configs/wfo"
+    registry_file    = "backtester/strategies/registry.py"
+    output_runs_dir  = "output/runs"
+    dedup_dir        = "factory/data/dedup"
+    results_dir      = "factory/data/results"
+    factory_log      = "factory/logs/factory.log"
+    tmp_dir          = "factory/data/_tmp"
+
+    [generation]
+    provider               = "claude"
+    cmd                    = "claude"
+    flags                  = ["-p"]
+    claude_cmd             = "claude"
+    claude_flags           = ["-p"]
+    generation_timeout_sec = 60
+
+    [stages]
+    stage_timeout_sec = 300
+
+    [alerts]
+    alert_threshold_metric = "wfo.oos_sharpe"
+    alert_threshold        = 1.0
+    telegram_bot_token     = ""
+    telegram_chat_id       = ""
+    dashboard_base_url     = "http://127.0.0.1:8787"
+
+    [loop]
+    mode                  = "continuous"
+    inter_cycle_sleep_sec = 0
+    max_cycles            = 1
+
+    [dashboard]
+    host             = "127.0.0.1"
+    port             = 8787
+    auto_refresh_sec = 10
+
+    [sync]
+    enabled                = true
+    branch                 = "factory-pool"
+    remote                 = "origin"
+    push_retries           = 5
+    auto_compact_enabled   = true
+    auto_compact_min_commits = 12
+    """), encoding="utf-8")
+
+    s = load_settings(p)
+    assert s.sync.auto_compact_enabled is True
+    assert s.sync.auto_compact_min_commits == 12
+
+
 def _produce_strategy(repo: Path, node_id: str, ts: int) -> str:
     """Simulate a cycle: write a uniquely-named strategy file + a results
     shard line. Returns the strategy id."""
