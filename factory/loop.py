@@ -16,6 +16,7 @@ from factory.settings_loader import Settings, load_settings
 from factory.sync import (
     bootstrap,
     check_sync_ready,
+    maybe_compact_pool_history,
     sync_pull,
     sync_push,
 )
@@ -165,6 +166,10 @@ def run_loop(
                 sync_push(settings)
             except Exception as exc:
                 log.exception("sync_push failed (continuing): %s", exc)
+            try:
+                maybe_compact_pool_history(settings)
+            except Exception as exc:
+                log.exception("sync compaction failed (continuing): %s", exc)
         completed += 1
         if max_cycles and completed >= max_cycles:
             break

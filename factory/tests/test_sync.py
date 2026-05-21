@@ -688,3 +688,23 @@ def test_maybe_compact_pool_history_logs_and_keeps_history_on_lease_failure(
     ).stdout.strip()
     assert before == after
     assert "lease rejected" in caplog.text
+
+
+def test_run_loop_calls_compaction_after_successful_sync(tmp_path: Path) -> None:
+    remote = _init_bare_remote(tmp_path / "remote.git")
+    repo = _clone(remote, tmp_path / "node")
+    _seed_master(repo)
+    s = _node_settings(repo, "desk")
+    bootstrap(s)
+    _git(["checkout", "factory-pool"], repo)
+
+    fake = CycleOutcome(status="failed", failed_stage="generation",
+                        strategy_id=None, record={"status": "failed"})
+
+    with mock.patch("factory.loop.run_cycle", return_value=fake) as rc, \
+         mock.patch("factory.loop.maybe_compact_pool_history") as compact:
+        completed = run_loop(s, rng=random.Random(0), max_cycles_override=1)
+
+    assert completed == 1
+    assert rc.call_count == 1
+    assert compact.call_count == 1
