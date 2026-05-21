@@ -505,3 +505,50 @@ def test_run_loop_blocks_cycle_when_sync_not_ready(
     assert spush.call_count == 0
     assert drain.call_count == 0
     assert "sync gate blocked: wrong_branch" in caplog.text
+
+
+def test_maybe_compact_pool_history_noop_below_threshold(
+    tmp_path: Path, caplog: pytest.LogCaptureFixture,
+) -> None:
+    remote = _init_bare_remote(tmp_path / "remote.git")
+    repo = _clone(remote, tmp_path / "node")
+    _seed_master(repo)
+    s = _node_settings(repo, "desk")
+    bootstrap(s)
+    _git(["checkout", "factory-pool"], repo)
+
+    for ts in (1000, 1001, 1002):
+        _produce_strategy(repo, "desk", ts)
+        _git(["add", "--", "strategies", "factory/data/results"], repo)
+        _git(["commit", "-m", "factory(desk): pool update"], repo)
+
+    from factory.sync import maybe_compact_pool_history
+
+    with caplog.at_level("INFO"):
+        maybe_compact_pool_history(s)
+
+    log_text = subprocess.run(
+        ["git", "log", "--oneline", "-3"],
+        cwd=str(repo), capture_output=True, text=True, check=True,
+    ).stdout
+    assert log_text.count("factory(desk): pool update") == 3
+
+
+
+def test_maybe_compact_pool_history_skips_dirty_tree(
+    tmp_path: Path, caplog: pytest.LogCaptureFixture,
+) -> None:
+    remote = _init_bare_remote(tmp_path / "remote.git")
+    repo = _clone(remote, tmp_path / "node")
+    _seed_master(repo)
+    s = _node_settings(repo, "desk")
+    bootstrap(s)
+    _git(["checkout", "factory-pool"], repo)
+    (repo / "README.md").write_text("dirty\n", encoding="utf-8")
+
+    from factory.sync import maybe_compact_pool_history
+
+    with caplog.at_level("INFO"):
+        maybe_compact_pool_history(s)
+
+    assert "dirty tracked tree" in caplog.text.lower()

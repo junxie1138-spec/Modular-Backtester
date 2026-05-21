@@ -227,6 +227,27 @@ def sync_pull(settings: Settings) -> None:
     log.info("sync_pull: rebased onto %s/%s", remote, branch)
 
 
+def _git_stdout(args: list[str], *, cwd: Path) -> str:
+    return _git(args, cwd=cwd).stdout.strip()
+
+
+
+def _trailing_pool_update_subjects(*, root: Path, limit: int) -> list[str]:
+    if limit <= 0:
+        return []
+    out = _git_stdout(["log", f"-n{limit}", "--format=%s", "HEAD"], cwd=root)
+    if not out:
+        return []
+    subjects = out.splitlines()
+    trailing: list[str] = []
+    for subject in subjects:
+        if _POOL_UPDATE_RE.match(subject):
+            trailing.append(subject)
+        else:
+            break
+    return trailing
+
+
 def sync_push(settings: Settings) -> None:
     """Commit + push this cycle's output. No-op when disabled or nothing staged.
 
@@ -278,3 +299,34 @@ def sync_push(settings: Settings) -> None:
     raise SyncError(
         f"sync_push: push still failing after {settings.sync.push_retries} retries"
     )
+
+
+def maybe_compact_pool_history(settings: Settings) -> None:
+    if not settings.sync.enabled:
+        return
+    if not settings.sync.auto_compact_enabled:
+        return
+
+    root = settings.paths.backtester_root
+    branch = settings.sync.branch
+
+    if _current_branch(root) != branch:
+        log.info("sync compact: skipping because current branch is not %s", branch)
+        return
+
+    dirt = _tracked_dirt(root)
+    if dirt:
+        log.info("sync compact: skipping because working tree has dirty tracked tree: %s", dirt)
+        return
+
+    trailing = _trailing_pool_update_subjects(
+        root=root,
+        limit=settings.sync.auto_compact_min_commits,
+    )
+    if len(trailing) < settings.sync.auto_compact_min_commits:
+        log.info(
+            "sync compact: trailing pool-update run too short (%d < %d)",
+            len(trailing),
+            settings.sync.auto_compact_min_commits,
+        )
+        return
