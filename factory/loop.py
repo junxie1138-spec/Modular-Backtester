@@ -13,7 +13,12 @@ from typing import Optional
 
 from factory.cycle import run_cycle
 from factory.settings_loader import Settings, load_settings
-from factory.sync import bootstrap, sync_pull, sync_push
+from factory.sync import (
+    bootstrap,
+    check_sync_ready,
+    sync_pull,
+    sync_push,
+)
 from factory.sortino_migration import drain_one_retro_promotion, migrate_shard
 
 log = logging.getLogger(__name__)
@@ -135,34 +140,37 @@ def run_loop(
 
     completed = 0
     while not flag.is_set():
-        try:
-            sync_pull(settings)
-        except Exception as exc:
-            log.exception("sync_pull failed (continuing): %s", exc)
-        try:
-            outcome = run_cycle(settings, rng=rng)
-            log.info("cycle %d outcome=%s id=%s",
-                     completed + 1, outcome.status, outcome.strategy_id)
-        except Exception as exc:
-            # An unexpected exception from inside run_cycle: log and continue.
-            # (run_cycle is supposed to never raise on expected failures, so
-            # reaching here means a bug — but the loop must not die.)
-            log.exception("unexpected exception in run_cycle: %s", exc)
-        try:
-            drain_one_retro_promotion(settings)
-        except Exception as exc:
-            log.exception("retro-promotion drain failed (continuing): %s", exc)
-        try:
-            sync_push(settings)
-        except Exception as exc:
-            log.exception("sync_push failed (continuing): %s", exc)
+        readiness = check_sync_ready(settings)
+        if not readiness.ready:
+            msg = f"sync gate blocked: {readiness.reason}"
+            if readiness.detail:
+                msg += f" ({readiness.detail})"
+            log.warning(msg)
+        else:
+            try:
+                sync_pull(settings)
+            except Exception as exc:
+                log.exception("sync_pull failed (continuing): %s", exc)
+            try:
+                outcome = run_cycle(settings, rng=rng)
+                log.info("cycle %d outcome=%s id=%s",
+                         completed + 1, outcome.status, outcome.strategy_id)
+            except Exception as exc:
+                log.exception("unexpected exception in run_cycle: %s", exc)
+            try:
+                drain_one_retro_promotion(settings)
+            except Exception as exc:
+                log.exception("retro-promotion drain failed (continuing): %s", exc)
+            try:
+                sync_push(settings)
+            except Exception as exc:
+                log.exception("sync_push failed (continuing): %s", exc)
         completed += 1
         if max_cycles and completed >= max_cycles:
             break
         if flag.is_set():
             break
         if sleep_sec > 0:
-            # Sleep in short increments so SIGINT is responsive.
             slept = 0.0
             while slept < sleep_sec and not flag.is_set():
                 time.sleep(min(0.5, sleep_sec - slept))

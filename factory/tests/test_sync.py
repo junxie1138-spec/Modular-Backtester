@@ -481,3 +481,27 @@ def test_run_loop_swallows_sync_failure(
     # SyncError, and were caught + logged by run_loop (not propagated).
     assert "sync bootstrap failed" in caplog.text
     assert "sync_pull failed" in caplog.text
+
+
+def test_run_loop_blocks_cycle_when_sync_not_ready(
+    tmp_path: Path, caplog: pytest.LogCaptureFixture,
+) -> None:
+    remote = _init_bare_remote(tmp_path / "remote.git")
+    repo = _clone(remote, tmp_path / "node")
+    _seed_master(repo)
+    s = _node_settings(repo, "desk")
+    bootstrap(s)
+
+    with mock.patch("factory.loop.run_cycle") as rc, \
+         mock.patch("factory.loop.sync_pull") as spull, \
+         mock.patch("factory.loop.sync_push") as spush, \
+         mock.patch("factory.loop.drain_one_retro_promotion") as drain, \
+         caplog.at_level("WARNING"):
+        completed = run_loop(s, rng=random.Random(0), max_cycles_override=1)
+
+    assert completed == 1
+    assert rc.call_count == 0
+    assert spull.call_count == 0
+    assert spush.call_count == 0
+    assert drain.call_count == 0
+    assert "sync gate blocked: wrong_branch" in caplog.text
