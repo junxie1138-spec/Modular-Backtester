@@ -89,10 +89,12 @@ port             = 8787
 auto_refresh_sec = 10
 
 [sync]
-enabled      = {enabled}
-branch       = "factory-pool"
-remote       = "{remote}"
-push_retries = 5
+enabled                  = {enabled}
+branch                   = "factory-pool"
+remote                   = "{remote}"
+push_retries             = 5
+auto_compact_enabled     = true
+auto_compact_min_commits = 10
 """
 
 
@@ -106,6 +108,68 @@ def _node_settings(repo: Path, node_id: str, *, enabled: bool = True,
     p = repo / "settings.toml"
     p.write_text(textwrap.dedent(toml), encoding="utf-8")
     return load_settings(p)
+
+
+def test_sync_settings_load_auto_compact_fields(tmp_path: Path) -> None:
+    remote = _init_bare_remote(tmp_path / "remote.git")
+    repo = _clone(remote, tmp_path / "node")
+    _seed_master(repo)
+
+    p = repo / "settings.toml"
+    p.write_text(textwrap.dedent(f"""\
+    node_id = "desk"
+
+    [paths]
+    backtester_root  = "{repo.as_posix()}"
+    strategies_dir   = "strategies"
+    configs_dir      = "configs/wfo"
+    registry_file    = "backtester/strategies/registry.py"
+    output_runs_dir  = "output/runs"
+    dedup_dir        = "factory/data/dedup"
+    results_dir      = "factory/data/results"
+    factory_log      = "factory/logs/factory.log"
+    tmp_dir          = "factory/data/_tmp"
+
+    [generation]
+    provider               = "claude"
+    cmd                    = "claude"
+    flags                  = ["-p"]
+    claude_cmd             = "claude"
+    claude_flags           = ["-p"]
+    generation_timeout_sec = 60
+
+    [stages]
+    stage_timeout_sec = 300
+
+    [alerts]
+    alert_threshold_metric = "wfo.oos_sharpe"
+    alert_threshold        = 1.0
+    telegram_bot_token     = ""
+    telegram_chat_id       = ""
+    dashboard_base_url     = "http://127.0.0.1:8787"
+
+    [loop]
+    mode                  = "continuous"
+    inter_cycle_sleep_sec = 0
+    max_cycles            = 1
+
+    [dashboard]
+    host             = "127.0.0.1"
+    port             = 8787
+    auto_refresh_sec = 10
+
+    [sync]
+    enabled                = true
+    branch                 = "factory-pool"
+    remote                 = "origin"
+    push_retries           = 5
+    auto_compact_enabled   = true
+    auto_compact_min_commits = 12
+    """), encoding="utf-8")
+
+    s = load_settings(p)
+    assert s.sync.auto_compact_enabled is True
+    assert s.sync.auto_compact_min_commits == 12
 
 
 def _produce_strategy(repo: Path, node_id: str, ts: int) -> str:
@@ -283,6 +347,93 @@ def test_sync_pull_skips_on_dirty_tree(tmp_path: Path, caplog: pytest.LogCapture
     assert "skipping" in caplog.text.lower()
 
 
+def test_check_sync_ready_returns_ready_when_sync_disabled(tmp_path: Path) -> None:
+    repo = _clone(_init_bare_remote(tmp_path / "remote.git"), tmp_path / "node")
+    _seed_master(repo)
+    s = _node_settings(repo, "desk", enabled=False)
+
+    from factory.sync import check_sync_ready
+
+    ready = check_sync_ready(s)
+    assert ready.ready is True
+    assert ready.reason == "sync_disabled"
+    assert ready.detail is None
+
+
+
+def test_check_sync_ready_blocks_wrong_branch(tmp_path: Path) -> None:
+    remote = _init_bare_remote(tmp_path / "remote.git")
+    repo = _clone(remote, tmp_path / "node")
+    _seed_master(repo)
+    s = _node_settings(repo, "desk")
+    bootstrap(s)
+
+    from factory.sync import check_sync_ready
+
+    ready = check_sync_ready(s)
+    assert ready.ready is False
+    assert ready.reason == "wrong_branch"
+    assert "master" in (ready.detail or "")
+
+
+
+def test_check_sync_ready_blocks_dirty_tracked_files(tmp_path: Path) -> None:
+    remote = _init_bare_remote(tmp_path / "remote.git")
+    repo = _clone(remote, tmp_path / "node")
+    _seed_master(repo)
+    s = _node_settings(repo, "desk")
+    bootstrap(s)
+    _git(["checkout", "factory-pool"], repo)
+    (repo / "README.md").write_text("dirty\n", encoding="utf-8")
+
+    from factory.sync import check_sync_ready
+
+    ready = check_sync_ready(s)
+    assert ready.ready is False
+    assert ready.reason == "dirty_tracked_files"
+    assert "README.md" in (ready.detail or "")
+
+
+
+def test_check_sync_ready_blocks_unreachable_remote(tmp_path: Path) -> None:
+    repo = tmp_path / "lonely"
+    repo.mkdir()
+    _git(["init", "-b", "master"], repo)
+    _git(["config", "user.email", "n@example.com"], repo)
+    _git(["config", "user.name", "N"], repo)
+    (repo / "README.md").write_text("x\n", encoding="utf-8")
+    _git(["add", "-A"], repo)
+    _git(["commit", "-m", "init"], repo)
+    _git(["branch", "factory-pool"], repo)
+    _git(["checkout", "factory-pool"], repo)
+    _git(["remote", "add", "origin", str(tmp_path / "missing.git")], repo)
+    s = _node_settings(repo, "desk")
+
+    from factory.sync import check_sync_ready
+
+    ready = check_sync_ready(s)
+    assert ready.ready is False
+    assert ready.reason == "remote_unreachable"
+    assert ready.detail is not None
+
+
+
+def test_check_sync_ready_returns_ready_for_clean_pool_branch(tmp_path: Path) -> None:
+    remote = _init_bare_remote(tmp_path / "remote.git")
+    repo = _clone(remote, tmp_path / "node")
+    _seed_master(repo)
+    s = _node_settings(repo, "desk")
+    bootstrap(s)
+    _git(["checkout", "factory-pool"], repo)
+
+    from factory.sync import check_sync_ready
+
+    ready = check_sync_ready(s)
+    assert ready.ready is True
+    assert ready.reason == "ready"
+    assert ready.detail is None
+
+
 def test_sync_pull_raises_on_unreachable_remote(tmp_path: Path) -> None:
     repo = tmp_path / "lonely"
     repo.mkdir()
@@ -302,9 +453,10 @@ def test_sync_pull_raises_on_unreachable_remote(tmp_path: Path) -> None:
 def test_run_loop_swallows_sync_failure(
     tmp_path: Path, caplog: pytest.LogCaptureFixture,
 ) -> None:
-    """With sync enabled but the remote unreachable, run_loop calls the sync
-    hooks, logs each failure, and still completes its cycles — sync failure
-    never aborts the loop."""
+    """With sync enabled but the remote unreachable, run_loop must NOT abort:
+    bootstrap's SyncError is caught and logged, then the readiness gate blocks
+    the cycle (no run_cycle, sync_pull, sync_push, or drain), and the loop
+    still completes its iterations cleanly."""
     repo = tmp_path / "node"
     repo.mkdir()
     _git(["init", "-b", "master"], repo)
@@ -319,16 +471,247 @@ def test_run_loop_swallows_sync_failure(
     fake = CycleOutcome(status="failed", failed_stage="generation",
                         strategy_id=None, record={"status": "failed"})
     with mock.patch("factory.loop.run_cycle", return_value=fake) as rc, \
-         mock.patch("factory.loop.sync_push", wraps=sync_push) as sp, \
-         caplog.at_level("ERROR"):
+         mock.patch("factory.loop.sync_pull") as spull, \
+         mock.patch("factory.loop.sync_push", wraps=sync_push) as spush, \
+         mock.patch("factory.loop.drain_one_retro_promotion") as drain, \
+         caplog.at_level("WARNING"):
         completed = run_loop(s, rng=random.Random(0), max_cycles_override=1)
 
-    # The cycle ran and the loop returned normally — no SyncError escaped.
-    assert rc.call_count == 1
+    # The loop returned normally — no SyncError escaped.
     assert completed == 1
-    # sync_push was wired into the loop and invoked once.
-    assert sp.call_count == 1
-    # bootstrap and sync_pull both hit the unreachable remote, raised
-    # SyncError, and were caught + logged by run_loop (not propagated).
+    # The readiness gate blocked the cycle: none of the hooks ran.
+    assert rc.call_count == 0
+    assert spull.call_count == 0
+    assert spush.call_count == 0
+    assert drain.call_count == 0
+    # bootstrap hit the unreachable remote, raised SyncError, and was caught
+    # + logged by run_loop (not propagated).
     assert "sync bootstrap failed" in caplog.text
-    assert "sync_pull failed" in caplog.text
+    # The gate logged the block reason — the remote was unreachable for the
+    # pre-cycle fetch in check_sync_ready.
+    assert "sync gate blocked:" in caplog.text
+
+
+def test_run_loop_blocks_cycle_when_sync_not_ready(
+    tmp_path: Path, caplog: pytest.LogCaptureFixture,
+) -> None:
+    remote = _init_bare_remote(tmp_path / "remote.git")
+    repo = _clone(remote, tmp_path / "node")
+    _seed_master(repo)
+    s = _node_settings(repo, "desk")
+    bootstrap(s)
+
+    with mock.patch("factory.loop.run_cycle") as rc, \
+         mock.patch("factory.loop.sync_pull") as spull, \
+         mock.patch("factory.loop.sync_push") as spush, \
+         mock.patch("factory.loop.drain_one_retro_promotion") as drain, \
+         caplog.at_level("WARNING"):
+        completed = run_loop(s, rng=random.Random(0), max_cycles_override=1)
+
+    assert completed == 1
+    assert rc.call_count == 0
+    assert spull.call_count == 0
+    assert spush.call_count == 0
+    assert drain.call_count == 0
+    assert "sync gate blocked: wrong_branch" in caplog.text
+
+
+def test_maybe_compact_pool_history_noop_below_threshold(
+    tmp_path: Path, caplog: pytest.LogCaptureFixture,
+) -> None:
+    remote = _init_bare_remote(tmp_path / "remote.git")
+    repo = _clone(remote, tmp_path / "node")
+    _seed_master(repo)
+    s = _node_settings(repo, "desk")
+    bootstrap(s)
+    _git(["checkout", "factory-pool"], repo)
+
+    for ts in (1000, 1001, 1002):
+        _produce_strategy(repo, "desk", ts)
+        _git(["add", "--", "strategies", "factory/data/results"], repo)
+        _git(["commit", "-m", "factory(desk): pool update"], repo)
+
+    from factory.sync import maybe_compact_pool_history
+
+    with caplog.at_level("INFO"):
+        maybe_compact_pool_history(s)
+
+    log_text = subprocess.run(
+        ["git", "log", "--oneline", "-3"],
+        cwd=str(repo), capture_output=True, text=True, check=True,
+    ).stdout
+    assert log_text.count("factory(desk): pool update") == 3
+
+
+
+def test_maybe_compact_pool_history_skips_dirty_tree(
+    tmp_path: Path, caplog: pytest.LogCaptureFixture,
+) -> None:
+    remote = _init_bare_remote(tmp_path / "remote.git")
+    repo = _clone(remote, tmp_path / "node")
+    _seed_master(repo)
+    s = _node_settings(repo, "desk")
+    bootstrap(s)
+    _git(["checkout", "factory-pool"], repo)
+    (repo / "README.md").write_text("dirty\n", encoding="utf-8")
+
+    from factory.sync import maybe_compact_pool_history
+
+    with caplog.at_level("INFO"):
+        maybe_compact_pool_history(s)
+
+    assert "dirty tracked tree" in caplog.text.lower()
+
+
+def test_maybe_compact_pool_history_rewrites_trailing_run(tmp_path: Path) -> None:
+    remote = _init_bare_remote(tmp_path / "remote.git")
+    repo = _clone(remote, tmp_path / "node")
+    _seed_master(repo)
+    s = _node_settings(repo, "desk")
+    bootstrap(s)
+    _git(["checkout", "factory-pool"], repo)
+
+    settings_path = repo / "settings.toml"
+    settings_path.write_text(
+        settings_path.read_text(encoding="utf-8").replace(
+            "auto_compact_min_commits = 10",
+            "auto_compact_min_commits = 3",
+        ),
+        encoding="utf-8",
+    )
+    s = load_settings(settings_path)
+
+    for ts in (1000, 1001, 1002):
+        _produce_strategy(repo, "desk", ts)
+        _git(["add", "--", "strategies", "factory/data/results"], repo)
+        _git(["commit", "-m", "factory(desk): pool update"], repo)
+
+    from factory.sync import maybe_compact_pool_history
+
+    maybe_compact_pool_history(s)
+
+    subjects = subprocess.run(
+        ["git", "log", "--format=%s", "-4"],
+        cwd=str(repo), capture_output=True, text=True, check=True,
+    ).stdout.splitlines()
+    assert subjects[0] == "factory(desk): pool update"
+    assert subjects.count("factory(desk): pool update") == 1
+
+
+
+def test_maybe_compact_pool_history_stops_at_user_commit_boundary(tmp_path: Path) -> None:
+    remote = _init_bare_remote(tmp_path / "remote.git")
+    repo = _clone(remote, tmp_path / "node")
+    _seed_master(repo)
+    s = _node_settings(repo, "desk")
+    bootstrap(s)
+    _git(["checkout", "factory-pool"], repo)
+
+    settings_path = repo / "settings.toml"
+    settings_path.write_text(
+        settings_path.read_text(encoding="utf-8").replace(
+            "auto_compact_min_commits = 10",
+            "auto_compact_min_commits = 2",
+        ),
+        encoding="utf-8",
+    )
+    s = load_settings(settings_path)
+
+    _produce_strategy(repo, "desk", 1000)
+    _git(["add", "--", "strategies", "factory/data/results"], repo)
+    _git(["commit", "-m", "factory(desk): pool update"], repo)
+
+    (repo / "README.md").write_text("user change\n", encoding="utf-8")
+    _git(["add", "README.md"], repo)
+    _git(["commit", "-m", "docs: user boundary"], repo)
+
+    _produce_strategy(repo, "desk", 1001)
+    _git(["add", "--", "strategies", "factory/data/results"], repo)
+    _git(["commit", "-m", "factory(desk): pool update"], repo)
+
+    from factory.sync import maybe_compact_pool_history
+
+    maybe_compact_pool_history(s)
+
+    subjects = subprocess.run(
+        ["git", "log", "--format=%s", "-3"],
+        cwd=str(repo), capture_output=True, text=True, check=True,
+    ).stdout.splitlines()
+    assert subjects == [
+        "factory(desk): pool update",
+        "docs: user boundary",
+        "factory(desk): pool update",
+    ]
+
+
+
+def test_maybe_compact_pool_history_logs_and_keeps_history_on_lease_failure(
+    tmp_path: Path, caplog: pytest.LogCaptureFixture,
+) -> None:
+    remote = _init_bare_remote(tmp_path / "remote.git")
+    repo = _clone(remote, tmp_path / "node")
+    _seed_master(repo)
+    s = _node_settings(repo, "desk")
+    bootstrap(s)
+    _git(["checkout", "factory-pool"], repo)
+
+    settings_path = repo / "settings.toml"
+    settings_path.write_text(
+        settings_path.read_text(encoding="utf-8").replace(
+            "auto_compact_min_commits = 10",
+            "auto_compact_min_commits = 2",
+        ),
+        encoding="utf-8",
+    )
+    s = load_settings(settings_path)
+
+    for ts in (1000, 1001):
+        _produce_strategy(repo, "desk", ts)
+        _git(["add", "--", "strategies", "factory/data/results"], repo)
+        _git(["commit", "-m", "factory(desk): pool update"], repo)
+
+    before = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        cwd=str(repo), capture_output=True, text=True, check=True,
+    ).stdout.strip()
+
+    from factory.sync import maybe_compact_pool_history, SyncError
+
+    def fake_git(args, *, cwd, check=True):
+        if args[:2] == ["push", "--force-with-lease"]:
+            raise SyncError("lease rejected")
+        return _real_git(args, cwd=cwd, check=check)
+
+    from factory import sync as sync_mod
+    _real_git = sync_mod._git
+
+    with mock.patch("factory.sync._git", side_effect=fake_git), \
+         caplog.at_level("WARNING"):
+        maybe_compact_pool_history(s)
+
+    after = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        cwd=str(repo), capture_output=True, text=True, check=True,
+    ).stdout.strip()
+    assert before == after
+    assert "lease rejected" in caplog.text
+
+
+def test_run_loop_calls_compaction_after_successful_sync(tmp_path: Path) -> None:
+    remote = _init_bare_remote(tmp_path / "remote.git")
+    repo = _clone(remote, tmp_path / "node")
+    _seed_master(repo)
+    s = _node_settings(repo, "desk")
+    bootstrap(s)
+    _git(["checkout", "factory-pool"], repo)
+
+    fake = CycleOutcome(status="failed", failed_stage="generation",
+                        strategy_id=None, record={"status": "failed"})
+
+    with mock.patch("factory.loop.run_cycle", return_value=fake) as rc, \
+         mock.patch("factory.loop.maybe_compact_pool_history") as compact:
+        completed = run_loop(s, rng=random.Random(0), max_cycles_override=1)
+
+    assert completed == 1
+    assert rc.call_count == 1
+    assert compact.call_count == 1

@@ -73,6 +73,22 @@ def test_run_loop_stops_on_sigint(tmp_settings_file: Path) -> None:
     assert completed == 2
 
 
+def test_run_loop_runs_sortino_migration_and_drain(tmp_settings_file: Path) -> None:
+    s = load_settings(tmp_settings_file)
+    assert s.loop.max_cycles == 1   # from the test fixture
+
+    from factory.cycle import CycleOutcome
+    fake_outcome = CycleOutcome(status="failed", failed_stage="generation",
+                                strategy_id=None, record={"status": "failed"})
+    with mock.patch("factory.loop.run_cycle", return_value=fake_outcome), \
+         mock.patch("factory.loop.migrate_shard") as migrate, \
+         mock.patch("factory.loop.drain_one_retro_promotion") as drain:
+        run_loop(s, rng=random.Random(0))
+
+    assert migrate.call_count == 1   # once, at startup
+    assert drain.call_count == 1     # once per cycle (max_cycles=1)
+
+
 def test_main_passes_max_cycles_override(tmp_settings_file: Path) -> None:
     with mock.patch("factory.loop.run_loop") as rl, \
          mock.patch("factory.loop.configure_logging"):

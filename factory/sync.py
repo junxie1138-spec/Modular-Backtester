@@ -21,8 +21,10 @@ and generation continues — sync failure never aborts the factory.
 from __future__ import annotations
 
 import logging
+import re
 import shutil
 import subprocess
+from dataclasses import dataclass
 from pathlib import Path
 
 from factory.settings_loader import Settings
@@ -35,6 +37,16 @@ _SCRATCH_GITIGNORE_ENTRIES = (
     "factory/logs/",
     "output/runs/",
 )
+
+
+_POOL_UPDATE_RE = re.compile(r"^factory\([^)]*\): pool update$")
+
+
+@dataclass(slots=True, frozen=True)
+class SyncReadiness:
+    ready: bool
+    reason: str
+    detail: str | None = None
 
 
 class SyncError(RuntimeError):
@@ -122,6 +134,13 @@ def _commit_paths(settings: Settings) -> list[str]:
     return [d.relative_to(root).as_posix() for d in dirs if d.exists()]
 
 
+def _fetch_pool_branch(*, root: Path, remote: str, branch: str) -> tuple[bool, str | None]:
+    proc = _git(["fetch", remote, branch], cwd=root, check=False)
+    if proc.returncode == 0:
+        return True, None
+    return False, (proc.stderr or proc.stdout or "").strip()
+
+
 def bootstrap(settings: Settings) -> None:
     """One-time, idempotent distributed-sync setup. No-op when disabled."""
     if not settings.sync.enabled:
@@ -152,6 +171,42 @@ def bootstrap(settings: Settings) -> None:
     log.info("sync bootstrap: created and published branch %s", branch)
 
 
+def check_sync_ready(settings: Settings) -> SyncReadiness:
+    """Return whether a distributed cycle may safely proceed right now."""
+    if not settings.sync.enabled:
+        return SyncReadiness(ready=True, reason="sync_disabled")
+
+    root = settings.paths.backtester_root
+    branch = settings.sync.branch
+    remote = settings.sync.remote
+
+    current = _current_branch(root)
+    if current != branch:
+        return SyncReadiness(
+            ready=False,
+            reason="wrong_branch",
+            detail=f"current branch is {current!r}, expected {branch!r}",
+        )
+
+    dirt = _tracked_dirt(root)
+    if dirt:
+        return SyncReadiness(
+            ready=False,
+            reason="dirty_tracked_files",
+            detail="; ".join(dirt),
+        )
+
+    ok, detail = _fetch_pool_branch(root=root, remote=remote, branch=branch)
+    if not ok:
+        return SyncReadiness(
+            ready=False,
+            reason="remote_unreachable",
+            detail=detail,
+        )
+
+    return SyncReadiness(ready=True, reason="ready")
+
+
 def sync_pull(settings: Settings) -> None:
     """Pull the pool before a cycle. No-op when disabled. Skips on a dirty tree."""
     if not settings.sync.enabled:
@@ -170,6 +225,31 @@ def sync_pull(settings: Settings) -> None:
     _git(["fetch", remote, branch], cwd=root)
     _git(["pull", "--rebase", remote, branch], cwd=root)
     log.info("sync_pull: rebased onto %s/%s", remote, branch)
+
+
+def _git_stdout(args: list[str], *, cwd: Path) -> str:
+    return _git(args, cwd=cwd).stdout.strip()
+
+
+
+def _trailing_pool_update_subjects(*, root: Path, limit: int) -> list[str]:
+    if limit <= 0:
+        return []
+    out = _git_stdout(["log", f"-n{limit}", "--format=%s", "HEAD"], cwd=root)
+    if not out:
+        return []
+    subjects = out.splitlines()
+    trailing: list[str] = []
+    for subject in subjects:
+        if _POOL_UPDATE_RE.match(subject):
+            trailing.append(subject)
+        else:
+            break
+    return trailing
+
+
+def _pool_update_commit_message(settings: Settings) -> str:
+    return f"factory({settings.node_id}): pool update"
 
 
 def sync_push(settings: Settings) -> None:
@@ -223,3 +303,49 @@ def sync_push(settings: Settings) -> None:
     raise SyncError(
         f"sync_push: push still failing after {settings.sync.push_retries} retries"
     )
+
+
+def maybe_compact_pool_history(settings: Settings) -> None:
+    if not settings.sync.enabled:
+        return
+    if not settings.sync.auto_compact_enabled:
+        return
+
+    root = settings.paths.backtester_root
+    branch = settings.sync.branch
+    remote = settings.sync.remote
+    threshold = settings.sync.auto_compact_min_commits
+
+    if _current_branch(root) != branch:
+        log.info("sync compact: skipping because current branch is not %s", branch)
+        return
+
+    dirt = _tracked_dirt(root)
+    if dirt:
+        log.info("sync compact: skipping because working tree has dirty tracked tree: %s", dirt)
+        return
+
+    ok, detail = _fetch_pool_branch(root=root, remote=remote, branch=branch)
+    if not ok:
+        log.warning("sync compact: skipping because fetch failed: %s", detail)
+        return
+
+    trailing = _trailing_pool_update_subjects(root=root, limit=threshold)
+    if len(trailing) < threshold:
+        log.info(
+            "sync compact: trailing pool-update run too short (%d < %d)",
+            len(trailing),
+            threshold,
+        )
+        return
+
+    original_head = _git_stdout(["rev-parse", "HEAD"], cwd=root)
+    parent = _git_stdout(["rev-parse", f"HEAD~{len(trailing)}"], cwd=root)
+    try:
+        _git(["reset", "--soft", parent], cwd=root)
+        _git(["commit", "-m", _pool_update_commit_message(settings)], cwd=root)
+        _git(["push", "--force-with-lease", remote, branch], cwd=root)
+        log.info("sync compact: compacted %d trailing pool-update commits", len(trailing))
+    except SyncError as exc:
+        _git(["reset", "--hard", original_head], cwd=root)
+        log.warning("sync compact: failed; restored original HEAD: %s", exc)

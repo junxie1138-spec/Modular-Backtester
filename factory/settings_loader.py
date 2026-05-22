@@ -83,6 +83,8 @@ class SyncCfg:
     branch: str
     remote: str
     push_retries: int
+    auto_compact_enabled: bool
+    auto_compact_min_commits: int
 
 
 @dataclass(slots=True, frozen=True)
@@ -194,5 +196,7 @@ def load_settings(path: Path) -> Settings:
             branch=str(sy.get("branch", "factory-pool")),
             remote=str(sy.get("remote", "origin")),
             push_retries=int(sy.get("push_retries", 5)),
+            auto_compact_enabled=bool(sy.get("auto_compact_enabled", True)),
+            auto_compact_min_commits=int(sy.get("auto_compact_min_commits", 10)),
         ),
     )
