@@ -219,3 +219,4 @@ Volume-confirmed short-horizon momentum thrust, traded long/short with surge-and
 1779316781	Compression-pressure streak releases on a two-pulse upside shockwave
 1779646716	Twin-streak drawdown recovery: enter when sickness-streak ripens then healing-streak ignites under 200-MA uptrend
 1779646877	Multi-horizon cumulative-return percentile alignment fires breakout when 3 timescales converge above 85th percentile
+1779647022	Long when channel-position acceleration percentile-rank crosses high threshold; fixed-bar exit.
