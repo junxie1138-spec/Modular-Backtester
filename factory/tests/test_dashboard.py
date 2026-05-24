@@ -169,6 +169,47 @@ def test_overview_shows_cumulative_tokens(app_with_records) -> None:
     assert "24660" in body
 
 
+def test_overview_orders_newest_first_across_shards(tmp_settings_file: Path) -> None:
+    """The overview table must be ordered by timestamp DESC across every shard.
+
+    Regression: read_records concatenates shards in filename order, so reversing
+    the list put the last alphabetical shard's records at the top regardless of
+    timestamp — a fresh write to an earlier shard (e.g. a1) was buried below
+    every record from a later shard (e.g. a2).
+    """
+    from factory.settings_loader import load_settings
+    from factory.dashboard.server import create_app
+    s = load_settings(tmp_settings_file)
+    results_dir = s.paths.results_dir
+    results_dir.mkdir(parents=True, exist_ok=True)
+    # a2.jsonl gets older records; a1.jsonl gets the newest. Alphabetical read
+    # order is a1 then a2, so a naive reverse() would surface a2's last record.
+    with (results_dir / "a2.jsonl").open("w", encoding="utf-8") as f:
+        for ts, sid in [("2026-05-20T10:00:00Z", "gen_a2_old"),
+                        ("2026-05-20T11:00:00Z", "gen_a2_mid")]:
+            f.write(json.dumps({"strategy_id": sid, "timestamp": ts,
+                                "status": "complete", "slots": {},
+                                "idea": {"one_line_summary": sid},
+                                "backtest": None, "optimize": None,
+                                "wfo": None, "promotion": None,
+                                "alerted": False}) + "\n")
+    with (results_dir / "a1.jsonl").open("w", encoding="utf-8") as f:
+        f.write(json.dumps({"strategy_id": "gen_a1_newest",
+                            "timestamp": "2026-05-25T02:21:24Z",
+                            "status": "complete", "slots": {},
+                            "idea": {"one_line_summary": "gen_a1_newest"},
+                            "backtest": None, "optimize": None,
+                            "wfo": None, "promotion": None,
+                            "alerted": False}) + "\n")
+    client = create_app(settings=s).test_client()
+    body = client.get("/").get_data(as_text=True)
+    pos_newest = body.find("gen_a1_newest")
+    pos_mid = body.find("gen_a2_mid")
+    pos_old = body.find("gen_a2_old")
+    assert pos_newest != -1 and pos_mid != -1 and pos_old != -1
+    assert pos_newest < pos_mid < pos_old
+
+
 def test_detail_view_formats_backtest_pct_fields(app_with_records) -> None:
     """The Stage 1 Backtest section renders total_return, max_drawdown and
     win_rate as percentages, not raw decimal fractions.

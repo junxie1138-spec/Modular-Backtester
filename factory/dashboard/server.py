@@ -88,8 +88,14 @@ def create_app(*, settings: Settings) -> Flask:
     @app.get("/")
     def overview():
         records = read_records(settings.paths.results_dir)
-        # Newest first for the table.
-        records = list(reversed(records))
+        # Newest first across all shards. read_records concatenates shards in
+        # filename order, so reversing would only sort within the last shard;
+        # sorting by the record's own timestamp gives true chronological order.
+        records = sorted(
+            records,
+            key=lambda r: r.get("timestamp") or "",
+            reverse=True,
+        )
         enriched = _enrich(
             records,
             threshold_metric=settings.alerts.alert_threshold_metric,
