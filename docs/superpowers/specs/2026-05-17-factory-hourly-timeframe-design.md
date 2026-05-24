@@ -1,7 +1,21 @@
 # Factory hourly-timeframe migration — design
 
 **Date:** 2026-05-17
-**Status:** Approved (brainstorm complete, ready for implementation planning)
+**Status:** PARKED (2026-05-17) — ready but disabled until a data source exists.
+
+> **Implementation status.** The annualisation fix and the hourly build
+> pipeline (`backtester/data/hourly_stitch.py`, `scripts/build_hourly_dataset.py`)
+> are implemented and on `master`. The preflight tradability gate and the
+> promotion `insufficient_history` skip are implemented on `factory-pool`.
+> The remaining step — flipping `factory/prompt.py` to hourly — is **not
+> applied**: it requires `data/raw_hourly/_build_report.json` with SPY
+> classified `tradable` (~7,000+ hourly bars). Neither free yfinance `1h`
+> (730-day cap) nor a public Kaggle donor gives SPY enough clean depth, so
+> the hourly production factory is blocked on acquiring a **commercial
+> intraday SPY feed** (Polygon, FirstRateData, etc.). The factory still runs
+> on daily bars; the hourly code path is dormant and safe. To resume: source
+> a deep intraday SPY feed, place it as a donor CSV, run
+> `build_hourly_dataset.py`, then complete the prompt flip.
 
 ## Problem
 
