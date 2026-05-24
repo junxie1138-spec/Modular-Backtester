@@ -218,3 +218,4 @@ Volume-confirmed short-horizon momentum thrust, traded long/short with surge-and
 1778915412	Long when distance-from-MA z-score is stretched AND trend adoption fraction is still spreading below saturation; fixed-bar exit
 1779316781	Compression-pressure streak releases on a two-pulse upside shockwave
 1779646716	Twin-streak drawdown recovery: enter when sickness-streak ripens then healing-streak ignites under 200-MA uptrend
+1779646877	Multi-horizon cumulative-return percentile alignment fires breakout when 3 timescales converge above 85th percentile
