@@ -311,3 +311,4 @@ Volume-confirmed short-horizon momentum thrust, traded long/short with surge-and
 1779884506	Day-of-week SI volatility-compartment transitions: long Tue S->I infection, short Fri I->S recovery, fixed 6-bar hold.
 1779884665	Long SPY when distance-from-MA z-score percentile-rank crosses a yield-stress threshold; ATR trailing-high stop.
 1779884830	Consecutive deepening-drawdown streak breaks long; exit on new drawdown low, 200MA regime, post-spike refractory.
+1779884971	Predator-prey relative-position: AND of consecutive price-rank-high streak and consecutive volume-rank-low streak fires reversal entry, fixed 18-bar hold.
