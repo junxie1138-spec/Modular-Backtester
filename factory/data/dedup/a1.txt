@@ -220,3 +220,94 @@ Volume-confirmed short-horizon momentum thrust, traded long/short with surge-and
 1779646716	Twin-streak drawdown recovery: enter when sickness-streak ripens then healing-streak ignites under 200-MA uptrend
 1779646877	Multi-horizon cumulative-return percentile alignment fires breakout when 3 timescales converge above 85th percentile
 1779647022	Long when channel-position acceleration percentile-rank crosses high threshold; fixed-bar exit.
+1779647265	Long SPY when day-of-month seasonal score is positive and realized-vol z-score sits in an elastic band, two-bar confirmed
+1779647421	SI reproduction-number percentile-rank regime switch with two-bar confirmation and fixed-ATR vol-stop
+1779647596	Bar-overlap coil regime breakout: hysteresis-latched compression, two-bar confirmed rail break, breakeven-then-trail ATR exit
+1779647739	Regime switch via volume-confirmed directional pressure: plastic regime trades trend, elastic regime stands aside
+1779647871	Fade SPY when close rank is at percentile floor only while return SNR is noise-dominated; fixed N-bar exit
+1779648016	Mean-revert spring: enter when ROC acceleration flips positive while price is stretched oversold, size by stored tension.
+1779648144	Predator-prey phase entry: long when vol-rank (predator) decays from high while return-rank (prey) recovers from low, above 200-MA
+1779648341	Range-spike refractory breakout: enter on first close above spike-bar high after cooldown, vol-stop exit
+1779648492	Long when volume surge confirms an up-bar AND realized-vol rank is still low (predator asleep); vol-targeted size; fixed-bar exit
+1779648682	Trade SPY when rolling return Sharpe and ATR compression both agree on a trend regime; breakeven-then-trail exit
+1779648836	Two-bar rising ROC acceleration at standing-wave antinode amplitude during drawdown; breakeven-then-trail ATR exit
+1779648964	Vol-headroom budget integral overflows AND MA z-score in bullish sweet-spot band; vol-targeted size; profit-target/time-stop exit
+1779649117	Tidal-antinode pullback long: enter low relative-position when short/long range ratio shows wave amplitude is elevated
+1779649226	Predator-strike range expansion: long when today's range balloons but close lands near the low; fixed-bar recovery hold
+1779649455	Volume-confirmed gap-up continuation, gated by capacity-limited inventory of recent unfilled gaps
+1779649605	Shockwave release long: first up-bar after N straight down-bars inside an active drawdown above 200-MA
+1779649805	Monthly-reset gap-up counter: long the Nth gap-up of a calendar month when early in the month and above 200-MA
+1779650030	Long single-bar capitulation: bottom-decile return paired with top-decile volume; profit-target or 5-bar exit.
+1779650207	Fade extreme when rolling z-score percentile AND N-bar return percentile both saturate the same tail; trailing ATR exit.
+1779650397	SI epidemic saturation: infected fraction saturates and peaks then deep drawdown z-score enters reversal
+1779650552	Return-space gap-jump: enter on outlier close-to-close z-score during compressed-vol regime, trail by ATR off rolling high.
+1779650744	Intra-month calendar split where short-window vol acceleration triggers long at turn-of-month and short at mid-month
+1779650943	Two-bar coherent gap with contracted range and close near bar extreme (standing-wave antinode) entry, breakeven-then-ATR-trail exit
+1779651117	Trade the direction of a plastic-deformation yield event: z-score crosses threshold with sufficient strain rate, signal-scaled vol-targeted size, ATR-trail exit.
+1779651238	Long when squared-negative-return density saturates AND short-window flux flips positive while accelerating
+1779651421	Long elastic-band drawdown: enter when ATR-normalised drawdown sits between yield and fracture while strain rate decelerates; depth-scaled size
+1779651764	Weekday spring snap-back: long when historically-positive weekday's recent returns underperformed seasonal mean above 200-MA
+1779651936	Long the shockwave release: tight range compression plus accelerating ROC, size scaled by coil tightness.
+1779652097	Saturating return-bucket regime switch: long on top-rail overflow, exit when bucket saturates at the opposite rail.
+1779652242	Cumulative small down-gaps store spring tension; first up-gap above threshold releases long entry above 200-MA.
+1779652347	Gap-autocorrelation tide regime switches between gap-momentum and gap-reversion, polarity from 200-MA, fixed ATR vol-stop
+1779652508	Variance-ratio regime switch: trade momentum when VR>1+band (plastic), mean-revert when VR<1-band (elastic)
+1779652636	Long SPY when 20-bar lag-1 return autocorrelation is significantly positive; exit when it flips significantly negative.
+1779652783	Long the volume-confirmed breakout above a multi-day range that has been compressed below long-run ATR-implied envelope.
+1779652923	Long when up-close streak AND higher-high streak both saturate, gated by post-spike refractory cooldown; ATR-trail exit.
+1779653084	Long when intrabar close-location is pinned low and range contracts, signaling seller exhaustion.
+1779653262	Weekday-conditional rolling percentile rank: trade tail extremes confirmed across two bars with ATR trailing stop
+1779653403	Long/short when N-bar streak of dormant-vol regime AND N-bar streak of trend-side both fire; signal-reversal exit
+1779653559	Long SPY when volume-per-range density z-score spikes during a multi-day decline; flat when condition lifts.
+1779653684	Compressed-range close-position percentile breakout/fade with 2-bar confirm, refractory-after-spike, signal-reversal flip
+1779653795	Spring-release breakout: long when MA z-score breaks up through threshold after sustained compression streak, above 200-MA, fixed N-bar hold
+1779653920	Long when short/long vol ratio percentile is extreme AND close relative-position percentile is depressed; fixed-bar release
+1779654045	Hysteresis Schmitt-trigger on the daily gap: enter long on clean gap-up, hold until gap cleanly flips negative.
+1779654180	Dual Schmitt-trigger AND of low-vol regime and volume-weighted thrust, vol-targeted sizing, signal-reversal exit.
+1779654358	Long the release bar of an N-bar strictly-narrowing range streak that closes above the compression high.
+1779654493	Turn-of-month drawdown reload: enter when month-boundary window coincides with noise-normalised drawdown depth in a buyable band
+1779654654	Predator-prey gap ecology: long when fresh bull-token gap fires AND bull-token population dominates bear-token population over window
+1779877072	Long when 10-bar overnight-gap-return z AND 10-bar intraday-return z both confirm positive above 200-MA, ATR trail.
+1779877282	Range-shockwave breakout: enter direction of N-bar cumulative move when bar range exceeds rolling N-bar max; ATR-trail exit.
+1779877402	Persistent top-of-window rolling rank streak triggers long entry with fixed-bar hold and post-exit refractory cooldown.
+1779877586	Two-bar confirmed long entry when consecutive overflow-events of a fixed-N close queue exceed threshold; ATR trail off in-trade high.
+1779877730	Drawdown-depth entry with Schmitt-trigger hysteresis, vol-target sizing scaled by depth, fixed ATR stop.
+1779877861	Long when extreme gap-down percentile coincides with saturated cumulative gap-down predator population
+1779878029	Long when dispersion of recent relative-position-in-corridor collapses at the bottom rail, breakeven-then-ATR-trail exit.
+1779878180	Long/short when absolute-return capacity utilisation collapses and two consecutive same-sign returns confirm release direction.
+1779878394	Long on N-bar consecutive up-gap streak filtered by gap signal-to-noise ratio, sized by streak length
+1779878541	Volume-weighted gap tokens fill a leaky reservoir; long when reservoir saturates above 200MA
+1779878669	Yield-strength volatility regime switch: fade strain when elastic, follow strain when plastic, profit-target+time-stop.
+1779878816	Rolling rank decoupling of overnight gap vs intraday return with Schmitt hysteresis and two-bar confirm.
+1779878920	Infected-fraction epidemic-outbreak: enter long when fraction of recent volume-confirmed up-bars crosses 0.5 from below; ATR trail off in-trade high.
+1779879169	Rankine-Hugoniot shock speed of return-flow vs return-density triggers long; size scales with shockwave amplitude.
+1779879345	Gap-up arrivals saturate an intraday-range absorption channel; long when utilization crosses overflow threshold, signal-scaled size.
+1779879527	Long when short-window lag-1 sign-product autocorrelation peaks at top of its rolling percentile rank; fixed 2-bar hold.
+1779879748	Long when ATR and vol-of-vol jointly sit in lowest percentile (doubly-still compression), exit on ATR trailing stop.
+1779879891	Long SPY when trend z-score percentile rank AND efficiency-ratio percentile rank are both extreme; fixed 2-bar hold.
+1779880017	Long when W-bar ROC acceleration normalised by realised vol clears 1-sigma; ATR trail off in-trade high.
+1779880273	Consecutive momentum-thrust streak above rolling percentile, Kaufman-efficiency SNR filter, breakeven-then-ATR-trail exit.
+1779880410	Long/short on two-bar ROC-acceleration sign-flip at corridor extremes; spike refractory; fixed ATR stop
+1779880573	Long when Pearson lag-1 return autocorrelation AND ROC acceleration are both positive; fixed ATR stop.
+1779880704	Fade large opening gaps whose bar-range absorbed (failed to extend) the shock, with refractory cooldown
+1779880908	SI epidemic growth product of compressed and extreme z-score bars triggers directional entry filtered by 200-MA regime.
+1779881057	Long when predator (momentum rank) and prey (inverse-drawdown rank) both expand into upper half; geometric-mean rank sizes position.
+1779881222	Long/short breakout when rolling census of new-high vs new-low bars is asymmetric and bar range expands.
+1779881375	Long when rolling lag-1 return autocorrelation is high AND realised vol is low; fixed 17-bar hold with post-spike refractory.
+1779881577	Asymmetric range-carve thrust breakout: long when upper carving dominates lower erosion for two consecutive armed bars.
+1779881762	Long at low-tide range compression near the floor; size scales with compression depth, ratcheting ATR trailing stop exits
+1779881911	Long when rolling percentile ranks of gap frequency AND gap magnitude both saturate; ATR rolling-high trailing stop
+1779882071	Long overnight up-gaps when lag-1 autocorrelation of gap returns is in a hysteretic positive-persistence regime above 200MA.
+1779882385	Buy SPY after down-spike when rolling lag-1 autocorrelation rank sits in bottom decile mean-reverting regime; profit-target + time-stop.
+1779882588	Turn-of-month calendar window AND volume-confirmed bullish bar fires long entry; exits on profit target or 4-bar time-stop.
+1779882815	Weekly standing-wave node entry: long when a fixed weekday coincides with rolling close percentile-rank trough; profit-target or time-stop exit.
+1779883044	Long when deep-distress z-score infection saturates then z recovers two bars; ATR trailing stop exit.
+1779883245	Long when realized-vol ratio is compressed AND price sits below short MA by ATR margin, only in bull regime; fixed 2-bar hold.
+1779883463	Long when consecutive up-gap streak AND consecutive intraday-bullish streak both saturate; profit-target or time-stop exit.
+1779883667	Long SPY when close z-score stretches deep below MA; size scales with stretch; fixed ATR stop plus 5-bar cap
+1779883863	Volume-weighted kinetic energy crosses high percentile with bar-direction aligned to accumulated push, regime-gated.
+1779884098	Consecutive higher-low streak AND upper-range position confluence, with post-spike volatility refractory and fixed 2-bar hold.
+1779884300	Long after recovery turn from a high-susceptibility drawdown population with two-bar up confirmation, ATR trailing stop.
+1779884506	Day-of-week SI volatility-compartment transitions: long Tue S->I infection, short Fri I->S recovery, fixed 6-bar hold.
+1779884665	Long SPY when distance-from-MA z-score percentile-rank crosses a yield-stress threshold; ATR trailing-high stop.
+1779884830	Consecutive deepening-drawdown streak breaks long; exit on new drawdown low, 200MA regime, post-spike refractory.

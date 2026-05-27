@@ -1,0 +1,40 @@
+run_name: gen_a1_1779652112
+strategy: gen_a1_1779652112
+strategy_params:
+  ma_window: 200
+  tension_window: 10
+  compression_max_pct: 0.003
+  yield_pct: 0.015
+  tension_threshold: 0.008
+  min_trigger_gap_pct: 0.0005
+  profit_target_pct: 0.015
+  max_hold_bars: 2
+  base_size: 1.0
+  tension_size_scale: 50.0
+data:
+  symbols: ["SPY"]
+  timeframe: "1d"
+  start: "2015-01-02"
+  end: "2024-12-31"
+  source: "csv"
+  root: "data/raw"
+execution:
+  initial_cash: 100000
+  commission_bps: 2
+  slippage_bps: 5
+  allow_fractional: false
+  allow_short: false
+portfolio:
+  sizing_mode: "percent_equity"
+  size: 0.95
+optimization:
+  objective: sortino
+  param_space:
+    tension_window: [5, 10, 20]
+    tension_threshold: [0.005, 0.008, 0.012]
+    profit_target_pct: [0.010, 0.015, 0.025]
+wfo:
+  enabled: true
+  train_bars: 756
+  test_bars: 252
+  step_bars: 252

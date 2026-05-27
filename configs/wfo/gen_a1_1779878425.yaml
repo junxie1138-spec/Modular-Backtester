@@ -1,0 +1,38 @@
+run_name: gen_a1_1779878425
+strategy: gen_a1_1779878425
+strategy_params:
+  ma_period: 200
+  vol_ma_period: 20
+  gap_threshold_pct: 0.0015
+  vol_ratio_threshold: 1.20
+  leak_rate: 0.15
+  capacity_threshold: 0.006
+  profit_target_pct: 0.030
+  time_stop_bars: 10
+data:
+  symbols: ["SPY"]
+  timeframe: "1d"
+  start: "2015-01-02"
+  end: "2024-12-31"
+  source: "csv"
+  root: "data/raw"
+execution:
+  initial_cash: 100000
+  commission_bps: 2
+  slippage_bps: 5
+  allow_fractional: false
+  allow_short: false
+portfolio:
+  sizing_mode: "percent_equity"
+  size: 0.95
+optimization:
+  objective: sortino
+  param_space:
+    capacity_threshold: [0.004, 0.006, 0.010]
+    leak_rate: [0.10, 0.15, 0.25]
+    profit_target_pct: [0.020, 0.030, 0.050]
+wfo:
+  enabled: true
+  train_bars: 756
+  test_bars: 252
+  step_bars: 252

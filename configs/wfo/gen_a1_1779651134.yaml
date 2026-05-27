@@ -1,0 +1,35 @@
+run_name: gen_a1_1779651134
+strategy: gen_a1_1779651134
+strategy_params:
+  jam_window: 20
+  jam_lookback: 252
+  jam_percentile: 0.80
+  flux_window: 5
+  holding_bars: 7
+data:
+  symbols: ["SPY"]
+  timeframe: "1d"
+  start: "2015-01-02"
+  end: "2024-12-31"
+  source: "csv"
+  root: "data/raw"
+execution:
+  initial_cash: 100000
+  commission_bps: 2
+  slippage_bps: 5
+  allow_fractional: false
+  allow_short: false
+portfolio:
+  sizing_mode: "percent_equity"
+  size: 0.95
+optimization:
+  objective: sortino
+  param_space:
+    jam_percentile: [0.70, 0.80, 0.90]
+    flux_window: [3, 5, 8]
+    holding_bars: [5, 7, 10]
+wfo:
+  enabled: true
+  train_bars: 756
+  test_bars: 252
+  step_bars: 252

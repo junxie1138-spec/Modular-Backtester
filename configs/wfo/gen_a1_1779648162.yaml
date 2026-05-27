@@ -1,0 +1,40 @@
+run_name: gen_a1_1779648162
+strategy: gen_a1_1779648162
+strategy_params:
+  range_lookback: 20
+  spike_multiplier: 2.0
+  refractory_bars: 5
+  breakout_horizon: 20
+  atr_period: 14
+  atr_stop_mult: 3.0
+  holding_bars_max: 30
+  size_floor: 0.4
+  size_ceiling: 1.0
+  size_scale: 0.35
+data:
+  symbols: ["SPY"]
+  timeframe: "1d"
+  start: "2015-01-02"
+  end: "2024-12-31"
+  source: "csv"
+  root: "data/raw"
+execution:
+  initial_cash: 100000
+  commission_bps: 2
+  slippage_bps: 5
+  allow_fractional: false
+  allow_short: false
+portfolio:
+  sizing_mode: "percent_equity"
+  size: 0.95
+optimization:
+  objective: sortino
+  param_space:
+    spike_multiplier: [1.5, 2.0, 2.5]
+    refractory_bars: [3, 5, 8]
+    atr_stop_mult: [2.0, 3.0, 4.0]
+wfo:
+  enabled: true
+  train_bars: 756
+  test_bars: 252
+  step_bars: 252

@@ -1,0 +1,38 @@
+run_name: gen_a1_1779878045
+strategy: gen_a1_1779878045
+strategy_params:
+  capacity_window: 10
+  expected_window: 60
+  compression_threshold: 0.55
+  min_return: 0.0015
+  atr_window: 14
+  trail_atr_mult: 1.75
+  ma_filter: 200
+  use_ma_filter: false
+data:
+  symbols: ["SPY"]
+  timeframe: "1d"
+  start: "2015-01-02"
+  end: "2024-12-31"
+  source: "csv"
+  root: "data/raw"
+execution:
+  initial_cash: 100000
+  commission_bps: 2
+  slippage_bps: 5
+  allow_fractional: false
+  allow_short: true
+portfolio:
+  sizing_mode: "percent_equity"
+  size: 0.95
+optimization:
+  objective: sortino
+  param_space:
+    compression_threshold: [0.45, 0.55, 0.65]
+    trail_atr_mult: [1.25, 1.75, 2.5]
+    capacity_window: [5, 10, 20]
+wfo:
+  enabled: true
+  train_bars: 756
+  test_bars: 252
+  step_bars: 252

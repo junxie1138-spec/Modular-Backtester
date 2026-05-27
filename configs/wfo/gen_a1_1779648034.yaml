@@ -1,0 +1,40 @@
+run_name: gen_a1_1779648034
+strategy: gen_a1_1779648034
+strategy_params:
+  prey_window: 20
+  pred_window: 20
+  rank_window: 60
+  regime_window: 200
+  prey_low_thresh: 0.40
+  pred_high_thresh: 0.60
+  prey_velocity_bars: 3
+  pred_velocity_bars: 3
+  profit_target_pct: 0.02
+  time_stop_bars: 5
+data:
+  symbols: ["SPY"]
+  timeframe: "1d"
+  start: "2015-01-02"
+  end: "2024-12-31"
+  source: "csv"
+  root: "data/raw"
+execution:
+  initial_cash: 100000
+  commission_bps: 2
+  slippage_bps: 5
+  allow_fractional: false
+  allow_short: false
+portfolio:
+  sizing_mode: "percent_equity"
+  size: 0.95
+optimization:
+  objective: sortino
+  param_space:
+    prey_low_thresh: [0.30, 0.40, 0.50]
+    pred_high_thresh: [0.50, 0.60, 0.70]
+    profit_target_pct: [0.015, 0.02, 0.03]
+wfo:
+  enabled: true
+  train_bars: 756
+  test_bars: 252
+  step_bars: 252

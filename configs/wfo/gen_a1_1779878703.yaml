@@ -1,0 +1,39 @@
+run_name: gen_a1_1779878703
+strategy: gen_a1_1779878703
+strategy_params:
+  gap_window: 63
+  intra_window: 63
+  gap_low_pct: 0.20
+  intra_high_pct: 0.75
+  hysteresis_band: 0.10
+  confirm_bars: 2
+  atr_period: 14
+  k_atr: 2.5
+  max_hold: 10
+data:
+  symbols: ["SPY"]
+  timeframe: "1d"
+  start: "2015-01-02"
+  end: "2024-12-31"
+  source: "csv"
+  root: "data/raw"
+execution:
+  initial_cash: 100000
+  commission_bps: 2
+  slippage_bps: 5
+  allow_fractional: false
+  allow_short: false
+portfolio:
+  sizing_mode: "percent_equity"
+  size: 0.95
+optimization:
+  objective: sortino
+  param_space:
+    gap_low_pct: [0.10, 0.20, 0.30]
+    intra_high_pct: [0.65, 0.75, 0.85]
+    k_atr: [2.0, 2.5, 3.0]
+wfo:
+  enabled: true
+  train_bars: 756
+  test_bars: 252
+  step_bars: 252

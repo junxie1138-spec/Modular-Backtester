@@ -1,0 +1,41 @@
+run_name: gen_a1_1779880033
+strategy: gen_a1_1779880033
+strategy_params:
+  momentum_lookback: 5
+  pct_window: 252
+  pct_threshold: 0.70
+  er_window: 10
+  er_pct_threshold: 0.65
+  min_streak: 3
+  trend_ma: 200
+  atr_window: 14
+  initial_stop_atr: 2.5
+  breakeven_trigger: 0.025
+  trail_atr: 2.0
+data:
+  symbols: ["SPY"]
+  timeframe: "1d"
+  start: "2015-01-02"
+  end: "2024-12-31"
+  source: "csv"
+  root: "data/raw"
+execution:
+  initial_cash: 100000
+  commission_bps: 2
+  slippage_bps: 5
+  allow_fractional: false
+  allow_short: false
+portfolio:
+  sizing_mode: "percent_equity"
+  size: 0.95
+optimization:
+  objective: sortino
+  param_space:
+    min_streak: [2, 3, 4]
+    pct_threshold: [0.60, 0.70, 0.80]
+    breakeven_trigger: [0.015, 0.025, 0.035]
+wfo:
+  enabled: true
+  train_bars: 756
+  test_bars: 252
+  step_bars: 252
