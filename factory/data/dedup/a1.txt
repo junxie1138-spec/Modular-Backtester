@@ -313,3 +313,4 @@ Volume-confirmed short-horizon momentum thrust, traded long/short with surge-and
 1779884830	Consecutive deepening-drawdown streak breaks long; exit on new drawdown low, 200MA regime, post-spike refractory.
 1779884971	Predator-prey relative-position: AND of consecutive price-rank-high streak and consecutive volume-rank-low streak fires reversal entry, fixed 18-bar hold.
 1779885129	Trade the divergence between fast and slow rolling lag-1 return autocorrelation as a micro-regime shift signal.
+1779885371	Follow or fade gaps based on overnight-vs-intraday volatility dominance, 200MA-gated with spike refractory and fixed 18-bar hold.
