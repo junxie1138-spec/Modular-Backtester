@@ -1,0 +1,27 @@
+run_name: gen_a1_1778891710
+strategy: gen_a1_1778891710
+strategy_params: {er_window: 20, entry_threshold: 0.30, profit_target: 0.04, time_stop: 10, base_size: 0.40, size_gain: 0.60, max_size: 1.00}
+data:
+  symbols: ["SPY"]
+  timeframe: "1d"
+  start: "2015-01-02"
+  end: "2024-12-31"
+  source: "csv"
+  root: "data/raw"
+execution:
+  initial_cash: 100000
+  commission_bps: 2
+  slippage_bps: 5
+  allow_fractional: false
+  allow_short: false
+portfolio:
+  sizing_mode: "percent_equity"
+  size: 0.95
+optimization:
+  objective: sharpe
+  param_space: {er_window: [10, 20, 30], entry_threshold: [0.20, 0.30, 0.40], profit_target: [0.03, 0.04, 0.06]}
+wfo:
+  enabled: true
+  train_bars: 756
+  test_bars: 252
+  step_bars: 252

@@ -3,8 +3,8 @@
 Triggered after WFO succeeds and clears settings.promotion.trigger_threshold.
 For each held-out ticker, build a promotion-specific YAML (canonical config
 cloned with data.symbols + data.source + strategy_params swapped, run_name
-suffixed) and run a full WFO via subprocess. Aggregate OOS Sharpe across the
-panel; gate against min_avg_sharpe.
+suffixed) and run a full WFO via subprocess. Aggregate OOS Sortino across the
+panel; gate against min_avg_sortino.
 
 Promotion failures do NOT fail the cycle (the cycle's status stays
 "complete"). The promotion result is informational on the dashboard; the
@@ -18,7 +18,7 @@ import subprocess
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Mapping, Optional
+from typing import Any, Mapping, Optional, Sequence
 
 import yaml
 
@@ -38,8 +38,8 @@ class PromotionResult:
     ran: bool
     tickers: tuple[str, ...]
     per_ticker: dict[str, dict[str, Any]]
-    avg_sharpe: Optional[float]
-    min_avg_sharpe_threshold: float
+    avg_sortino: Optional[float]
+    min_avg_sortino_threshold: float
     passed: bool
     error: Optional[str] = None
 
@@ -118,6 +118,31 @@ def _run_promotion_wfo(
         raise StageError(f"promotion wfo {run_name}: summary missing key: {exc}") from exc
 
 
+def _tradable_tickers(
+    tickers: Sequence[str], build_report_path: Optional[Path],
+) -> list[str]:
+    """Filter promotion tickers to those classified `tradable` in the hourly
+    build report.
+
+    When no report path is given, or the file is absent (the factory is still
+    on daily data), every ticker passes through unchanged. When the report is
+    present, a ticker is kept only if its classification is exactly
+    `tradable` — a ticker that is missing or `insufficient_history` is dropped
+    so promotion never runs a WFO on thin hourly data.
+    """
+    if build_report_path is None or not build_report_path.exists():
+        return list(tickers)
+    try:
+        report = json.loads(build_report_path.read_text(encoding="utf-8"))
+        symbols = report.get("symbols", {})
+    except (json.JSONDecodeError, OSError):
+        return list(tickers)
+    return [
+        t for t in tickers
+        if symbols.get(t, {}).get("classification") == "tradable"
+    ]
+
+
 def promote_strategy(
     *,
     strategy_id: str,
@@ -128,16 +153,25 @@ def promote_strategy(
     output_runs_dir: Path,
     stage_timeout_sec: int,
     backtester_root: Optional[Path] = None,
+    build_report_path: Optional[Path] = None,
 ) -> PromotionResult:
     """Run the strategy on each held-out ticker with the SPY-optimized params.
 
     Continues even if individual tickers fail (captures partial per_ticker
-    data). passed=True only if ALL tickers succeed AND avg oos_sharpe clears
-    promotion_cfg.min_avg_sharpe.
+    data). passed=True only if ALL tickers succeed AND avg oos_sortino clears
+    promotion_cfg.min_avg_sortino.
     """
+    eligible = _tradable_tickers(promotion_cfg.tickers, build_report_path)
+    eligible_set = set(eligible)
+    skipped = [t for t in promotion_cfg.tickers if t not in eligible_set]
+    if skipped:
+        log.info(
+            "promotion %s skipping non-tradable tickers: %s",
+            strategy_id, ", ".join(skipped),
+        )
     per_ticker: dict[str, dict[str, Any]] = {}
     errors: list[str] = []
-    for ticker in promotion_cfg.tickers:
+    for ticker in eligible:
         try:
             cfg_path, run_name = _build_promotion_config(
                 canonical_path=canonical_config_path,
@@ -156,32 +190,32 @@ def promote_strategy(
             )
             per_ticker[ticker] = parsed
             log.info(
-                "promotion %s ticker=%s oos_sharpe=%.3f",
-                strategy_id, ticker, parsed.get("oos_sharpe", 0.0),
+                "promotion %s ticker=%s oos_sortino=%.3f",
+                strategy_id, ticker, parsed.get("oos_sortino", 0.0),
             )
         except StageError as exc:
             errors.append(f"{ticker}: {exc}")
             log.warning("promotion %s ticker=%s failed: %s", strategy_id, ticker, exc)
 
     if per_ticker:
-        sharpes = [float(p["oos_sharpe"]) for p in per_ticker.values()]
-        avg = sum(sharpes) / len(sharpes)
+        sortinos = [float(p["oos_sortino"]) for p in per_ticker.values()]
+        avg = sum(sortinos) / len(sortinos)
     else:
         avg = None
 
-    all_tickers_completed = len(per_ticker) == len(promotion_cfg.tickers)
+    all_tickers_completed = len(per_ticker) == len(eligible)
     passed = (
         all_tickers_completed
         and avg is not None
-        and avg >= promotion_cfg.min_avg_sharpe
+        and avg >= promotion_cfg.min_avg_sortino
     )
     error = "; ".join(errors) if errors else None
     return PromotionResult(
         ran=True,
         tickers=tuple(promotion_cfg.tickers),
         per_ticker=per_ticker,
-        avg_sharpe=avg,
-        min_avg_sharpe_threshold=promotion_cfg.min_avg_sharpe,
+        avg_sortino=avg,
+        min_avg_sortino_threshold=promotion_cfg.min_avg_sortino,
         passed=passed,
         error=error,
     )

@@ -80,7 +80,7 @@ auto_refresh_sec = 10
 
     from factory.cycle import run_cycle
     try:
-        with mock.patch("factory.cycle.call_claude", return_value=fake_gen), \
+        with mock.patch("factory.cycle.call_generator", return_value=fake_gen), \
              mock.patch("factory.cycle.pick_unused_strategy_id", return_value=smoke_id):
             outcome = run_cycle(s, rng=random.Random(0))
     finally:

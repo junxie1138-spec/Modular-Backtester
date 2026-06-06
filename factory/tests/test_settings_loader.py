@@ -9,6 +9,9 @@ def test_loads_all_sections(tmp_settings_file: Path) -> None:
     assert s.paths.backtester_root.is_absolute()
     assert s.paths.strategies_dir.name == "strategies"
     assert s.paths.registry_file.parts[-2:] == ("strategies", "registry.py")
+    assert s.generation.provider == "claude"
+    assert s.generation.cmd == "claude"
+    assert "--bare" in s.generation.flags
     assert s.generation.claude_cmd == "claude"
     assert "--bare" in s.generation.claude_flags
     assert s.generation.generation_timeout_sec == 60
@@ -54,6 +57,24 @@ def test_settings_local_overrides_base(tmp_settings_file: Path) -> None:
     assert merged.alerts.alert_threshold_metric == "wfo.oos_sharpe"
     # Sections not mentioned in the local file are untouched.
     assert merged.dashboard.port == 8787
+
+
+def test_generation_provider_fields_override_legacy_aliases(tmp_settings_file: Path) -> None:
+    local = tmp_settings_file.parent / "settings.local.toml"
+    local.write_text(
+        "[generation]\n"
+        "provider = \"codex\"\n"
+        "cmd = \"codex\"\n"
+        "flags = [\"exec\", \"-\"]\n",
+        encoding="utf-8",
+    )
+    s = load_settings(tmp_settings_file)
+    assert s.generation.provider == "codex"
+    assert s.generation.cmd == "codex"
+    assert s.generation.flags == ("exec", "-")
+    # Legacy aliases remain populated for older code/tests.
+    assert s.generation.claude_cmd == "claude"
+    assert "--bare" in s.generation.claude_flags
 
 
 def test_node_id_defaults_to_local(tmp_settings_file: Path) -> None:

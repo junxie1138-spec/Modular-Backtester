@@ -37,6 +37,7 @@ class BacktestEngine:
             equity_curve=equity_curve,
             trades=trades,
             positions=positions,
+            timeframe=timeframe,
         )
         summary["params"] = ctx.metadata["params"]
         summary["symbol"] = symbol

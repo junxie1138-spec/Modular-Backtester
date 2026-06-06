@@ -5,6 +5,7 @@ import pytest
 
 from factory.generate import (
     GenerationError,
+    parse_codex_output,
     parse_claude_output,
 )
 
@@ -126,3 +127,40 @@ def test_usage_missing_subfields_default_to_zero() -> None:
         "cache_creation": 0,
         "cache_read": 0,
     }
+
+
+def _payload(strategy_id: str = "gen_codex") -> dict:
+    return {
+        "strategy_id": strategy_id,
+        "one_line_summary": "codex direct json",
+        "hypothesis": "h",
+        "novelty_justification": "n",
+        "failure_mode": "f",
+        "allow_short": False,
+        "strategy_file": "# x\n",
+        "config_file": f"run_name: {strategy_id}\n",
+    }
+
+
+def test_codex_parser_accepts_direct_final_json() -> None:
+    parsed, cost, usage = parse_codex_output(json.dumps(_payload()))
+    assert parsed["strategy_id"] == "gen_codex"
+    assert cost == 0.0
+    assert usage is None
+
+
+def test_codex_parser_accepts_fenced_json() -> None:
+    stdout = "```json\n" + json.dumps(_payload("gen_codex_fenced")) + "\n```"
+    parsed, _, _ = parse_codex_output(stdout)
+    assert parsed["strategy_id"] == "gen_codex_fenced"
+
+
+def test_codex_parser_accepts_prose_wrapped_json() -> None:
+    stdout = "Here is the JSON:\n" + json.dumps(_payload("gen_codex_prose")) + "\nDone."
+    parsed, _, _ = parse_codex_output(stdout)
+    assert parsed["strategy_id"] == "gen_codex_prose"
+
+
+def test_codex_parser_raises_on_missing_required_keys() -> None:
+    with pytest.raises(GenerationError, match="missing"):
+        parse_codex_output('{"strategy_id":"gen_bad"}')

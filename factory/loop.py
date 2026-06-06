@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import argparse
 import logging
 import logging.handlers
 import random
@@ -12,7 +13,14 @@ from typing import Optional
 
 from factory.cycle import run_cycle
 from factory.settings_loader import Settings, load_settings
-from factory.sync import bootstrap, sync_pull, sync_push
+from factory.sync import (
+    bootstrap,
+    check_sync_ready,
+    maybe_compact_pool_history,
+    sync_pull,
+    sync_push,
+)
+from factory.sortino_migration import drain_one_retro_promotion, migrate_shard
 
 log = logging.getLogger(__name__)
 
@@ -54,6 +62,30 @@ def configure_logging(log_path: Path) -> None:
     root.addHandler(stream_h)
 
 
+def _model_from_flags(claude_flags: tuple[str, ...]) -> str:
+    """Extract the --model value from claude_flags for display.
+
+    settings.toml passes no --model, so the factory uses the Claude Code
+    default (Opus) unless an override is set in settings.local.toml.
+    """
+    for i, flag in enumerate(claude_flags):
+        if flag == "--model" and i + 1 < len(claude_flags):
+            return claude_flags[i + 1]
+        if flag.startswith("--model="):
+            return flag.split("=", 1)[1]
+    return "(Claude Code default)"
+
+
+def _generation_display(provider: str, flags: tuple[str, ...]) -> str:
+    """Human-readable provider/model label for startup logs."""
+    model = _model_from_flags(flags)
+    if provider == "claude":
+        return model
+    if model == "(Claude Code default)":
+        return f"{provider} default"
+    return f"{provider} {model}"
+
+
 def _install_signal_handlers(flag: _ShutdownFlag) -> None:
     def _handler(signum, frame):  # noqa: ARG001
         log.info("received signal %s; requesting graceful shutdown", signum)
@@ -61,6 +93,17 @@ def _install_signal_handlers(flag: _ShutdownFlag) -> None:
     signal.signal(signal.SIGINT, _handler)
     if hasattr(signal, "SIGTERM"):
         signal.signal(signal.SIGTERM, _handler)
+
+
+def _nonneg_int(value: str) -> int:
+    """argparse `type` for --max-cycles: a non-negative integer."""
+    try:
+        n = int(value)
+    except ValueError:
+        raise argparse.ArgumentTypeError(f"invalid int value: {value!r}")
+    if n < 0:
+        raise argparse.ArgumentTypeError("must be >= 0 (0 = unlimited)")
+    return n
 
 
 def run_loop(
@@ -79,37 +122,60 @@ def run_loop(
     max_cycles = max_cycles_override if max_cycles_override is not None else settings.loop.max_cycles
     sleep_sec = settings.loop.inter_cycle_sleep_sec
 
+    mode = "distributed" if settings.sync.enabled else "standalone"
+    model = _generation_display(settings.generation.provider, settings.generation.flags)
+    log.info(
+        "factory loop starting: node=%s mode=%s model=%s",
+        settings.node_id, mode, model,
+    )
+
     try:
         bootstrap(settings)
     except Exception as exc:
         log.exception("sync bootstrap failed (continuing): %s", exc)
 
+    try:
+        migrate_shard(settings)
+    except Exception as exc:
+        log.exception("sortino migration failed (continuing): %s", exc)
+
     completed = 0
     while not flag.is_set():
-        try:
-            sync_pull(settings)
-        except Exception as exc:
-            log.exception("sync_pull failed (continuing): %s", exc)
-        try:
-            outcome = run_cycle(settings, rng=rng)
-            log.info("cycle %d outcome=%s id=%s",
-                     completed + 1, outcome.status, outcome.strategy_id)
-        except Exception as exc:
-            # An unexpected exception from inside run_cycle: log and continue.
-            # (run_cycle is supposed to never raise on expected failures, so
-            # reaching here means a bug — but the loop must not die.)
-            log.exception("unexpected exception in run_cycle: %s", exc)
-        try:
-            sync_push(settings)
-        except Exception as exc:
-            log.exception("sync_push failed (continuing): %s", exc)
+        readiness = check_sync_ready(settings)
+        if not readiness.ready:
+            msg = f"sync gate blocked: {readiness.reason}"
+            if readiness.detail:
+                msg += f" ({readiness.detail})"
+            log.warning(msg)
+        else:
+            try:
+                sync_pull(settings)
+            except Exception as exc:
+                log.exception("sync_pull failed (continuing): %s", exc)
+            try:
+                outcome = run_cycle(settings, rng=rng)
+                log.info("cycle %d outcome=%s id=%s",
+                         completed + 1, outcome.status, outcome.strategy_id)
+            except Exception as exc:
+                log.exception("unexpected exception in run_cycle: %s", exc)
+            try:
+                drain_one_retro_promotion(settings)
+            except Exception as exc:
+                log.exception("retro-promotion drain failed (continuing): %s", exc)
+            try:
+                sync_push(settings)
+            except Exception as exc:
+                log.exception("sync_push failed (continuing): %s", exc)
+            try:
+                maybe_compact_pool_history(settings)
+            except Exception as exc:
+                log.exception("sync compaction failed (continuing): %s", exc)
         completed += 1
         if max_cycles and completed >= max_cycles:
             break
         if flag.is_set():
             break
         if sleep_sec > 0:
-            # Sleep in short increments so SIGINT is responsive.
             slept = 0.0
             while slept < sleep_sec and not flag.is_set():
                 time.sleep(min(0.5, sleep_sec - slept))
@@ -119,7 +185,6 @@ def run_loop(
 
 
 def main(argv: Optional[list[str]] = None) -> int:
-    import argparse
     parser = argparse.ArgumentParser("factory.loop")
     parser.add_argument(
         "--settings",
@@ -129,6 +194,11 @@ def main(argv: Optional[list[str]] = None) -> int:
     )
     parser.add_argument("--seed", type=int, default=None,
                         help="Optional random seed for slot pulls")
+    parser.add_argument(
+        "--max-cycles", type=_nonneg_int, default=None,
+        help="Stop after N cycles (strategy attempts). 0 = unlimited. "
+             "Overrides [loop] max_cycles in settings.toml.",
+    )
     args = parser.parse_args(argv)
 
     s = load_settings(args.settings)
@@ -136,7 +206,8 @@ def main(argv: Optional[list[str]] = None) -> int:
     flag = _ShutdownFlag()
     _install_signal_handlers(flag)
     rng = random.Random(args.seed) if args.seed is not None else random.Random()
-    run_loop(s, rng=rng, shutdown_flag=flag)
+    run_loop(s, rng=rng, shutdown_flag=flag,
+             max_cycles_override=args.max_cycles)
     return 0
 
 

@@ -1,6 +1,6 @@
 # Strategy Factory
 
-An unattended loop that mass-produces trading-strategy ideas with `claude -p`, validates each one, runs it through the full backtest → optimize → WFO pipeline, and surfaces the survivors on a local dashboard and via Telegram. It wraps the Modular-Backtester and edits no backtester source file — generated strategies are picked up by registry auto-discovery.
+An unattended loop that mass-produces trading-strategy ideas with a configured LLM CLI provider (`claude -p` by default, or `codex exec -`), validates each one, runs it through the full backtest → optimize → WFO pipeline, and surfaces the survivors on a local dashboard and via Telegram. It wraps the Modular-Backtester and edits no backtester source file — generated strategies are picked up by registry auto-discovery.
 
 This README covers running the factory on **one machine** and, in detail, running it as a **distributed multi-machine pool** coordinated through git.
 
@@ -9,7 +9,7 @@ This README covers running the factory on **one machine** and, in detail, runnin
 ## What one cycle does
 
 ```
-pull pool  →  draw idea slots  →  claude -p generates a strategy
+pull pool  →  draw idea slots  →  configured LLM CLI generates a strategy
            →  static + functional validation
            →  write strategy .py + config .yaml
            →  backtest  →  optimize  →  (screen?)  →  WFO
@@ -34,7 +34,7 @@ pip install -e .[data]    # yfinance — needed by held-out promotion's default 
 pip install Flask         # the dashboard's only extra runtime dependency
 ```
 
-You also need the **`claude` CLI** authenticated on this machine and on `PATH`. The factory invokes it as a subprocess; `claude_cmd` defaults to `"claude"` (on Windows the `claude.CMD` npm shim is resolved automatically). Verify with `claude --version`.
+You also need a supported **generation CLI** authenticated on this machine and on `PATH`. The default is Claude Code (`claude -p`); OpenAI Codex CLI can be used with `codex exec -`. The factory invokes the CLI as a subprocess and pipes the prompt through stdin.
 
 ---
 
@@ -52,7 +52,23 @@ You also need the **`claude` CLI** authenticated on this machine and on `PATH`. 
    ```
 5. Open <http://127.0.0.1:8787>.
 
-The loop runs until `Ctrl-C` (graceful — it finishes the current cycle), or until `[loop] max_cycles` is reached. `python -m factory.loop --seed 42` makes idea-slot draws reproducible; `--settings <path>` points at an alternate settings file.
+The loop runs until `Ctrl-C` (graceful — it finishes the current cycle), or until a cycle limit is reached. `python -m factory.loop --seed 42` makes idea-slot draws reproducible; `--settings <path>` points at an alternate settings file.
+
+### Choosing how many strategies to generate
+
+Each cycle is one strategy attempt, so the cycle count *is* how many strategies a run generates. By default the loop runs forever (`[loop] max_cycles = 0` in `settings.toml`). To cap a run, pass `--max-cycles`:
+
+```bash
+python -m factory.loop --max-cycles 25   # run 25 cycles, then exit cleanly
+```
+
+- `--max-cycles N` runs **exactly N cycles** — N strategy attempts, whether each one ends `complete`, `complete (screened)`, or `failed` — and then the loop exits.
+- `--max-cycles 0` means unlimited (the same as the default).
+- The flag **overrides `[loop] max_cycles`** for that run only. Prefer it over editing `settings.toml` — `settings.toml` is tracked, and a modified tracked file makes distributed `sync_pull` skip every cycle (see [Troubleshooting](#troubleshooting)).
+- A negative value is rejected before the loop starts.
+- Omit the flag and the `[loop] max_cycles` setting applies instead.
+
+`Ctrl-C` still stops a run early at any point — gracefully, after the current cycle finishes — regardless of `--max-cycles`.
 
 With distributed mode off (the default), this is the whole factory — the per-machine ID scheme and sharded storage described below are still used, they are simply harmless on one machine.
 
@@ -75,16 +91,22 @@ At load time `settings.local.toml` is **merged over** `settings.toml`, section b
 |---|---|
 | *(top level)* | `node_id` — this machine's identity (see distributed mode). Default `"local"`. |
 | `[paths]` | `backtester_root` and the repo-relative dirs for strategies, configs, results shards, dedup shards, logs, tmp. |
-| `[generation]` | `claude_cmd`, `claude_flags`, `generation_timeout_sec`. |
+| `[generation]` | `provider`, `cmd`, `flags`, `generation_timeout_sec`. Legacy `claude_cmd` / `claude_flags` are still accepted. |
 | `[stages]` | `stage_timeout_sec` — per-stage subprocess timeout. |
-| `[alerts]` | `alert_threshold_metric` / `alert_threshold` (default `wfo.oos_sharpe` > 1.0), Telegram credentials, `dashboard_base_url`. |
+| `[alerts]` | `alert_threshold_metric` / `alert_threshold` (default `wfo.oos_sortino` > 1.0), Telegram credentials, `dashboard_base_url`. |
 | `[loop]` | `inter_cycle_sleep_sec`, `max_cycles` (`0` = unlimited). |
 | `[dashboard]` | `host`, `port`, `auto_refresh_sec`. |
-| `[promotion]` | Held-out gate: `tickers`, `data_source`, `min_avg_sharpe`, `trigger_metric`/`trigger_threshold`. |
+| `[promotion]` | Held-out gate: `tickers`, `data_source`, `min_avg_sortino`, `trigger_metric`/`trigger_threshold`. |
 | `[screening]` | Skip WFO when the best optimize score is below `min_optimize_score`. |
 | `[sync]` | Distributed mode — see below. `enabled = false` by default. |
 
 ### Secrets and per-machine values — `settings.local.toml`
+
+A ready-to-fill template is committed at `factory/config/settings.local.toml.example`. Copy it and edit:
+
+```bash
+cp factory/config/settings.local.toml.example factory/config/settings.local.toml
+```
 
 ```toml
 # factory/config/settings.local.toml  —  NEVER committed
@@ -93,9 +115,23 @@ node_id = "desk"
 [alerts]
 telegram_bot_token = "123456:AA..."
 telegram_chat_id   = "-100..."
+
+[sync]
+enabled = true
 ```
 
-`node_id` lives here precisely because it differs per machine and the file is already gitignored and per-machine.
+To use Codex on a specific machine, put this in `settings.local.toml`:
+
+```toml
+[generation]
+provider = "codex"
+cmd = "codex"
+flags = ["exec", "-"]
+```
+
+Older Claude-only configs remain valid. If `provider` / `cmd` / `flags` are absent, the loader falls back to `claude_cmd` / `claude_flags` and behaves as before.
+
+`node_id` lives here precisely because it differs per machine and the file is already gitignored and per-machine. **`node_id` must be a top-level key, above every `[section]`** — in TOML a key written after a `[header]` belongs to that table, so a misplaced `node_id` is silently ignored. It must also match `^[a-z0-9][a-z0-9-]*$` (lowercase letters, digits, hyphens) or startup fails with a clear error.
 
 ---
 
@@ -129,23 +165,29 @@ push_retries = 5               # bounded retry on a non-fast-forward push
 
 ### One-time setup, on each machine
 
-1. **Clone the repo and install** (see [Install](#install)). Each machine is a *full* factory — it needs the repo, an authenticated `claude` CLI, and market data. Market data ships committed (the OHLCV fixtures under `data/raw/`), so a fresh clone is self-sufficient.
-2. **Give the machine a unique `node_id`** in `factory/config/settings.local.toml`:
-   ```toml
-   node_id = "desk"     # must match ^[a-z0-9][a-z0-9-]*$  — lowercase, digits, hyphens
+1. **Clone the repo and install** (see [Install](#install)). Each machine is a *full* factory — it needs the repo, an authenticated generation CLI, and market data. Market data ships committed (the OHLCV fixtures under `data/raw/`), so a fresh clone is self-sufficient.
+2. **Give the machine a unique `node_id`.** Copy the committed template, then edit it:
+   ```bash
+   cp factory/config/settings.local.toml.example factory/config/settings.local.toml
    ```
-   A malformed or duplicated `node_id` defeats the no-collision guarantee. Pick a distinct short name per machine (`desk`, `laptop`, `vps1`).
-3. **Enable sync** in `factory/config/settings.toml`:
+   ```toml
+   # in factory/config/settings.local.toml — node_id must be a TOP-LEVEL key,
+   # above every [section], and match ^[a-z0-9][a-z0-9-]*$
+   node_id = "desk"
+   ```
+   A malformed or duplicated `node_id` defeats the no-collision guarantee. Pick a distinct short name per machine (`desk`, `laptop`, `vps1`). The template is gitignored once copied, so editing it never dirties the working tree.
+3. **Enable sync** — in that same `settings.local.toml`, set:
    ```toml
    [sync]
    enabled = true
    ```
+   Set this in the gitignored `settings.local.toml`, **not** the tracked `settings.toml`. Editing the tracked file dirties the working tree, which makes `sync_pull` skip every cycle — and the factory then commits pool updates to the wrong branch.
 4. **Ensure git can push without a prompt** — the loop runs unattended. Use an SSH key or a cached credential helper for `origin`.
 5. **Run the preflight check** to confirm the machine is actually ready:
    ```bash
    python -m factory.scripts.preflight
    ```
-   It verifies Python version, factory dependencies, settings + `node_id`, writable data dirs, the `[sync]` config, the `claude` CLI (resolvable *and* authenticated, via a trivial live call), git ≥ 2.28, and that the `[sync]` remote is reachable with non-interactive credentials. It exits `0` only when no check fails — review any `WARN`/`FAIL` lines before continuing. Use `--skip-claude-probe` to skip the live (token-spending) `claude` call, or `--skip-remote` when offline.
+   It verifies Python version, factory dependencies, settings + `node_id`, writable data dirs, the `[sync]` config, the configured generation CLI (resolvable *and* authenticated/responding, via a trivial live call), git ≥ 2.28, and that the `[sync]` remote is reachable with non-interactive credentials. It exits `0` only when no check fails — review any `WARN`/`FAIL` lines before continuing. Use `--skip-generation-probe` to skip the live token-spending call, or `--skip-remote` when offline.
 6. **Start the loop:** `python -m factory.loop`.
 
 On the **first** machine to start, the loop's one-time `bootstrap()` step creates the `factory-pool` branch off `master` and **publishes it to the remote** (the one intentional remote-mutating bootstrap action — the pool cannot work until the branch is visible). Every machine after that simply tracks the existing remote branch. `bootstrap()` is idempotent and also folds any pre-existing single-file `results.json` / `dedup_log.txt` into this machine's shards.
@@ -181,7 +223,8 @@ A pool can mix Windows and macOS machines. The repo ships a `.gitattributes` tha
 | Symptom | Cause / fix |
 |---|---|
 | Startup fails: *invalid node_id* | `node_id` must match `^[a-z0-9][a-z0-9-]*$`. Set it in `settings.local.toml`. |
-| `sync_pull: working tree has tracked changes; skipping` | You have uncommitted tracked edits on the checkout. Commit, stash, or revert them; the next cycle will sync. |
+| `sync_pull: working tree has tracked changes; skipping` | You have uncommitted tracked edits on the checkout. Commit, stash, or revert them; the next cycle will sync. A common cause is editing the tracked `settings.toml` — move per-machine settings to `settings.local.toml`. |
+| `sync_push: working tree is on '...', not the pool branch` | `sync_pull` skipped (dirty tree), so the loop never reached the pool branch. `sync_push` correctly refuses to commit to the wrong branch — resolve the tracked changes and sync resumes. |
 | `sync_push: push still failing after N retries` | The remote is unreachable or auth expired. Generation continues; fix git auth and the next cycle catches up. Raise `push_retries` if your pool is very large and pushes collide often. |
 | Two machines produced near-identical ideas | Expected within a sync window — dedup is eventual. It self-corrects as shards propagate. |
 | A generated strategy is missing from a run | A `gen_*.py` that fails to import is skipped (auto-discovery logs its filename and the exception). Check the factory log. |
@@ -196,9 +239,53 @@ python -m factory.scripts.endurance_check --cycles 100   # validate N unattended
 python -m factory.scripts.telegram_smoke                 # verify Telegram credentials send
 ```
 
-`preflight` is the readiness gate for the distributed factory — run it on each machine before enabling `[sync]`. `endurance_check` runs real backtest/optimize/WFO cycles with a stubbed `claude -p`, exercising the heavy local pipeline. Neither touches the network destructively: `preflight`'s remote check is a read-only `git ls-remote`, and all sync *tests* use a throwaway local repo.
+`preflight` is the readiness gate for the distributed factory — run it on each machine before enabling `[sync]`. `endurance_check` runs real backtest/optimize/WFO cycles with a stubbed generation provider, exercising the heavy local pipeline. Neither touches the network destructively: `preflight`'s remote check is a read-only `git ls-remote`, and all sync *tests* use a throwaway local repo.
 
 Logs rotate under `factory/logs/factory.log` (10 MB × 5 backups) and also mirror to stderr for interactive runs.
+
+---
+
+## Upgrading from an earlier version
+
+Ran the factory before these changes? Here is how to update and what carries over.
+
+### How to update
+
+1. **Pull the new code.** Single-machine: `git pull` on the branch you run from. Distributed: the loop runs `factory-pool`'s code, so update *that* branch — on one machine `git checkout factory-pool && git merge master && git push origin factory-pool`; every other machine picks the update up on its next `sync_pull`.
+2. **Refresh dependencies** — re-run the [Install](#install) steps. `Flask` and the `[data]` extra (yfinance, used by held-out promotion) may be newer requirements than when you first set up.
+3. **Run the preflight check** — `python -m factory.scripts.preflight` — to confirm the machine is still good.
+
+### Is my progress saved? — yes
+
+An upgrade discards no generated work:
+
+- **Strategy and config files** (`strategies/gen_*.py`, `configs/wfo/gen_*.yaml`) are plain files on disk — untouched. The registry auto-discovers them, including older `gen_<timestamp>.py` ids minted before the `gen_<node_id>_<timestamp>` scheme.
+- **Results records are forward-compatible.** Token tracking adds a `generation_tokens` field to *new* records only; older records have no such field and are read as "no token data" — the detail view shows `n/a` for them and they contribute `0` to the cumulative-tokens total. No migration, no data loss.
+- **Generation-provider settings are backward-compatible.** Existing `claude_cmd` / `claude_flags` configs keep working. Codex machines only need a local `[generation]` override; no archived strategy, dedup, or results data changes format.
+
+### Archived strategies are migrated to OOS Sortino automatically
+
+The alert and promotion gates key on **OOS Sortino**, but records produced before that switch carry only `oos_sharpe` — an archived strategy and a new one were not judged by the same field. The loop closes that gap with no operator step.
+
+At startup it runs one idempotent pass over this machine's own results shard. For each archived `complete` record it recovers `oos_sortino` from the run's existing WFO bundle — a pure read, no re-backtest or re-optimise — and stores it alongside the `oos_sharpe` already there, so a migrated record is indistinguishable from a natively-Sortino one. A record whose promote/no-promote verdict would flip under the new metric is flagged `needs_rerun` (advisory only — nothing re-optimises automatically). Archived strategies that now clear the promotion threshold are retroactively sent through the held-out promotion gate, one per cycle so the compute spreads alongside normal generation.
+
+The pass is per-shard and pool-safe: each machine migrates only its own `results/<node_id>.jsonl`, preserving the sole-writer invariant and conflict-free sync. A record whose WFO bundle was pruned from the gitignored, local-only `output/runs/` is skipped and logged, not recomputed — it is simply re-examined on the next startup.
+
+### If you ran a much older (single-file) version
+
+A pre-distributed factory kept one `factory/data/results.json` and one `factory/data/dedup_log.txt`. The current factory uses per-machine shard directories — `factory/data/results/<node_id>.jsonl` and `factory/data/dedup/<node_id>.txt`.
+
+- **Enabling distributed mode:** the first `bootstrap()` (run automatically at loop start) folds those legacy files into this machine's shards for you — a one-time verbatim copy, skipped if the shard already exists.
+- **Staying single-machine** (`[sync] enabled = false`): `bootstrap()` is a no-op, so do the one-time copy yourself (create the `results/` and `dedup/` directories first if they do not exist):
+  ```bash
+  cp factory/data/results.json   factory/data/results/local.jsonl    # "local" = default node_id
+  cp factory/data/dedup_log.txt  factory/data/dedup/local.txt
+  ```
+  The formats are compatible — results is JSONL either way, and old un-timestamped dedup lines are tolerated (treated as oldest). Skip the copy and only the dashboard history of those old runs is lost; the strategy files themselves are unaffected.
+
+### Moving to distributed mode
+
+Put `node_id` and `[sync] enabled` in the gitignored `settings.local.toml` (copy `settings.local.toml.example`) — **not** in the tracked `settings.toml`. A tracked-but-modified `settings.toml` permanently dirties the working tree, which makes `sync_pull` skip every cycle and the factory commit pool updates to the wrong branch. See [Configuration](#configuration).
 
 ---
 
@@ -216,4 +303,5 @@ The factory has a fast unit suite plus slower integration tests. Slow tests (Tie
 
 - Distributed factory — [`docs/superpowers/specs/2026-05-16-distributed-factory-design.md`](../docs/superpowers/specs/2026-05-16-distributed-factory-design.md)
 - Token tracking — [`docs/superpowers/specs/2026-05-16-factory-token-tracking-design.md`](../docs/superpowers/specs/2026-05-16-factory-token-tracking-design.md)
+- Sortino archive migration — [`docs/superpowers/specs/2026-05-17-sortino-archive-migration-design.md`](../docs/superpowers/specs/2026-05-17-sortino-archive-migration-design.md)
 - Original factory build — [`docs/superpowers/plans/2026-05-15-strategy-factory-v020.md`](../docs/superpowers/plans/2026-05-15-strategy-factory-v020.md)

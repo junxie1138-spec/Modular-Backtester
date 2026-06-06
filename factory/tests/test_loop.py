@@ -5,8 +5,22 @@ from unittest import mock
 
 import pytest
 
-from factory.loop import configure_logging, run_loop
+from factory.loop import _model_from_flags, configure_logging, main, run_loop
 from factory.settings_loader import load_settings
+
+
+def test_model_from_flags_extracts_separate_arg() -> None:
+    flags = ("-p", "--model", "sonnet", "--allowedTools", "Read")
+    assert _model_from_flags(flags) == "sonnet"
+
+
+def test_model_from_flags_extracts_equals_form() -> None:
+    assert _model_from_flags(("-p", "--model=haiku")) == "haiku"
+
+
+def test_model_from_flags_defaults_when_absent() -> None:
+    flags = ("-p", "--output-format", "json", "--allowedTools", "Read")
+    assert _model_from_flags(flags) == "(Claude Code default)"
 
 
 def test_configure_logging_creates_rotating_handler(tmp_path: Path) -> None:
@@ -57,3 +71,40 @@ def test_run_loop_stops_on_sigint(tmp_settings_file: Path) -> None:
     # The flag is checked AFTER each cycle, so cycle 2 runs to completion
     # and then the loop breaks.
     assert completed == 2
+
+
+def test_run_loop_runs_sortino_migration_and_drain(tmp_settings_file: Path) -> None:
+    s = load_settings(tmp_settings_file)
+    assert s.loop.max_cycles == 1   # from the test fixture
+
+    from factory.cycle import CycleOutcome
+    fake_outcome = CycleOutcome(status="failed", failed_stage="generation",
+                                strategy_id=None, record={"status": "failed"})
+    with mock.patch("factory.loop.run_cycle", return_value=fake_outcome), \
+         mock.patch("factory.loop.migrate_shard") as migrate, \
+         mock.patch("factory.loop.drain_one_retro_promotion") as drain:
+        run_loop(s, rng=random.Random(0))
+
+    assert migrate.call_count == 1   # once, at startup
+    assert drain.call_count == 1     # once per cycle (max_cycles=1)
+
+
+def test_main_passes_max_cycles_override(tmp_settings_file: Path) -> None:
+    with mock.patch("factory.loop.run_loop") as rl, \
+         mock.patch("factory.loop.configure_logging"):
+        rc = main(["--settings", str(tmp_settings_file), "--max-cycles", "3"])
+    assert rc == 0
+    assert rl.call_args.kwargs["max_cycles_override"] == 3
+
+
+def test_main_max_cycles_defaults_to_none(tmp_settings_file: Path) -> None:
+    with mock.patch("factory.loop.run_loop") as rl, \
+         mock.patch("factory.loop.configure_logging"):
+        main(["--settings", str(tmp_settings_file)])
+    assert rl.call_args.kwargs["max_cycles_override"] is None
+
+
+def test_main_rejects_negative_max_cycles(tmp_settings_file: Path) -> None:
+    with pytest.raises(SystemExit) as exc:
+        main(["--settings", str(tmp_settings_file), "--max-cycles", "-1"])
+    assert exc.value.code != 0

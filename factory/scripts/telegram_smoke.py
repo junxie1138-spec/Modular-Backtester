@@ -31,7 +31,7 @@ def main(argv: list[str] | None = None) -> int:
         "idea": {"one_line_summary": "telegram smoke test"},
         "backtest": {"sharpe": 0.5},
         "optimize": {"best_score": 0.7},
-        "wfo": {"oos_sharpe": 2.0, "oos_total_return": 0.30,
+        "wfo": {"oos_sharpe": 2.0, "oos_sortino": 2.5, "oos_total_return": 0.30,
                 "oos_max_drawdown": -0.06, "oos_n_trades": 25},
     }
     cfg = NotifyConfig(

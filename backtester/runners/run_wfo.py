@@ -129,6 +129,7 @@ def _run_multi_symbol_wfo(*, rc, cls) -> int:
     sim = MultiSymbolPortfolioSimulator(
         config=rc.portfolio, initial_cash=rc.execution.initial_cash,
         broker_factory=lambda: Broker(rc.execution),
+        timeframe=rc.data.timeframe,
     )
     engine = MultiSymbolBacktestEngine(simulator=sim)
     optimizer = MultiSymbolGridSearchOptimizer(
@@ -139,7 +140,7 @@ def _run_multi_symbol_wfo(*, rc, cls) -> int:
         step_bars=rc.wfo.step_bars,
     )
     runner = MultiSymbolWFORunner(engine=engine, optimizer=optimizer)
-    stitcher = MultiSymbolWFOStitcher()
+    stitcher = MultiSymbolWFOStitcher(timeframe=rc.data.timeframe)
 
     log.info("running multi-symbol WFO: train=%d test=%d step=%d on %d symbols",
              rc.wfo.train_bars, rc.wfo.test_bars, rc.wfo.step_bars, len(symbols))

@@ -38,7 +38,7 @@ def test_generation_failure_writes_failed_record_and_no_dedup_entry(
     _seed_backtester_tree(tmp_path)
     s = load_settings(tmp_settings_file)
     from factory.generate import GenerationError
-    with mock.patch("factory.cycle.call_claude", side_effect=GenerationError("boom")):
+    with mock.patch("factory.cycle.call_generator", side_effect=GenerationError("boom")):
         outcome = run_cycle(s, rng=random.Random(0))
     assert outcome.status == "failed"
     assert outcome.failed_stage == "generation"
@@ -58,7 +58,7 @@ def test_validation_failure_writes_dedup_but_no_files(
     _seed_backtester_tree(tmp_path)
     s = load_settings(tmp_settings_file)
     fake = _fake_claude_result("gen_cycle_test")
-    with mock.patch("factory.cycle.call_claude", return_value=fake), \
+    with mock.patch("factory.cycle.call_generator", return_value=fake), \
          mock.patch("factory.cycle._now_unix_int", return_value=1715800000), \
          mock.patch("factory.cycle._iso_now", return_value="2026-05-15T09:00:00Z"):
         outcome = run_cycle(s, rng=random.Random(0))
@@ -116,7 +116,7 @@ def test_complete_cycle_writes_files_and_record(
                               "run_bundle_path": "p3"},
                       bundle_path=Path("p3"), raw_summary={})
 
-    with mock.patch("factory.cycle.call_claude", return_value=fake), \
+    with mock.patch("factory.cycle.call_generator", return_value=fake) as call_generator, \
          mock.patch("factory.cycle._now_unix_int", return_value=1715800000), \
          mock.patch("factory.cycle._iso_now", return_value="2026-05-15T09:00:00Z"), \
          mock.patch("factory.cycle.run_backtest_stage", return_value=bt), \
@@ -125,6 +125,8 @@ def test_complete_cycle_writes_files_and_record(
         outcome = run_cycle(s, rng=random.Random(0))
 
     assert outcome.status == "complete"
+    assert call_generator.call_args.kwargs["provider"] == "claude"
+    assert call_generator.call_args.kwargs["cmd"] == "claude"
     assert outcome.failed_stage is None
     # Strategy + config written.
     assert (s.paths.strategies_dir / "gen_local_1715800000.py").exists()
@@ -164,7 +166,7 @@ def test_stage_failure_writes_failed_record_keeps_dedup_and_files(
         "config_file": valid_cfg,
     }, cost_usd=0.04, raw_stdout="{}")
 
-    with mock.patch("factory.cycle.call_claude", return_value=fake), \
+    with mock.patch("factory.cycle.call_generator", return_value=fake), \
          mock.patch("factory.cycle._now_unix_int", return_value=1715800000), \
          mock.patch("factory.cycle._iso_now", return_value="2026-05-15T09:00:00Z"), \
          mock.patch("factory.cycle.run_backtest_stage",
@@ -213,7 +215,7 @@ def test_screened_out_skips_wfo_and_promotion(
                               "best_score": 0.5, "run_bundle_path": "p2"},
                       bundle_path=Path("p2"), raw_summary={})
 
-    with mock.patch("factory.cycle.call_claude", return_value=fake), \
+    with mock.patch("factory.cycle.call_generator", return_value=fake), \
          mock.patch("factory.cycle._now_unix_int", return_value=1715800000), \
          mock.patch("factory.cycle._iso_now", return_value="2026-05-15T09:00:00Z"), \
          mock.patch("factory.cycle.run_backtest_stage", return_value=bt), \
@@ -240,7 +242,7 @@ def test_cycle_strategy_id_includes_node_id(
     s = load_settings(tmp_settings_file)
     assert s.node_id == "local"   # fixture default
     fake = _fake_claude_result("placeholder")  # placeholder body -> validation fails
-    with mock.patch("factory.cycle.call_claude", return_value=fake), \
+    with mock.patch("factory.cycle.call_generator", return_value=fake), \
          mock.patch("factory.cycle._now_unix_int", return_value=1715800000):
         outcome = run_cycle(s, rng=random.Random(0))
     assert outcome.strategy_id == "gen_local_1715800000"

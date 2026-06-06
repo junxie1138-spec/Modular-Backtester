@@ -12,6 +12,10 @@ factory_log      = "factory/logs/factory.log"
 tmp_dir          = "factory/data/_tmp"
 
 [generation]
+provider               = "claude"  # "claude" or "codex"; override per machine in settings.local.toml
+cmd                    = "claude"
+flags                  = ["-p", "--output-format", "json", "--allowedTools", "Read"]
+# Legacy aliases kept so older machines/configs keep working during rollout.
 claude_cmd             = "claude"
 claude_flags           = ["-p", "--output-format", "json", "--allowedTools", "Read"]
 generation_timeout_sec = 3000
@@ -20,7 +24,7 @@ generation_timeout_sec = 3000
 stage_timeout_sec = 5400
 
 [alerts]
-alert_threshold_metric = "wfo.oos_sharpe"
+alert_threshold_metric = "wfo.oos_sortino"
 alert_threshold        = 1.0
 telegram_bot_token     = ""       # real value goes in config/settings.local.toml (gitignored)
 telegram_chat_id       = ""       # real value goes in config/settings.local.toml (gitignored)
@@ -40,16 +44,18 @@ auto_refresh_sec = 10
 enabled           = true
 tickers           = ["AAPL", "QQQ", "DIA"]
 data_source       = "yfinance"        # csv if all tickers in data/raw/; yfinance fetches on first run
-min_avg_sharpe    = 0.7
-trigger_metric    = "wfo.oos_sharpe"
+min_avg_sortino   = 0.7
+trigger_metric    = "wfo.oos_sortino"
 trigger_threshold = 1.0
 
 [screening]
 enabled            = true
-min_optimize_score = 1.3
+min_optimize_score = 1.0   # in-sample optimize-objective (Sortino) floor to enter WFO
 
 [sync]
-enabled      = false          # master switch for distributed multi-machine sync
-branch       = "factory-pool" # shared pool branch
-remote       = "origin"
-push_retries = 5
+enabled                  = false          # master switch for distributed multi-machine sync
+branch                   = "factory-pool" # shared pool branch
+remote                   = "origin"
+push_retries             = 5
+auto_compact_enabled     = true
+auto_compact_min_commits = 10

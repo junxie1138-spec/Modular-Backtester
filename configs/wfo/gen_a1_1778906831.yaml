@@ -1,0 +1,27 @@
+run_name: gen_a1_1778906831
+strategy: gen_a1_1778906831
+strategy_params: {rank_window: 20, rank_threshold: 0.55, roc_lag: 5, accel_lag: 3, roc_smooth: 3, min_accel: 0.0}
+data:
+  symbols: ["SPY"]
+  timeframe: "1d"
+  start: "2015-01-02"
+  end: "2024-12-31"
+  source: "csv"
+  root: "data/raw"
+execution:
+  initial_cash: 100000
+  commission_bps: 2
+  slippage_bps: 5
+  allow_fractional: false
+  allow_short: false
+portfolio:
+  sizing_mode: "percent_equity"
+  size: 0.95
+optimization:
+  objective: sharpe
+  param_space: {rank_window: [15, 20, 25], roc_lag: [3, 5, 8], rank_threshold: [0.5, 0.55, 0.6]}
+wfo:
+  enabled: true
+  train_bars: 756
+  test_bars: 252
+  step_bars: 252

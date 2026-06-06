@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import math
+
+import numpy as np
 import pandas as pd
 import pytest
 
@@ -44,3 +47,22 @@ def test_stitcher_emits_parameter_stability():
     result = stitcher.stitch([w1, w2])
     assert result.parameter_stability["threshold"] == [1.0, 1.5]
     assert result.parameter_stability["mean_lookback"] == [10, 14]
+
+
+def test_multi_stitcher_oos_sharpe_uses_timeframe() -> None:
+    from backtester.wfo.multi_stitcher import MultiSymbolWFOStitcher
+    from backtester.wfo.multi_runner import WindowResult
+    rng = np.random.default_rng(3)
+    vals = 100 * np.exp(np.cumsum(rng.normal(0.0004, 0.01, 300)))
+    idx = pd.bdate_range("2024-01-02", periods=300)
+    wr = WindowResult(
+        window_idx=0,
+        train_start=idx[0], train_end=idx[10],
+        test_start=idx[0], test_end=idx[-1],
+        best_params={"fast": 10}, is_summary={}, oos_summary={},
+        oos_equity_curve=pd.Series(vals, index=idx),
+    )
+    assert MultiSymbolWFOStitcher().timeframe == "1d"
+    sh_d = MultiSymbolWFOStitcher(timeframe="1d").stitch([wr]).oos_summary["sharpe"]
+    sh_h = MultiSymbolWFOStitcher(timeframe="1h").stitch([wr]).oos_summary["sharpe"]
+    assert sh_h == pytest.approx(sh_d * math.sqrt(1638 / 252), rel=1e-9)

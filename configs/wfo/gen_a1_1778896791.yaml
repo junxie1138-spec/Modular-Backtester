@@ -1,0 +1,27 @@
+run_name: gen_a1_1778896791
+strategy: gen_a1_1778896791
+strategy_params: {roc_period: 5, accel_norm_window: 20, atr_period: 14, vol_window: 20, target_vol: 0.15, entry_z: 0.5, accel_clip: 3.0, strength_floor: 0.35, be_pct: 0.02, init_stop_atr: 2.0, trail_atr: 2.5, max_hold: 5, min_size: 0.25, max_size: 2.0}
+data:
+  symbols: ["SPY"]
+  timeframe: "1d"
+  start: "2015-01-02"
+  end: "2024-12-31"
+  source: "csv"
+  root: "data/raw"
+execution:
+  initial_cash: 100000
+  commission_bps: 2
+  slippage_bps: 5
+  allow_fractional: false
+  allow_short: false
+portfolio:
+  sizing_mode: "percent_equity"
+  size: 0.95
+optimization:
+  objective: sharpe
+  param_space: {roc_period: [3, 5, 8], target_vol: [0.10, 0.15, 0.20], trail_atr: [2.0, 2.5, 3.0]}
+wfo:
+  enabled: true
+  train_bars: 756
+  test_bars: 252
+  step_bars: 252

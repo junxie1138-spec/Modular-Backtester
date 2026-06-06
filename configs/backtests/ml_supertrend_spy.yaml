@@ -1,0 +1,44 @@
+# TradingView-parity baseline. Every value under `strategy_params` is copied
+# verbatim from the "Machine Learning Supertrend [Aslan]" Pine Script input
+# defaults. A tuned config (grid-search / WFO output) must be named distinctly
+# so a reader can always tell a TV-parity run from an optimized one.
+run_name: ml_supertrend_spy
+strategy: ml_supertrend
+strategy_params:
+  signal_mode: "reversal"
+  require_new_extreme: true
+  min_bars_between_signals: 10
+  sensitivity: 30
+  atr_period: 24
+  multiplier: 1.4
+  source_type: "hlcc4"
+  use_atr: true
+  enable_rsi: true
+  rsi_len: 14
+  rsi_lookback_top: 50
+  rsi_lookback_bot: 50
+  rsi_top: 70
+  rsi_bot: 30
+  vol_lookback: 3
+  vol_multiplier: 1.2
+  require_vol_spike: false
+  enable_major_levels_only: false
+  major_level_threshold: 4.5
+  size: 1.0
+data:
+  symbols: ["SPY"]
+  timeframe: "1d"
+  start: "2015-01-02"
+  end: "2024-12-31"
+  source: "csv"
+  root: "data/raw"
+execution:
+  initial_cash: 100000
+  commission_bps: 2
+  slippage_bps: 5
+  allow_fractional: false
+  allow_short: true
+portfolio:
+  sizing_mode: "percent_equity"
+  size: 0.95
+output_root: "output/runs"

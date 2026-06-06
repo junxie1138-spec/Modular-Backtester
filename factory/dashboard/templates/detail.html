@@ -55,7 +55,11 @@
   {% if record.backtest %}
     <ul>
       {% for k, v in record.backtest.items() %}
-        <li><strong>{{ k }}:</strong> {{ v }}</li>
+        {% if k in ('total_return', 'max_drawdown', 'win_rate') %}
+          <li><strong>{{ k }}:</strong> {{ "%.2f%%" | format(v * 100) }}</li>
+        {% else %}
+          <li><strong>{{ k }}:</strong> {{ v }}</li>
+        {% endif %}
       {% endfor %}
     </ul>
   {% else %}<p>(not reached)</p>{% endif %}
@@ -92,9 +96,9 @@
       {% else %}
         <span style="color: #b00; font-weight: bold;">FAILED</span>
       {% endif %}
-      &nbsp;(avg OOS Sharpe across tickers
-      <strong>{{ "%.3f" | format(record.promotion.avg_sharpe) if record.promotion.avg_sharpe is not none else 'n/a' }}</strong>
-      vs threshold {{ "%.2f" | format(record.promotion.min_avg_sharpe_threshold) }})
+      &nbsp;(avg OOS Sortino across tickers
+      <strong>{{ "%.3f" | format(record.promotion.avg_sortino) if record.promotion.avg_sortino is not none else 'n/a' }}</strong>
+      vs threshold {{ "%.2f" | format(record.promotion.min_avg_sortino_threshold) }})
     </p>
     {% if record.promotion.error %}
       <p><strong>Errors:</strong></p><pre>{{ record.promotion.error }}</pre>

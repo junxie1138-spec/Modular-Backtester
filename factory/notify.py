@@ -12,7 +12,7 @@ log = logging.getLogger(__name__)
 
 @dataclass(slots=True, frozen=True)
 class NotifyConfig:
-    alert_threshold_metric: str  # e.g. "wfo.oos_sharpe"
+    alert_threshold_metric: str  # e.g. "wfo.oos_sortino"
     alert_threshold: float
     telegram_bot_token: str
     telegram_chat_id: str
@@ -54,6 +54,7 @@ def format_alert_message(record: dict, *, dashboard_base_url: str) -> str:
         "[SHORTLIST SIGNAL — not a verdict]",
         f"Strategy: {sid}",
         f"Idea: {summary}",
+        f"OOS Sortino: {wfo.get('oos_sortino', 'n/a')}",
         f"OOS Sharpe: {wfo.get('oos_sharpe', 'n/a')}",
         f"OOS total return: {wfo.get('oos_total_return', 'n/a')}",
         f"OOS max drawdown: {wfo.get('oos_max_drawdown', 'n/a')}",

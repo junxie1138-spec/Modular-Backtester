@@ -11,7 +11,9 @@ from backtester.analytics.metrics import compute_summary_metrics
 class WalkForwardStitcher:
     """Concatenate OOS equity curves and recompute summary metrics across the stitched series."""
 
-    def combine(self, window_results: List[Dict[str, Any]]) -> Dict[str, Any]:
+    def combine(
+        self, window_results: List[Dict[str, Any]], timeframe: str = "1d",
+    ) -> Dict[str, Any]:
         if not window_results:
             raise ValueError("stitcher received no windows")
 
@@ -44,7 +46,9 @@ class WalkForwardStitcher:
         oos_trades_df = pd.concat(oos_trades, ignore_index=True) if oos_trades else pd.DataFrame()
         oos_positions_df = pd.concat(oos_positions) if oos_positions else pd.DataFrame()
 
-        oos_summary = compute_summary_metrics(oos_eq, oos_trades_df, oos_positions_df)
+        oos_summary = compute_summary_metrics(
+            oos_eq, oos_trades_df, oos_positions_df, timeframe=timeframe,
+        )
 
         # IS averages — only average keys with at least one numeric value
         # across windows. Skips metadata keys like 'params' (dict), 'symbol'

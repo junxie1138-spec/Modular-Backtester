@@ -77,6 +77,7 @@ def parse_wfo_summary(raw: dict[str, Any], *, bundle_path: Path) -> dict[str, An
     oos = raw["oos_summary"]
     return {
         "oos_sharpe": float(oos["sharpe"]),
+        "oos_sortino": float(oos["sortino"]),
         "oos_total_return": float(oos["total_return"]),
         "oos_max_drawdown": float(oos["max_drawdown"]),
         "oos_n_trades": int(oos["n_trades"]),

@@ -167,3 +167,20 @@ def test_overview_shows_cumulative_tokens(app_with_records) -> None:
     body = client.get("/").get_data(as_text=True)
     assert "Cumulative tokens" in body
     assert "24660" in body
+
+
+def test_detail_view_formats_backtest_pct_fields(app_with_records) -> None:
+    """The Stage 1 Backtest section renders total_return, max_drawdown and
+    win_rate as percentages, not raw decimal fractions.
+    """
+    client, _ = app_with_records
+    body = client.get("/strategy/gen_1").get_data(as_text=True)
+    # gen_1 backtest: total_return 0.1 -> 10.00%, max_drawdown -0.1 -> -10.00%,
+    # win_rate 0.5 -> 50.00%.
+    assert "10.00%" in body
+    assert "-10.00%" in body
+    assert "50.00%" in body
+    # The raw fractions are no longer printed for these fields.
+    assert "total_return:</strong> 0.1" not in body
+    assert "max_drawdown:</strong> -0.1" not in body
+    assert "win_rate:</strong> 0.5" not in body

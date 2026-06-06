@@ -44,6 +44,7 @@ def test_parse_wfo_summary_extracts_oos_block() -> None:
     raw = _load("sample_wfo_summary.json")
     parsed = parse_wfo_summary(raw, bundle_path=Path("output/runs/z"))
     assert parsed["oos_sharpe"] == pytest.approx(0.6897185480952924)
+    assert parsed["oos_sortino"] == pytest.approx(0.9847132205534219)
     assert parsed["oos_total_return"] == pytest.approx(0.31078674058870415)
     assert parsed["oos_max_drawdown"] == pytest.approx(-0.07374129512318983)
     assert parsed["oos_n_trades"] == 109
