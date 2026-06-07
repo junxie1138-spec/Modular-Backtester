@@ -17,6 +17,7 @@ def tmp_settings_file(tmp_path: Path) -> Path:
         output_runs_dir  = "output/runs"
         dedup_dir        = "factory/data/dedup"
         results_dir      = "factory/data/results"
+        slot_pool_db     = "factory/data/slot_pool.sqlite"
         factory_log      = "factory/logs/factory.log"
         tmp_dir          = "factory/data/_tmp"
 

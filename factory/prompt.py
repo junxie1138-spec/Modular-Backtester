@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Mapping, Sequence
+from typing import Mapping
 
 # Appendix A — reproduced verbatim from the spec.
 # Placeholders use {{double_braces}} and are filled by build_prompt.
@@ -83,11 +83,6 @@ THIS IDEA'S RANDOM CONSTRAINTS:
 - Hard twist (must satisfy): {{constraint_twist}}
 - Loose inspiration (use only if genuinely useful): {{inspiration_anchor}}
 
-ALREADY-GENERATED IDEAS - yours must be meaningfully different from every one.
-Not a parameter tweak, not the same hypothesis with a different indicator. A
-different mechanism.
-{{last_30_idea_summaries}}
-
 OUTPUT - strict JSON, nothing outside it, no markdown fences:
 {
   "strategy_id": "{{strategy_id}}",
@@ -144,22 +139,10 @@ def build_prompt(
     *,
     strategy_id: str,
     slots: Mapping[str, str],
-    dedup_tail: Sequence[str],
 ) -> str:
-    """Fill the Appendix A template with the slot values and the dedup tail.
-
-    `dedup_tail` is the LIST of recent one_line_summary lines (oldest first).
-    Only the last 30 are used.
-    """
-    tail = list(dedup_tail)[-30:]
-    if tail:
-        tail_block = "\n".join(f"- {line}" for line in tail)
-    else:
-        tail_block = "(none yet)"
-
+    """Fill the Appendix A template with the pre-claimed slot values."""
     filled = PROMPT_TEMPLATE
     for name, value in slots.items():
         filled = filled.replace("{{" + name + "}}", value)
     filled = filled.replace("{{strategy_id}}", strategy_id)
-    filled = filled.replace("{{last_30_idea_summaries}}", tail_block)
     return filled

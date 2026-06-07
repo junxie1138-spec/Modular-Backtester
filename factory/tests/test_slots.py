@@ -31,8 +31,19 @@ def test_pull_is_diverse_across_many_calls() -> None:
     families = Counter()
     for _ in range(200):
         families[pull_slots(rng)["strategy_family"]] += 1
-    # All distinct families should appear within 200 pulls (~12 families).
+    # All distinct families should appear within 200 pulls (~14 families).
     assert len(families) == len(SLOTS["strategy_family"])
+
+
+def test_modern_research_methods_are_available() -> None:
+    assert "changepoint-reaction" in SLOTS["strategy_family"]
+    assert "historical-shape analogs" in SLOTS["strategy_family"]
+    assert "latent trend/slope innovation" in SLOTS["signal_primitive"]
+    assert "fractional-differenced close" in SLOTS["signal_primitive"]
+    assert "ordinal pattern complexity" in SLOTS["signal_primitive"]
+    assert "low-order path signature area" in SLOTS["signal_primitive"]
+    assert "multiscale wavelet energy" in SLOTS["signal_primitive"]
+    assert "visibility-graph topology" in SLOTS["signal_primitive"]
 
 
 def test_direction_is_weighted_toward_long_only() -> None:

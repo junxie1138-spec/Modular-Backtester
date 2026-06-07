@@ -1,5 +1,6 @@
 data/results.json
 data/dedup_log.txt
+data/slot_pool.sqlite*
 data/_tmp/
 logs/
 __pycache__/

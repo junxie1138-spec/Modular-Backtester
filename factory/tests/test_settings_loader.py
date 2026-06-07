@@ -9,6 +9,7 @@ def test_loads_all_sections(tmp_settings_file: Path) -> None:
     assert s.paths.backtester_root.is_absolute()
     assert s.paths.strategies_dir.name == "strategies"
     assert s.paths.registry_file.parts[-2:] == ("strategies", "registry.py")
+    assert s.paths.slot_pool_db.name == "slot_pool.sqlite"
     assert s.generation.provider == "claude"
     assert s.generation.cmd == "claude"
     assert "--bare" in s.generation.flags
@@ -30,6 +31,7 @@ def test_paths_resolve_under_root(tmp_settings_file: Path) -> None:
     root = s.paths.backtester_root
     assert s.paths.strategies_dir.is_relative_to(root)
     assert s.paths.results_dir.is_relative_to(root)
+    assert s.paths.slot_pool_db.is_relative_to(root)
     assert s.paths.tmp_dir.is_relative_to(root)
 
 

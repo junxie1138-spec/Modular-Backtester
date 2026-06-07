@@ -16,5 +16,6 @@ data/processed/*
 .env
 .DS_Store
 factory/data/_tmp/
+factory/data/slot_pool.sqlite*
 factory/logs/
 output/runs/

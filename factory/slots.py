@@ -43,7 +43,8 @@ SLOTS: Mapping[str, tuple[str, ...]] = {
         "momentum", "mean-reversion", "breakout", "volatility-targeting",
         "seasonality", "regime-switching", "range-compression",
         "gap-behavior", "drawdown-recovery", "autocorrelation",
-        "relative-position", "trend-strength",
+        "relative-position", "trend-strength", "changepoint-reaction",
+        "historical-shape analogs",
     ),
     "signal_primitive": (
         "close-to-close returns", "high-low range dynamics",
@@ -51,6 +52,12 @@ SLOTS: Mapping[str, tuple[str, ...]] = {
         "gap (open vs prior close)", "rolling rank/percentile",
         "consecutive-streak count", "distance-from-MA (z-score)",
         "rate-of-change acceleration", "drawdown depth",
+        "latent trend/slope innovation",
+        "fractional-differenced close",
+        "ordinal pattern complexity",
+        "low-order path signature area",
+        "multiscale wavelet energy",
+        "visibility-graph topology",
     ),
     "holding_horizon": (
         "1-2 days", "3-5 days", "1-2 weeks", "3-4 weeks",

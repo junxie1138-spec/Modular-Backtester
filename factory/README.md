@@ -9,7 +9,8 @@ This README covers running the factory on **one machine** and, in detail, runnin
 ## What one cycle does
 
 ```
-pull pool  →  draw idea slots  →  configured LLM CLI generates a strategy
+pull pool  →  claim idea slots from the slot-pool DB
+           →  configured LLM CLI generates a strategy
            →  static + functional validation
            →  write strategy .py + config .yaml
            →  backtest  →  optimize  →  (screen?)  →  WFO
@@ -72,6 +73,13 @@ python -m factory.loop --max-cycles 25   # run 25 cycles, then exit cleanly
 
 With distributed mode off (the default), this is the whole factory — the per-machine ID scheme and sharded storage described below are still used, they are simply harmless on one machine.
 
+The first cycle also creates `factory/data/slot_pool.sqlite`, a local
+pre-populated SQLite database containing every valid slot combination. Each
+cycle claims one unused combination and marks it consumed when the attempt
+finishes, so slot uniqueness no longer depends on the old "last 30 ideas"
+prompt context. The `dedup/` shard is still written as historical idea
+metadata for records and dashboards.
+
 ---
 
 ## Configuration
@@ -90,7 +98,7 @@ At load time `settings.local.toml` is **merged over** `settings.toml`, section b
 | Section | Key settings |
 |---|---|
 | *(top level)* | `node_id` — this machine's identity (see distributed mode). Default `"local"`. |
-| `[paths]` | `backtester_root` and the repo-relative dirs for strategies, configs, results shards, dedup shards, logs, tmp. |
+| `[paths]` | `backtester_root` and the repo-relative dirs for strategies, configs, results shards, dedup shards, slot-pool DB, logs, tmp. |
 | `[generation]` | `provider`, `cmd`, `flags`, `generation_timeout_sec`. Legacy `claude_cmd` / `claude_flags` are still accepted. |
 | `[stages]` | `stage_timeout_sec` — per-stage subprocess timeout. |
 | `[alerts]` | `alert_threshold_metric` / `alert_threshold` (default `wfo.oos_sortino` > 1.0), Telegram credentials, `dashboard_base_url`. |
@@ -198,7 +206,7 @@ On the **first** machine to start, the loop's one-time `bootstrap()` step create
 - **The cycle runs**, writing only this machine's `node_id`-keyed files.
 - **`sync_push` (after the cycle):** stages this machine's new strategy/config files and its two shards, commits as `factory(<node_id>): pool update`, and pushes. A non-fast-forward rejection (another machine pushed first) triggers `git pull --rebase` + retry, up to `push_retries` times. The rebase is always conflict-free, so retries converge immediately. If nothing new was produced, the push is a logged no-op.
 
-**Sync failure never aborts generation.** Network down, auth expired, an unexpected conflict — every failure is logged and the loop continues. A machine that cannot reach GitHub keeps generating locally and catches up on its next successful sync. Dedup is therefore *eventual*: a machine dedups only against ideas it has already pulled, so two machines can briefly produce similar ideas within a sync window. That is the accepted tradeoff of git-only coordination.
+**Sync failure never aborts generation.** Network down, auth expired, an unexpected conflict — every failure is logged and the loop continues. A machine that cannot reach GitHub keeps generating locally and catches up on its next successful sync. Slot-pool uniqueness is local to each machine's SQLite database; global cross-machine uniqueness requires a shared claim store, not git-merging SQLite state. The `dedup/` shards remain historical metadata and are not the slot-filling mechanism.
 
 ### Watching the pool
 
@@ -226,7 +234,7 @@ A pool can mix Windows and macOS machines. The repo ships a `.gitattributes` tha
 | `sync_pull: working tree has tracked changes; skipping` | You have uncommitted tracked edits on the checkout. Commit, stash, or revert them; the next cycle will sync. A common cause is editing the tracked `settings.toml` — move per-machine settings to `settings.local.toml`. |
 | `sync_push: working tree is on '...', not the pool branch` | `sync_pull` skipped (dirty tree), so the loop never reached the pool branch. `sync_push` correctly refuses to commit to the wrong branch — resolve the tracked changes and sync resumes. |
 | `sync_push: push still failing after N retries` | The remote is unreachable or auth expired. Generation continues; fix git auth and the next cycle catches up. Raise `push_retries` if your pool is very large and pushes collide often. |
-| Two machines produced near-identical ideas | Expected within a sync window — dedup is eventual. It self-corrects as shards propagate. |
+| Two machines produced near-identical ideas | Slot-pool claims are local per machine. For cross-machine uniqueness, use a shared claim store or run one factory writer. |
 | A generated strategy is missing from a run | A `gen_*.py` that fails to import is skipped (auto-discovery logs its filename and the exception). Check the factory log. |
 
 ---

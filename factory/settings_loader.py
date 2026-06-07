@@ -19,6 +19,7 @@ class Paths:
     output_runs_dir: Path
     dedup_dir: Path
     results_dir: Path
+    slot_pool_db: Path
     factory_log: Path
     tmp_dir: Path
 
@@ -135,6 +136,7 @@ def load_settings(path: Path) -> Settings:
         output_runs_dir=_under_root(p["output_runs_dir"]),
         dedup_dir=_under_root(p["dedup_dir"]),
         results_dir=_under_root(p["results_dir"]),
+        slot_pool_db=_under_root(p.get("slot_pool_db", "factory/data/slot_pool.sqlite")),
         factory_log=_under_root(p["factory_log"]),
         tmp_dir=_under_root(p["tmp_dir"]),
     )

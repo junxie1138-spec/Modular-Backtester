@@ -9,7 +9,7 @@ line for each, then a final verdict:
                              Flask; yfinance is optional)
 - Settings load             (settings.toml + settings.local.toml parse)
 - node_id                   (set, and not the single-machine default)
-- Data directories          (results / dedup / log / tmp are writable)
+- Data directories          (results / dedup / slot-pool / log / tmp are writable)
 - [sync] config             (distributed mode enabled)
 - Generation provider       (resolvable on PATH and - unless skipped -
                              authenticated/responding via a trivial live call)
@@ -116,7 +116,7 @@ def _check_node_id(settings) -> tuple[str, str]:
 
 def _check_writable(settings) -> tuple[str, str]:
     p = settings.paths
-    for d in (p.results_dir, p.dedup_dir, p.factory_log.parent, p.tmp_dir):
+    for d in (p.results_dir, p.dedup_dir, p.slot_pool_db.parent, p.factory_log.parent, p.tmp_dir):
         try:
             d.mkdir(parents=True, exist_ok=True)
             probe = d / ".preflight_write_probe"
@@ -124,7 +124,7 @@ def _check_writable(settings) -> tuple[str, str]:
             probe.unlink()
         except OSError as exc:
             return FAIL, f"cannot write to {d}: {exc}"
-    return PASS, "results / dedup / log / tmp directories are writable"
+    return PASS, "results / dedup / slot-pool / log / tmp directories are writable"
 
 
 def _check_sync_enabled(settings) -> tuple[str, str]:

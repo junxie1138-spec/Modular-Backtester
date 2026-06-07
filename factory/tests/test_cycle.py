@@ -4,7 +4,7 @@ from unittest import mock
 
 import pytest
 
-from factory.cycle import CycleOutcome, run_cycle
+from factory.cycle import run_cycle
 from factory.settings_loader import load_settings
 
 
@@ -32,9 +32,34 @@ def _fake_claude_result(strategy_id: str):
     return GenerationResult(parsed=parsed, cost_usd=0.03, raw_stdout="{}")
 
 
+@pytest.fixture
+def slot_pool_mocks():
+    """Keep cycle tests focused on orchestration, not full pool prepopulation."""
+    from factory.slot_pool import SlotClaim
+
+    claim = SlotClaim(
+        combination_id="claim-1",
+        claimed_by="local",
+        claimed_at=1715800000,
+        slots={
+            "strategy_family": "momentum",
+            "signal_primitive": "close-to-close returns",
+            "holding_horizon": "3-5 days",
+            "direction": "long-only",
+            "exit_rule": "fixed-bar exit (exit exactly N bars after entry, no signal-based exit)",
+            "constraint_twist": "<=2 tunable params",
+            "inspiration_anchor": "hysteresis control",
+        },
+    )
+    with mock.patch("factory.cycle.claim_slot_combination", return_value=claim) as claim_slot, \
+         mock.patch("factory.cycle.consume_slot_combination") as consume_slot:
+        yield claim, claim_slot, consume_slot
+
+
 def test_generation_failure_writes_failed_record_and_no_dedup_entry(
-    tmp_settings_file: Path, tmp_path: Path,
+    tmp_settings_file: Path, tmp_path: Path, slot_pool_mocks,
 ) -> None:
+    claim, claim_slot, consume_slot = slot_pool_mocks
     _seed_backtester_tree(tmp_path)
     s = load_settings(tmp_settings_file)
     from factory.generate import GenerationError
@@ -50,11 +75,22 @@ def test_generation_failure_writes_failed_record_and_no_dedup_entry(
     assert len(records) == 1
     assert records[0]["status"] == "failed"
     assert records[0]["failed_stage"] == "generation"
+    claim_slot.assert_called_once()
+    consume_slot.assert_called_once_with(
+        s.paths.slot_pool_db,
+        combination_id=claim.combination_id,
+        claimed_by=claim.claimed_by,
+        claimed_at=claim.claimed_at,
+        strategy_id=None,
+        outcome_status="failed",
+        failed_stage="generation",
+    )
 
 
 def test_validation_failure_writes_dedup_but_no_files(
-    tmp_settings_file: Path, tmp_path: Path,
+    tmp_settings_file: Path, tmp_path: Path, slot_pool_mocks,
 ) -> None:
+    claim, _claim_slot, consume_slot = slot_pool_mocks
     _seed_backtester_tree(tmp_path)
     s = load_settings(tmp_settings_file)
     fake = _fake_claude_result("gen_cycle_test")
@@ -72,11 +108,21 @@ def test_validation_failure_writes_dedup_but_no_files(
     # No strategy file or config was written (validation failed before write).
     assert not (s.paths.strategies_dir / "gen_local_1715800000.py").exists()
     assert not (s.paths.configs_dir / "gen_local_1715800000.yaml").exists()
+    consume_slot.assert_called_once_with(
+        s.paths.slot_pool_db,
+        combination_id=claim.combination_id,
+        claimed_by=claim.claimed_by,
+        claimed_at=claim.claimed_at,
+        strategy_id="gen_local_1715800000",
+        outcome_status="failed",
+        failed_stage="validation",
+    )
 
 
 def test_complete_cycle_writes_files_and_record(
-    tmp_settings_file: Path, tmp_path: Path,
+    tmp_settings_file: Path, tmp_path: Path, slot_pool_mocks,
 ) -> None:
+    claim, _claim_slot, consume_slot = slot_pool_mocks
     _seed_backtester_tree(tmp_path)
     s = load_settings(tmp_settings_file)
 
@@ -127,6 +173,7 @@ def test_complete_cycle_writes_files_and_record(
     assert outcome.status == "complete"
     assert call_generator.call_args.kwargs["provider"] == "claude"
     assert call_generator.call_args.kwargs["cmd"] == "claude"
+    assert "Strategy family:" in call_generator.call_args.kwargs["prompt"]
     assert outcome.failed_stage is None
     # Strategy + config written.
     assert (s.paths.strategies_dir / "gen_local_1715800000.py").exists()
@@ -136,6 +183,15 @@ def test_complete_cycle_writes_files_and_record(
     rec = read_records(s.paths.results_dir)[0]
     assert rec["status"] == "complete"
     assert rec["wfo"]["oos_sharpe"] == 1.25
+    consume_slot.assert_called_once_with(
+        s.paths.slot_pool_db,
+        combination_id=claim.combination_id,
+        claimed_by=claim.claimed_by,
+        claimed_at=claim.claimed_at,
+        strategy_id="gen_local_1715800000",
+        outcome_status="complete",
+        failed_stage=None,
+    )
     # Test settings have no telegram creds, so alerted=False.
     assert rec["alerted"] is False
     # gen.usage threads through to the record's generation_tokens field.
@@ -145,8 +201,9 @@ def test_complete_cycle_writes_files_and_record(
 
 
 def test_stage_failure_writes_failed_record_keeps_dedup_and_files(
-    tmp_settings_file: Path, tmp_path: Path,
+    tmp_settings_file: Path, tmp_path: Path, slot_pool_mocks,
 ) -> None:
+    claim, _claim_slot, consume_slot = slot_pool_mocks
     _seed_backtester_tree(tmp_path)
     s = load_settings(tmp_settings_file)
 
@@ -181,11 +238,21 @@ def test_stage_failure_writes_failed_record_keeps_dedup_and_files(
     # The strategy file IS present (orphan accepted); the registry is no
     # longer edited per-strategy — it auto-discovers gen_*.py at import.
     assert (s.paths.strategies_dir / "gen_local_1715800000.py").exists()
+    consume_slot.assert_called_once_with(
+        s.paths.slot_pool_db,
+        combination_id=claim.combination_id,
+        claimed_by=claim.claimed_by,
+        claimed_at=claim.claimed_at,
+        strategy_id="gen_local_1715800000",
+        outcome_status="failed",
+        failed_stage="backtest",
+    )
 
 
 def test_screened_out_skips_wfo_and_promotion(
-    tmp_settings_file: Path, tmp_path: Path,
+    tmp_settings_file: Path, tmp_path: Path, slot_pool_mocks,
 ) -> None:
+    claim, _claim_slot, consume_slot = slot_pool_mocks
     _seed_backtester_tree(tmp_path)
     s = load_settings(tmp_settings_file)
 
@@ -232,10 +299,19 @@ def test_screened_out_skips_wfo_and_promotion(
     assert outcome.record["wfo"] is None
     assert outcome.record["promotion"] is None
     assert "0.500" in outcome.record["screen_reason"]
+    consume_slot.assert_called_once_with(
+        s.paths.slot_pool_db,
+        combination_id=claim.combination_id,
+        claimed_by=claim.claimed_by,
+        claimed_at=claim.claimed_at,
+        strategy_id="gen_local_1715800000",
+        outcome_status="complete",
+        failed_stage=None,
+    )
 
 
 def test_cycle_strategy_id_includes_node_id(
-    tmp_settings_file: Path, tmp_path: Path,
+    tmp_settings_file: Path, tmp_path: Path, slot_pool_mocks,
 ) -> None:
     """The minted strategy id is gen_<node_id>_<unix-second>."""
     _seed_backtester_tree(tmp_path)

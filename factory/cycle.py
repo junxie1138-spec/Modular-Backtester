@@ -8,7 +8,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Optional
 
-from factory.dedup import append_summary, read_tail
+from factory.dedup import append_summary
 from factory.filesystem import (
     pick_unused_strategy_id,
     write_strategy_artifacts,
@@ -20,7 +20,11 @@ from factory.promote import PromotionResult, promote_strategy
 from factory.prompt import build_prompt
 from factory.results import build_failed_record, build_record, write_record
 from factory.settings_loader import Settings
-from factory.slots import pull_slots
+from factory.slot_pool import (
+    SlotClaim,
+    claim_slot_combination,
+    consume_slot_combination,
+)
 from factory.stages import (
     StageError,
     StageResult,
@@ -64,6 +68,18 @@ def _notify_cfg(s: Settings) -> NotifyConfig:
     )
 
 
+def _consume_claim(settings: Settings, claim: SlotClaim, rec: dict[str, Any]) -> None:
+    consume_slot_combination(
+        settings.paths.slot_pool_db,
+        combination_id=claim.combination_id,
+        claimed_by=claim.claimed_by,
+        claimed_at=claim.claimed_at,
+        strategy_id=rec.get("strategy_id"),
+        outcome_status=rec["status"],
+        failed_stage=rec["failed_stage"],
+    )
+
+
 def run_cycle(settings: Settings, *, rng: random.Random) -> CycleOutcome:
     """Execute one full cycle (§3 steps 1-17) and return the outcome.
 
@@ -73,13 +89,17 @@ def run_cycle(settings: Settings, *, rng: random.Random) -> CycleOutcome:
     """
     s = settings
     paths = s.paths
-    slots = pull_slots(rng)
+    claim: SlotClaim = claim_slot_combination(
+        paths.slot_pool_db,
+        rng=rng,
+        node_id=s.node_id,
+    )
+    slots = claim.slots
     ts = _iso_now()
     base_strategy_id = f"gen_{s.node_id}_{_now_unix_int()}"
-    # Step 1-3: slots + dedup tail + prompt.
-    dedup_tail = read_tail(paths.dedup_dir, n=30)
+    # Step 1-3: claim slots from the precomputed pool + build prompt.
     strategy_id = pick_unused_strategy_id(base_strategy_id, strategies_dir=paths.strategies_dir)
-    prompt = build_prompt(strategy_id=strategy_id, slots=slots, dedup_tail=dedup_tail)
+    prompt = build_prompt(strategy_id=strategy_id, slots=slots)
     log.info("cycle start id=%s slots=%s", strategy_id, slots)
 
     # Step 4-5: generate + parse.
@@ -97,6 +117,7 @@ def run_cycle(settings: Settings, *, rng: random.Random) -> CycleOutcome:
             generation_cost_usd=0.0, failed_stage="generation", error=str(exc),
         )
         write_record(paths.results_dir, rec, node_id=s.node_id)
+        _consume_claim(s, claim, rec)
         log.warning("cycle id=%s generation failed: %s", strategy_id, exc)
         return CycleOutcome(status="failed", failed_stage="generation",
                             strategy_id=None, record=rec)
@@ -135,6 +156,7 @@ def run_cycle(settings: Settings, *, rng: random.Random) -> CycleOutcome:
             failed_stage="validation", error=str(exc),
         )
         write_record(paths.results_dir, rec, node_id=s.node_id)
+        _consume_claim(s, claim, rec)
         log.warning("cycle id=%s validation failed: %s", strategy_id, exc)
         return CycleOutcome(status="failed", failed_stage="validation",
                             strategy_id=strategy_id, record=rec)
@@ -191,6 +213,7 @@ def run_cycle(settings: Settings, *, rng: random.Random) -> CycleOutcome:
                 optimize=opt.parsed if opt else None,
             )
             write_record(paths.results_dir, rec, node_id=s.node_id)
+            _consume_claim(s, claim, rec)
             log.warning("cycle id=%s stage=%s failed: %s", strategy_id, stage_name, exc)
             return CycleOutcome(status="failed", failed_stage=stage_name,
                                 strategy_id=strategy_id, record=rec)
@@ -261,6 +284,7 @@ def run_cycle(settings: Settings, *, rng: random.Random) -> CycleOutcome:
     rec["alerted"] = bool(notify_result.sent)
 
     write_record(paths.results_dir, rec, node_id=s.node_id)
+    _consume_claim(s, claim, rec)
     log.info("cycle id=%s complete oos_sortino=%s screened=%s alerted=%s",
              strategy_id,
              wfo.parsed.get("oos_sortino") if wfo is not None else "n/a",

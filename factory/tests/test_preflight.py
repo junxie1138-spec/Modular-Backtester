@@ -10,6 +10,7 @@ from factory.scripts.preflight import (
     WARN,
     _check_generation_provider,
     _check_hourly_dataset,
+    _check_writable,
 )
 
 
@@ -54,6 +55,22 @@ def test_check_hourly_dataset_fails_when_spy_missing(tmp_path: Path) -> None:
     status, detail = _check_hourly_dataset(_settings(tmp_path))
     assert status == FAIL
     assert "no SPY entry" in detail
+
+
+def test_check_writable_includes_slot_pool_parent(tmp_path: Path) -> None:
+    settings = SimpleNamespace(
+        paths=SimpleNamespace(
+            results_dir=tmp_path / "results",
+            dedup_dir=tmp_path / "dedup",
+            slot_pool_db=tmp_path / "slot_pool" / "slot_pool.sqlite",
+            factory_log=tmp_path / "logs" / "factory.log",
+            tmp_dir=tmp_path / "tmp",
+        )
+    )
+    status, detail = _check_writable(settings)
+    assert status == PASS
+    assert (tmp_path / "slot_pool").is_dir()
+    assert "slot-pool" in detail
 
 
 def test_check_generation_provider_accepts_codex_plain_stdout() -> None:

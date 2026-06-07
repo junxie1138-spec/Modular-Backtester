@@ -24,6 +24,7 @@ registry_file    = "backtester/strategies/registry.py"
 output_runs_dir  = "output/runs"
 dedup_dir        = "{(tmp_path / 'dedup').as_posix()}"
 results_dir      = "{(tmp_path / 'results').as_posix()}"
+slot_pool_db     = "{(tmp_path / 'slot_pool.sqlite').as_posix()}"
 factory_log      = "{(tmp_path / 'factory.log').as_posix()}"
 tmp_dir          = "{(tmp_path / '_tmp').as_posix()}"
 
