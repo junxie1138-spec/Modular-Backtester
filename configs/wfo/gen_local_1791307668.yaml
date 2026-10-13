@@ -1,0 +1,27 @@
+run_name: gen_local_1791307668
+strategy: gen_local_1791307668
+strategy_params: {correlation_window: 30, percentile_window: 80, entry_percentile: 0.8, atr_window: 14, stop_atr: 2.0, hold_bars: 8}
+data:
+  symbols: ["SPY"]
+  timeframe: "1d"
+  start: "2015-01-02"
+  end: "2024-12-31"
+  source: "csv"
+  root: "data/raw"
+execution:
+  initial_cash: 100000
+  commission_bps: 2
+  slippage_bps: 5
+  allow_fractional: false
+  allow_short: false
+portfolio:
+  sizing_mode: "percent_equity"
+  size: 0.95
+optimization:
+  objective: sortino
+  param_space: {entry_percentile: [0.7, 0.8, 0.9], stop_atr: [1.5, 2.0, 2.5], hold_bars: [6, 8, 10]}
+wfo:
+  enabled: true
+  train_bars: 756
+  test_bars: 252
+  step_bars: 252

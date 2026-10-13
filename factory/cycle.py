@@ -8,13 +8,14 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Optional
 
-from factory.dedup import append_summary
+from factory.dedup import append_summary, read_tail
+from factory.discovery import record_factory_creation
 from factory.filesystem import (
     pick_unused_strategy_id,
     write_strategy_artifacts,
 )
 from dataclasses import asdict
-from factory.generate import GenerationError, GenerationResult, call_generator
+from factory.generate import GenerationError, GenerationResult, GeneratorUnavailable, call_generator
 from factory.notify import NotifyConfig, extract_metric, maybe_send_alert
 from factory.promote import PromotionResult, promote_strategy
 from factory.prompt import build_prompt
@@ -24,6 +25,7 @@ from factory.slot_pool import (
     SlotClaim,
     claim_slot_combination,
     consume_slot_combination,
+    release_slot_combination,
 )
 from factory.stages import (
     StageError,
@@ -44,7 +46,7 @@ log = logging.getLogger(__name__)
 
 @dataclass(slots=True, frozen=True)
 class CycleOutcome:
-    status: str                     # "complete" | "failed"
+    status: str                     # "complete" | "failed" | "skipped_duplicate"
     failed_stage: Optional[str]
     strategy_id: Optional[str]
     record: dict[str, Any]
@@ -99,7 +101,9 @@ def run_cycle(settings: Settings, *, rng: random.Random) -> CycleOutcome:
     base_strategy_id = f"gen_{s.node_id}_{_now_unix_int()}"
     # Step 1-3: claim slots from the precomputed pool + build prompt.
     strategy_id = pick_unused_strategy_id(base_strategy_id, strategies_dir=paths.strategies_dir)
-    prompt = build_prompt(strategy_id=strategy_id, slots=slots)
+    recent_summaries = read_tail(paths.dedup_dir, n=30)
+    prompt = build_prompt(strategy_id=strategy_id, slots=slots,
+                          recent_summaries=recent_summaries)
     log.info("cycle start id=%s slots=%s", strategy_id, slots)
 
     # Step 4-5: generate + parse.
@@ -117,8 +121,13 @@ def run_cycle(settings: Settings, *, rng: random.Random) -> CycleOutcome:
             generation_cost_usd=0.0, failed_stage="generation", error=str(exc),
         )
         write_record(paths.results_dir, rec, node_id=s.node_id)
-        _consume_claim(s, claim, rec)
+        release_slot_combination(
+            paths.slot_pool_db, combination_id=claim.combination_id,
+            claimed_by=claim.claimed_by, claimed_at=claim.claimed_at,
+        )
         log.warning("cycle id=%s generation failed: %s", strategy_id, exc)
+        if isinstance(exc, GeneratorUnavailable):
+            raise
         return CycleOutcome(status="failed", failed_stage="generation",
                             strategy_id=None, record=rec)
 
@@ -131,6 +140,20 @@ def run_cycle(settings: Settings, *, rng: random.Random) -> CycleOutcome:
         "failure_mode": parsed["failure_mode"],
         "allow_short": bool(parsed["allow_short"]),
     }
+
+    if " ".join(parsed["one_line_summary"].split()).casefold() in {
+        " ".join(summary.split()).casefold() for summary in recent_summaries
+    }:
+        rec = build_failed_record(
+            strategy_id=strategy_id, timestamp=ts, slots=slots, idea=idea,
+            generation_cost_usd=cost, generation_tokens=gen.usage,
+            failed_stage="duplicate", error="recent summary already exists",
+        )
+        rec["status"] = "skipped_duplicate"
+        write_record(paths.results_dir, rec, node_id=s.node_id)
+        _consume_claim(s, claim, rec)
+        return CycleOutcome(status="skipped_duplicate", failed_stage="duplicate",
+                            strategy_id=strategy_id, record=rec)
 
     # Step 6: dedup-log append (BEFORE validation, BEFORE stages — §3.2).
     append_summary(paths.dedup_dir, parsed["one_line_summary"], node_id=s.node_id)
@@ -171,6 +194,10 @@ def run_cycle(settings: Settings, *, rng: random.Random) -> CycleOutcome:
     )
 
     canonical_cfg = paths.configs_dir / f"{strategy_id}.yaml"
+    try:
+        record_factory_creation(paths.backtester_root, strategy_id)
+    except Exception:
+        log.exception("discovery creation ledger write failed for %s", strategy_id)
 
     # Step 11-13: run the three stages sequentially.
     bt: Optional[StageResult] = None

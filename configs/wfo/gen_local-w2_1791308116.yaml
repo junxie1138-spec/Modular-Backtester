@@ -1,0 +1,27 @@
+run_name: gen_local-w2_1791308116
+strategy: gen_local-w2_1791308116
+strategy_params: {slope_window: 6, noise_window: 20, baseline_window: 12, atr_window: 14, innovation_z: 0.20, floor_atr: 0.35, breakeven_pct: 0.008, trail_atr: 1.8, hold_bars: 4}
+data:
+  symbols: ["SPY"]
+  timeframe: "1d"
+  start: "2015-01-02"
+  end: "2024-12-31"
+  source: "csv"
+  root: "data/raw"
+execution:
+  initial_cash: 100000
+  commission_bps: 2
+  slippage_bps: 5
+  allow_fractional: false
+  allow_short: false
+portfolio:
+  sizing_mode: "percent_equity"
+  size: 0.95
+optimization:
+  objective: sortino
+  param_space: {innovation_z: [0.12, 0.20, 0.28], floor_atr: [0.15, 0.35, 0.55], trail_atr: [1.4, 1.8, 2.2]}
+wfo:
+  enabled: true
+  train_bars: 756
+  test_bars: 252
+  step_bars: 252

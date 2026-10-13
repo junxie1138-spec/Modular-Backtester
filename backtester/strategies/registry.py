@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import importlib
+import importlib.util
 import logging
+import os
 from pathlib import Path
 from typing import Dict, Type
 
@@ -21,6 +23,17 @@ def register_strategy(cls: Type[BaseStrategy]) -> Type[BaseStrategy]:
 
 
 def get_strategy_class(strategy_id: str) -> Type[BaseStrategy]:
+    if strategy_id not in STRATEGY_REGISTRY and os.environ.get("DISCOVERY_STRATEGY_DIR"):
+        path = Path(os.environ["DISCOVERY_STRATEGY_DIR"]) / f"{strategy_id}.py"
+        if path.is_file() and path.stem == strategy_id:
+            spec = importlib.util.spec_from_file_location(f"discovery_{strategy_id}", path)
+            if spec is None or spec.loader is None:
+                raise ImportError(f"cannot load discovery strategy: {path}")
+            module = importlib.util.module_from_spec(spec)
+            import sys
+            sys.modules[spec.name] = module
+            spec.loader.exec_module(module)
+            register_strategy(module.GeneratedStrategy)
     if strategy_id not in STRATEGY_REGISTRY:
         raise KeyError(
             f"Strategy {strategy_id!r} is not registered. "

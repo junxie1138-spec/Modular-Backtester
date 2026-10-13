@@ -9,6 +9,7 @@
       data-threshold-metric="{{ summary.threshold_metric }}"
       data-threshold-value="{{ summary.threshold_value }}">
   <h1>Strategy Factory — overview</h1>
+  <p id="refresh-status" role="status">Waiting for refresh.</p>
   <div class="banner">
     All "good" flags and Telegram alerts in this dashboard are
     <strong>shortlist signals, not verdicts</strong>. WFO mitigates but does not
@@ -19,8 +20,9 @@
   <div class="counters" id="counters">
     <span>Total cycles: <strong id="c-total">{{ summary.total_cycles }}</strong></span>
     <span>Completes: <strong id="c-complete">{{ summary.completes }}</strong></span>
-    <span>Failures: <strong id="c-failures">{{ summary.total_cycles - summary.completes }}</strong>
+    <span>Failures: <strong id="c-failures">{{ summary.failures_by_stage.values()|sum }}</strong>
       ({% for stage, n in summary.failures_by_stage.items() %}{{ stage }}={{ n }}{% if not loop.last %}, {% endif %}{% endfor %})</span>
+    <span>Duplicates skipped: <strong id="c-duplicates">{{ summary.skipped_duplicates }}</strong></span>
     <span>Above threshold ({{ summary.threshold_metric }} &gt; {{ summary.threshold_value }}):
       <strong id="c-above">{{ summary.above_threshold }}</strong></span>
     <span>Promoted: <strong id="c-promoted">{{ summary.promoted }}</strong> / {{ summary.promotion_attempted }} attempted</span>
@@ -62,6 +64,24 @@
         <td>{{ '*' if r.is_promoted else '' }}</td>
         <td>{{ '*' if r.alerted else '' }}</td>
       </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <h2>Discovery candidates</h2>
+  <table id="discovery">
+    <thead>
+      <tr><th>Candidate ID</th><th>Source</th><th>Idea</th><th>Status</th><th>OOS Sortino</th><th>Gates</th><th>Error</th></tr>
+    </thead>
+    <tbody id="discovery-body">
+      {% for c in discovery_candidates %}
+      <tr>
+        <td>{{ c.id }}</td><td>{{ c.source_id }}</td><td>{{ c.idea or '' }}</td><td>{{ c.status }}</td>
+        <td>{{ "%.3f"|format(c.oos_sortino) if c.oos_sortino is not none else '' }}</td>
+        <td>{{ (c.gates.values()|select|list|length) ~ '/' ~ (c.gates|length) if c.gates else '' }}</td>
+        <td>{{ c.error or '' }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="7">No discovery candidates yet.</td></tr>
       {% endfor %}
     </tbody>
   </table>

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import subprocess
 import sys
 from dataclasses import dataclass
@@ -109,6 +110,7 @@ class StageResult:
 
 def build_stage_config(
     *, canonical_path: Path, strategy_id: str, stage: str, tmp_dir: Path,
+    overrides: dict[str, Any] | None = None,
 ) -> Path:
     """Clone the canonical YAML to <tmp_dir>/<strategy_id>/<stage>.yaml with
     `run_name` rewritten so each stage's output bundle is distinct (R2).
@@ -120,6 +122,11 @@ def build_stage_config(
         raise StageError(f"canonical config is not a mapping: {canonical_path}")
     suffix = STAGE_SUFFIX[stage]
     raw["run_name"] = f"{strategy_id}{suffix}"
+    for key, value in (overrides or {}).items():
+        if isinstance(value, dict) and isinstance(raw.get(key), dict):
+            raw[key].update(value)
+        else:
+            raw[key] = value
     out_dir = tmp_dir / strategy_id
     out_dir.mkdir(parents=True, exist_ok=True)
     out_path = out_dir / f"{stage}.yaml"
@@ -136,6 +143,8 @@ def _run_stage(
     tmp_dir: Path,
     timeout_sec: int,
     backtester_root: Path | None = None,
+    overrides: dict[str, Any] | None = None,
+    strategy_dir: Path | None = None,
 ) -> StageResult:
     """Internal: run one stage subprocess and parse its summary.json."""
     stage_cfg = build_stage_config(
@@ -143,9 +152,15 @@ def _run_stage(
         strategy_id=strategy_id,
         stage=stage,
         tmp_dir=tmp_dir,
+        overrides=overrides,
     )
     cmd = [sys.executable, "-m", STAGE_MODULE[stage], "--config", str(stage_cfg)]
     log.info("running stage=%s cmd=%s", stage, cmd)
+    env = os.environ.copy()
+    env["BACKTESTER_OUTPUT_ROOT"] = str(output_runs_dir.resolve())
+    env.setdefault("BACKTESTER_SAVE_HISTORY", "0")
+    if strategy_dir is not None:
+        env["DISCOVERY_STRATEGY_DIR"] = str(strategy_dir.resolve())
     try:
         proc = subprocess.run(
             cmd,
@@ -155,6 +170,7 @@ def _run_stage(
             check=False,
             cwd=str(backtester_root) if backtester_root else None,
             encoding="utf-8",
+            env=env,
         )
     except subprocess.TimeoutExpired as exc:
         raise StageError(f"stage={stage} timed out after {timeout_sec}s") from exc

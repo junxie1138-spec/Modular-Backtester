@@ -1,5 +1,8 @@
 import json
+import sqlite3
+import webbrowser
 from pathlib import Path
+from unittest import mock
 
 import pytest
 
@@ -62,6 +65,49 @@ def test_overview_html_renders(app_with_records) -> None:
     assert "shortlist signal" in body.lower() or "shortlist" in body.lower()
 
 
+@pytest.mark.parametrize("browser_mode", ["open", "disabled", "failed"])
+def test_dashboard_command_opens_browser_and_reads_factory_writes(
+    app_with_records, tmp_settings_file: Path, browser_mode: str,
+) -> None:
+    from factory.dashboard.server import main
+    from factory.results import write_record
+
+    _, settings = app_with_records
+    tmp_settings_file.write_text(tmp_settings_file.read_text().replace("port             = 8787", "port             = 8788"))
+    server = mock.MagicMock()
+    server.__enter__.return_value = server
+    server.server_port = 8788
+
+    def serve():
+        app = bind.call_args.args[2]
+        client = app.test_client()
+        before = client.get("/api/summary").get_json()["total_cycles"]
+        write_record(settings.paths.results_dir, {"strategy_id": "gen_live", "status": "complete"}, node_id="local")
+        assert client.get("/api/summary").get_json()["total_cycles"] == before + 1
+        assert client.get("/api/records").get_json()[-1]["strategy_id"] == "gen_live"
+
+    def open_browser(url):
+        assert bind.called, "Bind the server before opening the browser"
+        if browser_mode == "failed":
+            raise webbrowser.Error("browser unavailable")
+        return True
+
+    server.serve_forever.side_effect = serve
+    args = ["--settings", str(tmp_settings_file)]
+    if browser_mode == "disabled":
+        args.append("--no-browser")
+    with mock.patch("factory.dashboard.server.make_server", return_value=server) as bind, \
+         mock.patch("factory.dashboard.server.webbrowser.open", side_effect=open_browser) as browser:
+        assert main(args) == 0
+        assert bind.call_args.args[:2] == ("127.0.0.1", 8788)
+        assert bind.call_args.kwargs == {"threaded": True}
+        if browser_mode == "disabled":
+            browser.assert_not_called()
+        else:
+            browser.assert_called_once_with("http://127.0.0.1:8788/")
+        server.serve_forever.assert_called_once()
+
+
 def test_api_records_returns_jsonl(app_with_records) -> None:
     client, _ = app_with_records
     resp = client.get("/api/records")
@@ -70,6 +116,31 @@ def test_api_records_returns_jsonl(app_with_records) -> None:
     assert isinstance(data, list)
     assert len(data) == 3
     assert data[0]["strategy_id"] == "gen_1"
+
+
+def test_discovery_candidates_appear_on_dashboard(app_with_records) -> None:
+    client, settings = app_with_records
+    path = settings.paths.backtester_root / "discovery/state.sqlite"
+    path.parent.mkdir(parents=True)
+    with sqlite3.connect(path) as db:
+        db.execute("CREATE TABLE candidates (id TEXT, source_id TEXT, status TEXT, evidence TEXT, attempts TEXT, error TEXT)")
+        db.execute("INSERT INTO candidates VALUES (?,?,?,?,?,?)", (
+            "disc_42", "gen_1", "shortlisted",
+            json.dumps({"analysis": {"summary": "new SPY idea"},
+                        "wfo": {"parsed": {"oos_sortino": 1.25}},
+                        "gates": {"novelty": True, "wfo": True, "stress": False}}),
+            "{}", None,
+        ))
+
+    body = client.get("/").get_data(as_text=True)
+    assert "disc_42" in body
+    assert "new SPY idea" in body
+    assert "1.250" in body
+    assert "2/3" in body
+    candidates = client.get("/api/discovery").get_json()
+    assert candidates[0]["id"] == "disc_42"
+    assert candidates[0]["status"] == "shortlisted"
+    assert client.get("/api/summary").get_json()["total_cycles"] == 3
 
 
 def test_api_summary_aggregates_counts(app_with_records) -> None:
@@ -86,6 +157,15 @@ def test_api_summary_aggregates_counts(app_with_records) -> None:
     assert data["cumulative_spend_usd"] == pytest.approx(0.05)
     assert data["threshold_metric"] == "wfo.oos_sharpe"
     assert data["threshold_value"] == 1.0
+
+
+def test_duplicate_is_not_counted_as_failure() -> None:
+    from factory.dashboard.server import _aggregate
+
+    summary = _aggregate([{"status": "skipped_duplicate", "failed_stage": "duplicate"}],
+                         "wfo.oos_sortino", 1.0)
+    assert summary["skipped_duplicates"] == 1
+    assert summary["failures_by_stage"] == {}
 
 
 def test_detail_view_renders_complete_record(app_with_records) -> None:

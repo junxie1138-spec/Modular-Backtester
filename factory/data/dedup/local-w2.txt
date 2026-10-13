@@ -1,0 +1,1317 @@
+1790940013	Trades percentile-extreme overnight gaps inverted through the previous close, sizing by gap rarity and reversal depth.
+1790940338	Trades twice-confirmed acceleration divergence between overnight gap pressure and closing returns, with breakeven ATR trails and eighteen-session expiry.
+1790940594	Buys mild latent-slope recoil after slope-floor uplift, scaling exposure by retained deformation with fixed entry-ATR stops.
+1790940761	Trades percentile-extreme drawdowns using nearest historical depth trajectories, with two-session expiry and breakeven ATR ratchets.
+1790940925	Separates genuine drawdown repairs from apparent recoveries caused by expiring peaks, trading opposite directions for two sessions.
+1790941040	Buys twice-confirmed positive fractional-close autoregressive forecasts, holding two sessions with a ratcheting ATR high-water stop.
+1790941310	Fades turning fractional-close extremes with excursion-scaled exposure, fixed entry ATR stops, and four-session expiry.
+1790941485	Buys deep, overnight-dominated drawdowns after partial gap stabilization, scaling exposure by depth and recovery with ratcheting ATR exits.
+1790941749	Fades changes in signed return variance, targeting volatility with conviction-scaled exposure and opposite-pressure exits.
+1790941894	Trades accelerating returns toward unused channel space, scales exposure by acceleration and remaining room, and ratchets breakeven ATR stops.
+1790942112	Buys upward escapes from compressed deep-drawdown bands, with fixed entry-ATR stops and eight-session expiry.
+1790942264	Trades one-sided range expansion after a compressed session, requiring an extreme close and holding exactly four sessions.
+1790961738	Matches gap–intraday signature areas to matured historical analogs, buying percentile-ranked four-session forecasts until the entry condition reverses.
+1790961881	Buys deep drawdowns when negative second-lag depth autocorrelation forecasts next-session repair; exits when that condition reverses.
+1790961990	Trades overnight gap mean changepoints confirmed by intraday return mean shifts, holding exactly eight sessions.
+1790962215	Trades percentile-ranked wick asymmetry changepoints within the 200-day trend, using breakeven ATR ratchets and two-session expiry.
+1790962511	Trades dominant lag-two fractional-close echoes confirmed by candle-body direction, holding exactly two sessions.
+1790962651	Buys negative-gap triplets with profitable historical analogs only when bullish closing pressure confirms, using two-session trailing exits.
+1790962882	Trades inward z-score crossings during range compression within the 200-day trend, with fixed entry-ATR stops and eight-session holds.
+1790963015	Fades failed second pushes in moving-average distance after a post-spike pause, with breakeven ATR ratchets and two-session expiry.
+1790963215	Buys expanding bullish visibility-graph connectivity, scales exposure by topology strength, and exits through ratcheting ATR stops or four-session expiry.
+1790963353	Trades under-assimilated overnight gaps aligned with fractional-close pressure, scaling exposure by gap magnitude and pressure.
+1790963733	Buys selling-pressure rebounds after ordinal complexity collapses into disorder, scaling exposure and applying breakeven ATR ratchets.
+1790964044	Buys accumulated z-score overflow, switching between trend continuation and stationary-center discount recovery, with conviction sizing and four-session holds.
+1790964269	Trades percentile-extreme relative position when ordinal entropy–concentration complexity rises, using ratcheting high-water exits and four-session holds.
+1790964637	Buys variance-before-gains signature areas after two confirmations, targets volatility, and holds eighteen sessions with fixed entry-ATR stops.
+1790964773	Trades volatility-amplified month-turn buying and midmonth selling within the 200-day regime, with ratcheting high-water exits.
+1790965057	Trades compressed drawdown-shelf breakouts within the 200-day regime, using breakeven ATR ratchets and four-session expiry.
+1790965261	Buys short-window drawdowns only during volume depletion, exiting when either discount or depletion disappears.
+1790965474	Fades accumulated standardized overnight-gap surprises above the 200-day average, exiting when gap pressure reverses through hysteresis.
+1790965744	Buys unfilled upside gaps emerging after overnight dormancy, with breakeven ATR ratchets and eighteen-session expiry.
+1790965952	Buys distributed return gains after removing the largest advance, with strength-scaled volatility targeting and two-session breakeven trails.
+1790966145	Buys emerging downside-gap return superiority above the 200-day average, with breakeven ATR trails and eighteen-session expiry.
+1790966330	Buys early-week rebounds when downside Haar wavelet energy concentrates at the eight-session scale; exits on profit or expiry.
+1790966576	Range-overlap percentile regimes switch upside–downside signature-area rotations between continuation and reversal, holding eighteen sessions.
+1790966764	Trades expanding two-close z-score breakouts from a frozen, low-drift moving-average equilibrium with eight-session holds.
+1790966864	Buys percentile-strong weakest-week momentum across four consecutive weeks, exiting when the qualifying momentum floor disappears.
+1790967026	Targets volatility when daily ordinal diversity exceeds coarse-scale diversity, buying noisy advances with breakeven ATR trails.
+1790967298	Gap-response regimes switch confirmed downside-gap recovery and upside-gap continuation, with four-day expiry and breakeven ATR ratchets.
+1790967540	Buys two volume-confirmed closes reclaiming the historical volume centroid below range resistance, with ratcheting ATR exits.
+1790967692	Fades percentile-extreme drawdown occupancy inside compressed ranges, exiting on profit or eighteen-session expiry.
+1790967841	Buys expanding natural-visibility edge spans confirmed by volume-weighted intraday pressure, exiting on profit or two-session expiry.
+1790967943	Buys partial drawdown recoveries with structured ordinal complexity, scales entry exposure by complexity, and exits after eight sessions.
+1790968089	Buys downside-gap reclaims after low overnight ordinal entropy, with fixed entry-volatility stops and four-session expiry.
+1790968242	Matches signed consecutive-streak shapes to matured historical analogs, requiring two-day forecast agreement before eighteen-session long or short holds.
+1790968362	Buys month-opening rate-of-change acceleration after prior weakness, holding eighteen sessions with ratcheting ATR trailing stops.
+1790968490	Buys twice-confirmed gap-to-session signature rotations showing overnight selling followed by intraday repair; exits when that pattern disappears.
+1790968659	Price–volatility signature rotation switches between efficient-trend expansion and disorderly recovery, requiring two confirmations and fixed ATR stops.
+1790968778	Buys two confirmed positive returns while cumulative return remains deeply negative relative to total price movement; holds four sessions.
+1790968944	Trades drawdown shock dissipation when latent forecast innovations reverse and volume contracts, exiting on opposite recovery signals.
+1790969171	Trades calendar-dependent drawdown asymmetry: buys month-boundary discounts and shorts midmonth peak proximity, scaling exposure by signal strength.
+1790969326	Haar energy regimes switch between accelerating drift and noisy pullback recovery, scaling exposure and holding eighteen sessions.
+1790969467	Fades fresh drawdown and drawup capacity breaches on thin volume, with close-based profit targets and two-session expiry.
+1790969550	Trades expanding-range escapes from persistent overlapping auctions, with breakeven activation, ratcheting ATR stops, and ten-session expiry.
+1790969694	Trades changepoints in dual horizontal-visibility return topology, scaling exposure by shock strength and holding four sessions.
+1790969808	Buys volume-confirmed surviving upside gaps; exits when mirrored downside gap persistence dominates an eight-session auction window.
+1790970104	Fades natural-visibility triangle imbalance after price turns, scaling exposure and using breakeven-to-ATR exits with eighteen-session expiry.
+1790970239	Trades streak-conditioned persistence exceeding baseline autocorrelation, switching between continuation and exhaustion with ratcheting exits and eight-session expiry.
+1790970475	Trades volume-conditioned return-pair persistence with directional flow coherence, holding until a twice-confirmed opposite signal.
+1790970706	Buys percentile-extreme drawdowns when negative latent slopes produce unexpectedly positive curvature innovations, with fixed ATR stops and four-session expiry.
+1790970847	Fades single-day over-erasure of three consecutive gains, sizing by excess reversal magnitude with breakeven trailing exits.
+1790971019	Trades compressed auctions when price–volume-flow signature area reveals directional pressure arriving before price displacement.
+1790971142	Follows synchronized return-quantile migration and fades distribution widening, with eighteen-session holds and breakeven ATR ratchets.
+1790971304	Matches historical slope-innovation waveforms and trades their subsequent drift when analog forecasts exceed rolling conviction percentiles.
+1790971445	Trades persistent price moves backed by volume exceeding weekday seasonal norms, exiting on symmetric opposite pressure.
+1790971592	Fades partially rejected overnight gaps when rare ordinal patterns disrupt low-complexity gap sequences, holding four sessions.
+1790971783	Buys persistent positive price rank among horizontal-visibility neighbors, weighting distant connections and scaling exposure by conviction.
+1790971942	Fades mirrored natural-visibility reach imbalance only when intraday closing position confirms rejection; exits on opposite joint agreement.
+1790972116	Buys fractional-differenced trend strength AND closing-pressure overflow relative to recent volume capacity; exits when either condition flips.
+1790972253	Trades twice-confirmed latent slope reversals against stale trend expectations, with profit targets and eight-session time stops.
+1790972515	Buys downside gaps that reclaim compressed range floors, scaling exposure by displacement, compression, and recovery strength.
+1790972805	Trades twice-confirmed moderate z-score expansion when price outruns its moving average, using breakeven ATR trails and two-session expiry.
+1790973116	Fades expanded ranges that reject dominant outside excursions, sizing by rejection strength with breakeven ATR trails.
+1790973382	Trades historical moving-average z-score recovery analogs only when volume-weighted intraday pressure agrees, with breakeven ATR trails.
+1790973644	Buys percentile-tail z-score recoveries within compressed ranges while the moving-average anchor remains stable.
+1790973757	Trades gaps escaping compressed ranges only when efficient intraday bodies confirm direction, with profit targets and four-session expiry.
+1790974015	Trades volume-confirmed reclaims or failures of recent sellers’ price basis during drawdowns, scaling conviction and holding eighteen sessions.
+1790974317	Buys heavy-volume declines with unusually low selling impact, scales by absorption strength, and exits through breakeven ATR ratchets.
+1790974532	Trades percentile volatility releases through frozen squeeze boundaries, with ratcheting ATR trails and ten-session expiry.
+1790974697	Trades weekday-specific range elasticity, learning whether directional range expansions unwind or persist over two sessions.
+1790974890	Buys month-turn inflows when causal multiscale Haar energy concentrates in rising slow components, holding eighteen sessions.
+1790974985	Buys positive residuals of alternating overnight gap pairs, scaling exposure by cancellation imbalance and exiting on signal reversal.
+1790975198	Follows percentile-extreme gaps that jump from an opposite quartile across the channel median without breaking its boundaries.
+1790975306	Trades asymmetric range contraction when intraday body direction agrees, holding until opposite joint agreement.
+1790975394	Buys stretched downside streaks upon reversal in negatively autocorrelated markets, with ratcheting ATR trails and eighteen-session expiry.
+1790975595	Fades moving-average z-score extremes when repeated opening-gap failures confirm exhaustion, using ratcheting ATR trails and ten-session expiry.
+1790975786	Trades directional echoes after alternating range shocks, filtered by the 200-day mean, with four-session expiry.
+1790975967	Buys unfilled upward range gaps below the moving-average anchor in a 200-day bull regime, holding two sessions.
+1790976143	Buys twice-confirmed bullish historical analogs matched by price visibility-graph edges, holding exactly eighteen sessions.
+1790976268	Trades consecutive channel-edge residency confirmed by directional wick rejection, with fixed entry-ATR stops and eight-session expiry.
+1790976414	Trades channel escapes after sustained ordinal motif saturation, aligned with the 200-day regime and fixed entry-ATR stops.
+1790976618	Trades autocorrelation forecasts of fractional-close displacement only when three-session candle-pressure echoes agree, with profit targets and four-session expiry.
+1790976798	Buys accelerating upward-gap arrivals confirmed by rising volume participation, holding eighteen sessions with a fixed entry-ATR stop.
+1790976945	Trades quarter-boundary drawdown recovery and renewed deterioration, scaling exposure by drawdown depth with fixed entry-ATR stops.
+1790977104	Fades consecutive intraday streaks partially absorbed by opposing overnight flows, holding exactly eighteen sessions.
+1790977196	Buys Thursday drawdown recoveries exceeding weekday-conditioned historical percentiles, with ratcheting ATR stops and four-session expiry.
+1790977307	Buys consecutive rising daily lows with efficient upward displacement above the 200-day average, using breakeven ATR ratchets.
+1790977529	Trades normalized return-shape analog forecasts over eighteen sessions, holding until confident opposite forecasts trigger an exit.
+1790977659	Trades drawdown rebounds and failed rebounds when reversal volume absorbs accumulated opposing volume, with fixed ATR stops.
+1790977857	Trades percentile-ranked fresh-price territory migration during range compression, exiting only when opposite migration qualifies.
+1790978160	Fades stretched Haar oscillations when short-scale phases oppose and fine-scale energy dominates, with conviction sizing and fixed ATR stops.
+1790978270	Buys consecutive shrinking upside gaps defended above previous closes throughout each session, holding exactly seven sessions.
+1790978479	Trades elastic recovery after return cancellation and volatility compression, opposing dominant shock energy until an opposite setup triggers exit.
+1790978763	Trades candle-pressure drift reversals confirmed by abnormal-volume directional moves, with profit targets and two-session expiry.
+1790978894	Buys upward gaps reclaiming red candle bodies during directional trends, with two-session breakeven ATR ratchets.
+1790979139	Fades consecutive shrinking directional moves on rising volume, scaling exposure by exhaustion strength with fixed entry-ATR stops.
+1790979371	Buys twice-confirmed percentile extremes in downside variance-share migration, with breakeven ATR ratchets and four-session expiry.
+1790979474	Buys twice-confirmed early-week cumulative gap surpluses, exiting when the surplus or Thursday seasonal window reverses.
+1790979711	Trades partially repaired gaps beyond yesterday's range in the 200-day regime direction, holding two sessions.
+1790979844	Trades percentile-extreme shifts between consecutive three-day candle-pressure cohorts, exiting when an opposite cohort shift qualifies.
+1790979954	Trades percentile-rare directional streaks, switching between continuation and reversal according to historical daily-range congestion.
+1790980049	Buys drawdown recoveries when percentile-extreme wavelet energy migrates into medium-scale upside while the coarse shock remains bearish.
+1790980282	Buys twice-confirmed MA z-score shapes whose historical analogs reclaimed their mean before deepening, with fixed ATR stops.
+1790980504	Drawdown occupancy switches fresh selloffs between short contagion and long capitulation, with two-session breakeven ATR ratchets.
+1790980651	Buys gaps across the prior range midpoint after two-bar acceptance, holding exactly four sessions.
+1790980875	Overnight-to-session coupling switches unusually large gaps between continuation and reversal, with profit targets and four-session expiry.
+1790981120	Buys twice-confirmed drawdown repairs after synchronized Haar energy contraction, using breakeven ATR ratchets and twenty-session expiry.
+1790981352	Trades drawdown repair or deepening confirmed by efficient intraday-range migration, with ratcheting ATR exits and four-session expiry.
+1790981671	Trades twice-confirmed channel breakouts when time-price signature area identifies late acceleration, using fixed ATR stops and four-session expiry.
+1790981781	Trades historical outcomes of opposing streak-length shapes, scaling exposure by analog agreement with profit targets and four-day expiry.
+1790982030	Percentile hysteresis switches latent slope innovations between trend continuation and range reversal, with breakeven ATR ratchets.
+1790982210	Trades rolling weekday return forecasts above historical strength percentiles, holding each seasonal position exactly four sessions.
+1790982298	Buys volume-confirmed month-end advances above the 200-day average, capturing seasonal allocation momentum with profit and time exits.
+1790982464	Buys volume-amplified advances when their historical next-day autocorrelation predicts continuation, sizing by forecast strength.
+1790982635	Buys overnight-selling absorption streaks or broken decline streaks above the 200-day average, switching with its slope.
+1790982883	Five-day variance ratios switch confirmed return impulses between continuation and reversal, with breakeven ATR ratchets.
+1790983106	Buys drawdown retests with improving fractional-close memory above the 200-day average, using profit and time exits.
+1790983292	Trades drawdown velocity changepoints confirmed by volume-weighted closing-pressure reversals, holding eight sessions.
+1790983500	Buys drawdown-depth recoveries confirmed by diffuse upside-volume participation, using breakeven ATR ratchets and eighteen-session expiry.
+1790983734	Buys compressed drawdown shelves after two rising closes hold their frozen midpoint, using fixed entry ATR stops.
+1790983939	Trades signed bridge flux in dual horizontal-visibility graphs, scaling exposure by topology strength with breakeven ATR ratchets.
+1790984141	Trades volume-confirmed escapes from percentile-defined high-volume absorption candles, holding long or short positions exactly two sessions.
+1790984391	Buys bullish turnover relief after percentile-extreme hubs dissolve in weekday-layer volume visibility graphs.
+1790984608	Trades twice-confirmed forecasts from visibility-edge return autocorrelation, smoothing topology-conditioned predictions over eighteen sessions and exiting on reversal.
+1790984731	Buys drawdown braking waves when negative ROC accelerates upward and daily ranges contract, exiting when braking conditions reverse.
+1790984982	Trades efficient trends confirmed by return–volume concordance, using 200-day regimes, ratcheting ATR stops, and four-session expiry.
+1790985093	Buys compressed ranges when candle-midpoint slope turns positive before closing-price slope, with ratcheting ATR exits.
+1790985276	Buys weekly echoes of latent slope innovations, sizing by predicted acceleration with ratcheting ATR exits.
+1790985406	Trades volume-confirmed impulses only when completed holding-period returns from the same monthly phase predict matching direction.
+1790985539	Buys twice-confirmed time–price signature recoveries when weekday-conditioned intraday seasonality supports a two-session rebound.
+1790985662	Trades asymmetric responses to ATR innovations when volatility clusters, scaling conviction with breakeven ATR ratchets and eighteen-session expiry.
+1790985883	Trades twice-confirmed ROC acceleration discounted by directional saturation, freezing volatility-targeted exposure for eight sessions.
+1790986032	Buys fractional-close downside recaptures inside compressed ranges, sizing by recovery strength and holding exactly four sessions.
+1790986236	Trades directional releases from compressed, mutually cancelling returns within 200-day regimes, exiting at profit targets or four sessions.
+1790986442	Trades volume-confirmed moves when nearest historical price-volume shapes predict percentile-extreme eighteen-session returns, with breakeven ATR trails.
+1790986650	Fades isolated overnight gap shocks when percentile-extreme fine-scale Haar energy accompanies closing reentry into yesterday's range.
+1790986734	Fades candle-concentrated ROC acceleration shocks, scaling exposure by restoring force and exiting on opposite qualifying shocks.
+1790986819	Buys volume-confirmed channel breakouts after clustered rejected downside auctions, holding exactly eight sessions.
+1790986955	Trades overnight–intraday signature-area changepoints, scaling exposure by directional rotation strength and exiting on opposite qualifying rotations.
+1790987070	Trades deep local drawdowns using drawdown-change autocorrelation to distinguish persistent selling from alternating recovery, holding eighteen sessions.
+1790987161	Switches expanded-range breakout direction using recent auction overlap, continuing separated auctions and fading congested auctions for eighteen sessions.
+1790987275	Switches price–volume signature loops between participation-led continuation and quiet-market exhaustion, with conviction-scaled exposure and eight-session exits.
+1790987369	Switches recovering MA displacement between congested pullbacks and efficient uptrend continuation, requiring two confirmations and fixed ATR stops.
+1790987588	Fades MA z-score extremes during range compression when intraday pressure opposes displacement, scaling exposure by stretch.
+1790987728	Trades percentile-extreme gaps reinforced intraday, targeting volatility over two sessions with ratcheting closing-high ATR exits.
+1790987829	Switches gap direction using historical gap acceptance, requiring accumulated buying pressure, with closing profit targets and two-day expiry.
+1790988108	Trades learned weekday holding-period seasonality when ordinal entropy–disequilibrium complexity exceeds its historical percentile, using breakeven ATR trails.
+1790988238	Trades month-opening directional streaks, sizing by streak propagation and monthly displacement, with frozen entry-volatility stops.
+1790988367	Matches historical ATR tide shapes to matured eighteen-session outcomes, requiring two confirmations and ratcheting closing-high stops.
+1790988457	Fades consecutive range extensions when volume-weighted closing pressure confirms rejection, holding eighteen sessions.
+1790988583	Switches ordinal acceleration between continuation and exhaustion regimes, requiring volume pressure agreement and frozen entry ATR stops.
+1790988862	Fades percentile-extreme displacement when four-return ordinal repertoire expands, signaling release of directional tension.
+1790988982	Trades gaps escaping compressed price boxes with retained overnight displacement and 200-day trend alignment, holding eighteen sessions.
+1790989100	Fades anchored-edge closes after asymmetric inside-day range contraction, sizing by boundary imbalance and closing extremity.
+1790989239	Trades coherent fractional-close impulses with tail compensation, exiting only when an opposite strength threshold qualifies.
+1790989428	Targets volatility when diverse ceiling ordinal patterns coexist with orderly rising floors above the 200-day average.
+1790989568	Buys drawdown recoveries when natural visibility graphs form bullish endpoint hubs for two consecutive sessions, holding four days.
+1790989770	Targets range volatility using accumulated upside versus downside range renewal, signal-scaled exposure, and ratcheting closing-high ATR exits.
+1790989886	Trades compressed closing volatility with suppressed overnight variance and twice-confirmed directional intraday accumulation, holding eighteen sessions.
+1790989977	Trades fractional-close channel breakouts when a volume drought ends in renewed participation, with profit targets and two-session expiry.
+1790990131	Buys fractional-close median reclamations after repeated lower-percentile visits, targeting volatility and holding exactly eight sessions.
+1790990287	Fades percentile-extreme queues of intraday-rejected overnight gaps when trading ranges compress.
+1790990420	Targets volatility during consecutive bullish wick erosion, scaling exposure by streak length and candle efficiency.
+1790990664	Trades twice-confirmed changes in volume-weighted price pressure against a disjoint historical baseline, with fixed ATR stops.
+1790990805	Buys acceleration-record breakouts when price clears prior highs, with ratcheting ATR exits and four-session expiry.
+1790990918	Trades expanding range breakouts with collapsing candle overlap and agreeing volume-weighted closing pressure, using breakeven ATR trails.
+1790991044	Buys rebound streaks resembling historically successful selloff recoveries, scaling exposure by analog strength with ratcheting ATR exits.
+1790991208	Buys twice-confirmed upper-middle channel residency streaks with limited price displacement, using ratcheting ATR exits and ten-session expiry.
+1790991318	Buys historically profitable range-shape analogs only when volume-weighted intraday demand agrees, with fixed entry ATR stops.
+1790991455	Fades twice-confirmed elastic displacement inside multiscale Haar energy compression, exiting on confirmed opposite tension.
+1790991592	Fades late price displacement identified by price–volume-clock signature area, scaling exposure by tension and holding two sessions.
+1790991758	Buys twice-confirmed downside volatility resets when positive drift replaces a turbulent decline, using breakeven ATR trails.
+1790991859	Buys intact upward gap voids when an expanded prior range gives way to quiet, upper-half closing containment.
+1790992121	Buys weekday-abnormal latent slope innovations during favorable seasonal drift, scales exposure by joint strength, and holds four sessions.
+1790992312	Buys declining return permutation entropy with upward ordinal imbalance, scales volatility exposure by conviction, and holds eight sessions.
+1790992515	Buys annual harmonic seasonal upswings when latent slope innovations agree, exiting at a profit target or eight sessions.
+1790992660	Fades moving-average z-score extremes on weekdays with historically strong recoil, scaling exposure by displacement and seasonal evidence.
+1790992771	Trades gap-led moving-average displacement during intraday range compression, exiting when the opposite compressed displacement qualifies.
+1790992989	Trades partially absorbed gap clusters when fine-scale Haar energy exceeds its historical percentile, with profit and time exits.
+1790993125	Buys pullbacks when ranked returns exhibit unusually strong weekly echoes above the 200-day average, with ratcheting ATR exits.
+1790993229	Buys quarter-end moving-average discounts during directionally inefficient trading, scales exposure by displacement, and holds eighteen sessions.
+1790993300	Buys percentile-extreme ROC acceleration during low-volume participation, targeting continuation as sidelined demand catches up.
+1790993411	Buys downside gaps that probe and reclaim the previous bullish candle's midpoint while leaving the gap partially unfilled.
+1790993626	Switches between continuation and reversal using return-shock visibility triangle closure, requiring two-bar confirmation and fixed ATR stops.
+1790993743	Trades percentile-ranked contagion of directional return tails within the 200-day trend, using frozen ATR stops and eighteen-session expiry.
+1790993841	Trades autocorrelated latent slope innovations when accumulated trend updates overflow symmetric capacity thresholds.
+1790994024	Trades percentile-extreme autocorrelation forecasts weighted by nonlocal visibility connections between return magnitudes, with profit and time exits.
+1790994119	Buys volume-confirmed capitulation midpoint reclaims after selling participation dries up, holding exactly eight sessions.
+1790994240	Buys newly efficient upward fractional-close paths above the 200-day average, holding exactly four sessions.
+1790994388	Buys twice-defended downside gap floors before full repair, targets volatility, and exits with frozen ATR stops.
+1790994503	Buys rebounds from inverse-price visibility hubs near channel lows above the 200-day average, with ratcheting ATR trails.
+1790994598	Buys ATR-scaled escapes from overlapping daily ranges, exiting when fresh breakout pressure disappears.
+1790994688	Targets volatility when sustained range contraction and positive intraday body efficiency jointly confirm orderly accumulation.
+1790994840	Targets volatility on consecutive shrinking daily losses above the 200-day average, holding exactly two sessions.
+1790994960	Targets volatility when percentile-extreme price–participation signature area reveals buying pressure preceding price recovery, with fixed ATR stops.
+1790995087	Buys positive gaps horizontally visible to multiple earlier downside shocks through quiet gaps, above the 200-day average.
+1790995324	Trades accelerating compounded overnight gaps with limited daytime erosion, 200-day trend gating, frozen ATR stops, and eighteen-session expiry.
+1790995477	Trades historical ordinal-pattern histogram analog forecasts during percentile-low permutation entropy, holding exactly four sessions.
+1790995626	Buys deep drawdown plateaus after two compressed-range confirmations, holding exactly two sessions.
+1790995803	Buys percentile-extreme breakout persistence when weekly ordinal statistical complexity indicates organized price propagation.
+1790995893	Trades volume-drought channel escapes confirmed by a second high-participation session, holding exactly eight trading bars.
+1790996005	Trades volume-confirmed month-end advances and early-month declines with two-session expiry and ratcheting highest-close ATR exits.
+1790996111	Buys price visibility reconnections after graph bottlenecks when volume-weighted intraday absorption agrees, with frozen ATR stops.
+1790996207	Trades unexpected latent slope strengthening during shrinking regression noise, gated by the 200-day average, with four-session expiry.
+1790996334	Switches between directional acceptance streaks and countertrend rejection streaks using variance asymmetry, with streak-scaled sizing and breakeven trails.
+1790996505	Fades ordinally organized gap amplification only when intraday rejection agrees, with ratcheting highest-close ATR exits.
+1790996691	Fades ATR-normalized discounts to an inverse-volatility price centroid as volatility cools, sizing by discount strength.
+1790996804	Trades gap-seeded range expansion relays with translating boundaries, strength-scaled sizing, fixed entry ATR stops, and eighteen-session expiry.
+1790996968	Buys percentile-extreme predicted slope rebounds from negatively autocorrelated latent trend innovations, with ratcheting close-based ATR exits.
+1790997092	Trades drawdown recovery acceleration and late-rebound deceleration, sizing by curvature strength and holding exactly eight sessions.
+1790997211	Trades renewed moving-average z-score expansion after two-session pauses, with volatility-targeted, conviction-scaled sizing and ratcheting close trails.
+1790997431	Ordinal transition complexity switches between momentum following and pullback buying, with conviction-scaled sizing and predicate-reversal exits.
+1790997528	Buys downside horizontal-visibility hubs with intraday recovery, holding four sessions with fixed entry-ATR stops.
+1790997619	Buys positive return trends when downside shockwaves dissipate while upside participation persists, with ratcheting ATR trails and eighteen-session expiry.
+1790997744	Trades channel extremes confirmed twice when coarse Haar wavelet energy dominates, holding exactly two sessions.
+1790997823	Buys consecutive losing streaks only when return-sign autocorrelation confirms an alternating regime, holding exactly eight sessions.
+1790997940	Visibility-graph triangle closure switches percentile-selected trend continuation and rebound entries, with profit targets and eight-session expiry.
+1790998050	Trades drawdown recoveries and failed rebounds using price–participation signature area, two-session expiry, and ratcheting highest-close ATR exits.
+1790998258	Trades accumulated eighteen-session latent slope forecasts from two-lag innovation autocorrelation, exiting symmetrically on opposing forecasts.
+1790998375	Trades compressed auction traversals when opening-location and closing-location percentiles agree, with two-session expiry and frozen ATR stops.
+1790998528	Trades twice-confirmed underwater volume majorities as drawdown recovery succeeds or fails, with profit targets and two-session expiry.
+1790998659	Fades consecutive overnight gap streaks when volume-weighted closing pressure opposes them, holding exactly eight sessions.
+1790998773	Buys twice-defended upside gaps when fractional-differenced closing pressure rises, with frozen ATR stops and eighteen-session expiry.
+1790998964	Buys reclaimed downside gaps when percentile-extreme fine-scale overnight Haar energy signals temporary auction dislocation.
+1790999132	Trades percentile-selected drawdown braking and rebound exhaustion using latent slope innovation coherence, with breakeven ATR trails.
+1790999240	Trades drawdown tension only when the shared intersection of recent trading ranges migrates in the restoring direction.
+1790999451	Ordinal friction complexity switches between intraday and overnight directional pressure, with conviction-scaled sizing and reversal exits.
+1790999604	Buys percentile-extreme winning streaks when return autocorrelation strengthens, holding two sessions with frozen entry-ATR stops.
+1790999757	Matches low-complexity ordinal return sequences to matured historical analogs, trading percentile-selected forecasts for two sessions with frozen ATR stops.
+1790999945	Volume recruitment lead–lag percentiles switch impulse continuation and reversal, with four-session expiry and ratcheting highest-close ATR exits.
+1791000024	Buys accelerating overnight gap drift only when intraday directional efficiency confirms upward transmission, exiting on either predicate reversal.
+1791000155	Trades twice-confirmed price–range signature rotation inside compressed ranges, holding exactly four sessions.
+1791000294	Buys lower-range recoveries when ordinal position entropy contracts, with four-session expiry and breakeven ATR ratchets.
+1791000412	Trades drawdown recovery using price–volume signature area AND volume-weighted candle pressure, with profit targets and four-session expiry.
+1791000492	Buys recovering negative moving-average z-scores around month boundaries, with eight-session expiry and ratcheting highest-close ATR stops.
+1791000602	Trades time–price signature acceleration only when directional return breadth agrees, holding until opposite joint confirmation.
+1791000705	Percentile-extreme drawdowns switch between overnight-damage reversal and intraday-liquidation continuation, with profit targets and two-session expiry.
+1791000835	Trades volume-confirmed return-mean changepoints with conviction-scaled sizing, four-session expiry, and breakeven ATR ratchets.
+1791000942	Buys broad positive opening-gap consensus inside a compressed monthly price envelope, exiting when either condition reverses.
+1791001126	Buys collapsed monthly drawdown depth inside persistent six-month drawdowns, exiting at a profit target or twenty sessions.
+1791001297	Buys twice-confirmed fast-versus-slow ROC acceleration inside unresolved drawdowns, with four-session expiry and breakeven ATR trails.
+1791001467	Competing consecutive streak lengths fade weak reversals and follow challenger runs that overtake the preceding directional streak.
+1791194242	Trades percentile disagreement between instantaneous drawdown depth and accumulated underwater burden, with breakeven ATR ratchets and two-session expiry.
+1791194425	Buys variance-before-return signature area identifying noise-cleared trends, with breakeven ATR ratchets and twenty-session expiry.
+1791194695	Buys escapes from deep, narrow drawdown shelves, scaling exposure by shelf depth and tightness with fixed entry-ATR stops.
+1791194952	Buys recurring ordinal return motifs AND positive directional efficiency, exiting when either primitive reverses.
+1791195279	Buys positive ROC acceleration aligned with recurring weekday acceleration, scaling conviction and holding exactly eighteen sessions.
+1791195443	Buys shallower drawdown retests after halfway recoveries above the 200-day average, with ratcheting highest-close ATR exits.
+1791195621	Buys falling intraday-range permutation entropy after volatility shocks subside, freezes volatility-targeted exposure, and exits after eight sessions.
+1791195835	Trades percentile-extreme, energy-weighted Haar phase forecasts using autocorrelation between nonoverlapping wavelet blocks, with two-session expiry.
+1791195972	Fades percentile-extreme volatility shocks trapped near established range edges, holding exactly two sessions.
+1791196292	Volume–price-impact coupling percentiles switch volume-confirmed moves between continuation and absorption reversal, with breakeven ATR trails.
+1791196438	Trades ROC acceleration debt repayment during regime-aligned drawdown recoveries and rally failures, with fixed entry-ATR stops.
+1791196657	Buys volume-confirmed intraday advances during semimonthly funding windows, holding exactly two sessions.
+1791196800	Trades abrupt MA z-score escapes from locally stable displacement, with two-session expiry and breakeven ATR ratchets.
+1791197060	Trades autocorrelation-predicted ROC acceleration aligned with the 200-day regime, using ratcheting ATR exits and eight-session expiry.
+1791197192	Trades volume-confirmed escapes from compressed ranges with percentile-extreme trading density, exiting at profit targets or twenty sessions.
+1791197328	Fractional-close increment persistence switches between traveling-wave breakouts and standing-wave trough recoveries, with profit targets and four-session expiry.
+1791197485	Buys bullish recoveries when return ordinal complexity jumps out of an orderly selloff; exits at profit target or expiry.
+1791197619	Buys underwater recoveries when upside semivolatility overtakes downside semivolatility; exits when the recovery condition reverses.
+1791197763	Buys twice-confirmed volume-before-price signature rotations during historically favorable weekdays, holding exactly two sessions.
+1791198067	Trades newly record-length closing streaks aligned with the 200-day regime, using breakeven ATR ratchets and eighteen-session expiry.
+1791198184	Trades counter-gap range breakouts with extreme MA displacement, scaling exposure by displacement and intraday directional pressure.
+1791198383	Trades percentile-extreme coherence of latent slope revisions aligned with trend strength, exiting at profit targets or eighteen sessions.
+1791198538	Buys shared-range midpoint reclaims below channel resistance, scaling exposure by overlap persistence and reclaim depth.
+1791198656	Fades prolonged channel-edge residence after two consecutive inward closes, holding exactly eighteen sessions.
+1791198851	Buys twice-confirmed lower-channel recoveries with long-span natural visibility edges; exits when recovery eligibility reverses.
+1791199051	Buys distributed selloff overload when one recovery return clears the largest loss packet but leaves substantial drawdown.
+1791199219	Buys percentile-deep drawdowns when consecutive downside gaps shrink without new lows; holds eight sessions with fixed ATR stops.
+1791199480	Buys accumulated above-yield latent slope innovations, scaling exposure by directional plastic memory and trend efficiency.
+1791199710	Fades mirrored horizontal-visibility hubs during quarterly allocation resets, exiting at profit targets or eighteen sessions.
+1791199854	Buys compressed sessions retaining upside gaps above yesterday’s high, with breakeven ATR ratchets and two-session expiry.
+1791200015	Buys efficient upward migration of daily range boundaries confirmed by positive volume-weighted candle pressure; exits on agreement reversal.
+1791200269	Trades twice-confirmed fractional-close recovery ahead of underwater price repair, with mirrored shorts and eight-session exits.
+1791200545	Trades twice-confirmed channel breakouts after intraday-pressure ordinal entropy collapses, exiting at profit targets or ten sessions.
+1791200739	Trades eight-session forecasts from historical ATR-cycle shape analogs, with breakeven activation and monotonic ATR profit-floor trails.
+1791201018	Buys drawdowns when lower-range propagation collapses and upper-range propagation takes over, with strength-scaled exposure and breakeven ATR trails.
+1791201283	Buys calendar-conditioned coarse Haar energy acceleration, holding eighteen sessions with breakeven activation and monotonic ATR trails.
+1791201552	Fades percentile-extreme overnight versus intraday divergence at month starts, with eighteen-session expiry and breakeven ATR ratchets.
+1791201853	Fades three-day price stretches when return ordinal complexity surges, gated by the 200-day average and breakeven ATR trails.
+1791202156	Buys negative gap shocks when fitted gap anticorrelation predicts a five-session rebound above the 200-day average.
+1791202361	Switches between fading and following rolling close percentiles using shared daily-range overlap, holding exactly eighteen sessions.
+1791202591	Trades percentile-extreme autocorrelation forecasts of fractional-close innovations, holding eighteen sessions with breakeven ATR trails.
+1791202710	Buys partially repaired downside gaps when latent trend slope accelerates upward, holding exactly two sessions.
+1791202904	Buys percentile-extreme volume-weighted selling pressure on third Fridays, capturing post-expiration recovery over eighteen sessions.
+1791203015	Buys simultaneous upward changepoints in overnight gaps and intraday closing location; exits when either primitive loses agreement.
+1791203329	Buys percentile-selected forecasts from historical return-permutation distributions and entropy-change analogs, with breakeven ATR ratchets.
+1791203527	Trades agreement between autocorrelation forecasts of ROC acceleration and intraday returns, holding exactly two sessions.
+1791203805	Buys accelerating close-to-close gains through two increasingly negative opening gaps, with fixed entry-ATR stops and two-day expiry.
+1791203909	Buys percentile MA-distance breakouts after below-average participation converts into accelerating positive stretches, with four-session expiry and ATR ratchets.
+1791204298	Fades relative-price extremes confirmed by endpoint visibility-degree imbalance, with ratcheting ATR exits and eighteen-session expiry.
+1791204439	Trades two volume-confirmed steps toward a prior range midpoint, with two-session expiry and ratcheting ATR trails.
+1791204606	Buys drawdown recovery measured against frozen MA-distance anchors; exits on the symmetrically opposite deterioration signal.
+1791204761	Buys abrupt ATR contractions and exits symmetric expansions, reacting to short-lived volatility regime changes.
+1791204909	Trades directional acceptance two sessions after volatility shocks, requiring sustained range expansion before an eight-session hold.
+1791205104	Trades noise-normalized changepoints between adjacent drawdown-depth windows, locking strength-scaled exposure for four sessions.
+1791205231	Buys downside-variance share reversals, scaling exposure by variance repair and inverse volatility, with eighteen-session holds.
+1791205446	Follows accelerating return shockwaves when ordinal pattern entropy contracts, with two-session expiry and ratcheting close-high stops.
+1791205603	Buys drawdown recoveries when advancing-volume dominance agrees with a rising downside floor; holds eighteen sessions with fixed ATR stops.
+1791205757	Buys drawdowns after two retained gaps clear preceding daily highs, with breakeven ATR ratchets and two-session expiry.
+1791205955	Fades directional moves when reflected natural visibility graphs show asymmetric triangle density, exiting on opposite topology signals.
+1791206132	Buys partially repaired downside gaps exceeding historical intraday absorption capacity; exits when the qualifying condition reverses.
+1791206292	Trades relative displacement from a natural visibility graph's shortest-path medoid, exiting on opposite displacement.
+1791206529	Buys persistent MA-z-score oversold spells with declining volume above the 200-day average; exits on profit or time.
+1791206630	Follows ROC acceleration in session-driven regimes and fades it in gap-driven regimes, exiting on opposite entries.
+1791206751	Follows price displacement after percentile-extreme reversals in gap–intraday path-signature area, exiting on profit or two sessions.
+1791206900	Trades twice-confirmed middle-band Haar energy resonance with directional phase agreement and fixed entry-ATR stops.
+1791207217	Matches horizontal-visibility graph analogs and trades percentile-extreme historical forward-return consensus with frozen ATR stops.
+1791207532	Buys downside ROC acceleration turns confirmed by shrinking sell-volume price impact, with eighteen-session holds and breakeven ATR trails.
+1791207870	Buys sequential likelihood changepoints in drawdown deepening, scales exposure by evidence, and exits with close-high ATR ratchets.
+1791208072	Buys percentile-ranked range packing with persistent bullish candle pressure, scaling exposure by compression and pressure strength.
+1791208279	Fades fractional-close percentile shocks after a refractory pause and partial recovery, holding eight sessions.
+1791208538	Buys deep drawdowns after two confirmations of compressed ranges and stalled deepening, exiting on profit or four sessions.
+1791208683	Trades persistent fractional-close displacement as volatility contracts, with inverse-volatility sizing, 200-day regime alignment, and fixed ATR stops.
+1791208840	Buys twice-confirmed ROC acceleration that survives removing its strongest session, holding eighteen sessions with frozen entry-ATR stops.
+1791208965	Trades drawdown-depth channel breakouts toward recovery or renewed liquidation, holding until the opposite breakout.
+1791209173	Buys deepening drawdowns with alternating autocorrelation echoes, scales exposure by depth and echo strength, and holds eight sessions.
+1791209347	Trades ordinal entropy expansion during drawdown recovery and entropy contraction during renewed liquidation, exiting on opposite evidence.
+1791209574	Fades percentile-extreme directional volume concentration relative to session counts, with conviction-scaled sizing and eight-session holds.
+1791209694	Buys rapid squared-drawdown energy release beneath a stable peak, scales by release strength, and holds four sessions.
+1791209825	Buys percentile-extreme upward range-frontier migration, excluding overnight gaps, and exits when frontier dominance reverses.
+1791209925	Trades four-day historical analog forecasts matched by ordinal-pattern distributions and complexity, with 200-day regime alignment and reversal exits.
+1791210142	Buys recovering negative MA z-scores around third-Friday inventory unwinds, holding eighteen sessions with frozen entry-ATR stops.
+1791210488	Trades recent-versus-legacy closing-price rank inversions during drawdown recovery, with 200-day regime alignment and breakeven ATR trails.
+1791210622	Buys negative MA z-score excursions with a volume-weighted price premium; exits through ratcheting ATR trails or two-session expiry.
+1791210780	Buys historically profitable calendar months when incoming ordinal complexity contracts below the same month's prior-year complexity, confirmed twice.
+1791210937	Trades directional endpoint visibility-degree dominance with 200-day regime alignment, ratcheting ATR exits, and two-session expiry.
+1791211067	Buys positively autocorrelated innovations in a latent closing-price slope, exiting at a profit target or four sessions.
+1791211341	Buys negative MA z-score recoveries requiring less volume per displacement than declines, with breakeven ATR trails.
+1791211475	Trades twice-confirmed shrinking directional gaps with accelerating intraday follow-through, exiting at a profit target or two-session expiry.
+1791211639	Buys lower-channel closes when downside excursion volatility compresses relative to upside excursion volatility, holding four sessions.
+1791211829	Trades twice-confirmed range–return correlation with inverse-volatility exposure and opposite-correlation exits.
+1791212179	Trades range-curvature-amplified corridor breakouts with conviction-scaled exposure and opposite-breakout exits.
+1791212432	Switches wavelet impulse following versus fading using middle-scale energy migration, requiring agreement from volume-weighted candle pressure.
+1791212682	Buys efficient rolling-rank breakouts, accumulates sponsorship credit, and exits when below-median closes exhaust that credit.
+1791212880	Trades wick-pressure asymmetry inside low-entropy range compression, with conviction-scaled exposure and opposite-entry exits.
+1791212995	Fades twice-confirmed MA z-score displacement inside compressed ranges when the moving anchor barely deforms.
+1791213294	Switches fractional-price displacement between continuation and reversion, requiring candle-pressure agreement, with spike cooldowns and ratcheting high-water exits.
+1791213651	Buys twice-confirmed profitable historical analogs matched by ordinal-pattern distribution and complexity, with profit targets and eighteen-session expiry.
+1791213867	Trades opposite-channel breakouts after consecutive rejected price probes, with four-session expiry and breakeven ATR trails.
+1791214010	Trades percentile-extreme MA displacement with historically coherent displacement memory, holding each long or short position eighteen sessions.
+1791214181	Buys percentile-extreme calendar–price signature rotation, smoothing monthly funding-flow catch-up over eighteen sessions and exiting on predicate reversal.
+1791214359	Buys percentile-extreme Friday intraday selling for a two-session post-weekend rebound, with a frozen entry volatility stop.
+1791214611	Buys volatility-normalized drawdown pressure from fresh peaks, scales exposure by compression strength, and exits at target or two sessions.
+1791214846	Fades calendar-gated MA z-score dislocations around monthly funding waves, aligned with the 200-day regime.
+1791215166	Trades weekly gap-autocorrelation echoes confirmed by volume-weighted candle pressure, with breakeven ATR ratchets and eight-session expiry.
+1791215482	Trades percentile-extreme directional sign-survival asymmetry during unusually persistent autocorrelation regimes, with ratcheting ATR exits and eighteen-session expiry.
+1791215605	Trades temporal separation between buying and selling return centroids, exiting when directional rotation reverses.
+1791215930	Buys losing-streak reversals whose ordered streak-count analogs forecast percentile-qualified gains, exiting at a profit target or eight sessions.
+1791216173	Buys expanding upside escapes after consecutive nested inside bars, exiting at a close-based profit target or two-session expiry.
+1791216376	Trades percentile-ranked shifts in closing auction pressure, aligned with the 200-day regime, using breakeven ATR trails.
+1791216615	Follows rapid traversal between historical drawdown percentiles, with frozen entry ATR stops and eight-session expiry.
+1791216764	Trades percentile-extreme natural visibility edge-span asymmetry with volatility-targeted exposure, frozen ATR stops, and two-session expiry.
+1791217101	Trades twice-confirmed percentile forecasts from volume-migration and price-curvature analogs, with ratcheting highest-close exits and eighteen-session expiry.
+1791217263	Trades MA displacement forecasts combining eighteen-session residual autocorrelation with moving-anchor drift, sizing exposure by forecast strength.
+1791217407	Trades weekday-relative gap–intraday signature rotation in the 200-day regime, with two-session expiry and ratcheting highest-close stops.
+1791217569	Trades ATR expansion overflowing historical range boundaries only when volume-weighted candle pressure agrees, with breakeven trails.
+1791217772	Buys range breakouts from high ordinal complexity reservoirs, holding eighteen sessions with ratcheting highest-close ATR exits.
+1791217952	Follows rate-of-change acceleration under subdued volume capacity, targeting brief continuation with profit targets and two-session expiry.
+1791218190	Trades twice-confirmed four-session weekday return premiums with ratcheting highest-close exits.
+1791218333	Buys deepening drawdowns when consecutive downside gaps shrink without an intraday rebound, scaling exposure and holding four sessions.
+1791218580	Buys retained high-volume impulse gains after quiet recoil and renewed participation, using breakeven ATR ratchets and four-session expiry.
+1791218734	Detects return-distribution changepoints through adjacent-block rank dominance, buying upward shifts and exiting symmetric downward shifts.
+1791219002	Switches between trend continuation and pullback recovery using ordinal transition complexity above the 200-day average.
+1791219158	Trades persistent coarse-scale Haar energy aligned with the 200-day regime, using breakeven ATR trails and eighteen-session expiry.
+1791219290	Horizontal visibility triangle closure switches daily impulses between continuation and elastic reversal, with conviction-scaled positions.
+1791219477	Learns weekday return premiums conditional on natural visibility hub polarity, with conviction sizing and ratcheting highest-close exits.
+1791219640	Trades simultaneous close-return and overnight-gap tail breakouts, with four-session expiry and breakeven ATR trails.
+1791219933	Matches fractional-differenced price shapes to historical eight-day outcomes, sizing by analog conviction and exiting through ratcheting ATR trails.
+1791220078	Volatility-targeted trades capture signature-area evidence that volatility shocks precede directional price transmission within the 200-day regime.
+1791220342	Switches acceleration-tail trades between propagation and correction regimes using positive-session saturation, with four-day expiry and breakeven ATR trails.
+1791220527	Trades calendar-gated countertrend streaks within the 200-day regime, holding eighteen sessions with ratcheting highest-close ATR exits.
+1791220733	Buys drawdown repairs exceeding fast ATR, using slow-volatility normalization and hysteretic recovery-condition reversals.
+1791220989	Buys accelerating ROC reversals inside compressed price envelopes, scaling exposure by compression depth and acceleration strength.
+1791221316	Buys twice-confirmed drawdown repairs when historical depth-path analogs predict substantial repayment, with ratcheting highest-close ATR exits.
+1791221552	Trades deepening drawdowns using depth-change autocorrelation to distinguish repair from propagation, with 200-day regime gates and breakeven trails.
+1791221684	Trades compressed ranges when price–closing-pressure signature area reveals untransmitted buying or selling, with fixed seven-session holds.
+1791221880	Buys percentile-compressed ranges with extreme turnover and upper-half closes, exiting at a profit target or eighteen-session expiry.
+1791222132	Fades persistent MA z-score extremes after fresh tail recruitment declines, scaling exposure by displacement and stressed-session prevalence.
+1791222400	Fades one-sided channel excursions after twice-confirmed contraction of elevated daily ranges, holding eighteen sessions.
+1791222543	Buys drawdown gap reversals only when volume-weighted closing pressure turns positive, with ratcheting ATR exits and eighteen-session expiry.
+1791222666	Trades same-direction ROC acceleration as volume load declines, holding eight sessions after entry.
+1791222810	Trades changepoints in deep-drawdown residence time within the 200-day regime, using breakeven activation and ratcheting ATR exits.
+1791222944	Trades historical slope-shape forecasts only when fresh trend innovation agrees, exiting at profit targets or eighteen sessions.
+1791223036	Trades range-edge closes when low-frequency Haar energy dominates noise, exiting on profit or two-day expiry.
+1791223117	Hysteretic volatility regimes switch between momentum and reversal when return and signed true-range pressure agree.
+1791223247	Trades channel breaks when fractional-close tension exceeds lagged percentiles, using four-day ratcheting ATR exits.
+1791223440	Buys volume-confirmed third-Friday upside impulses, scaling conviction until a profit target or four-session timeout.
+1791223518	Buys elastic downside-gap repairs during intermediate ordinal gap complexity, then exits after eighteen sessions.
+1791223681	Buys elastic mean reclaims when slope-normalized Haar energy agrees across 8-, 16-, and 32-day scales.
+1791223925	Trades rolling-peak drawdown repairs and relapses when the intraday candle body confirms direction.
+1791224041	Buys higher-low streak breakouts, scales with streak length, and exits on mirrored lower-high breakdowns.
+1791224297	Trades two-bar confirmed gap-led path area with breakeven ATR trails.
+1791224408	Matches multiscale wavelet energy patterns to historical two-day outcomes, then exits on profit or time.
+1791224529	Trades percentile-qualified matches between recent returns and time-reversed historical return paths, with breakeven ATR trails.
+1791224691	Matches recent slope innovations and trend strain to historical shapes, then trades their two-day directional consensus.
+1791224891	Buys high-volume upside moves during quiet positive flow, sizes by volatility, and exits with a breakeven ATR trail.
+1791225010	Trades short-scale Haar energy bursts confirmed by volume-weighted closing pressure, with volatility sizing and ATR trails.
+1791225155	Switches between post-loss reversal and upside continuation using recent return responses, with a ratcheting ATR stop.
+1791225261	Buys contracting volatility when price–range path area turns negative, then exits on condition reversal.
+1791225363	Trades failed escapes from percentile-compressed ranges with ratcheting ATR stops.
+1791225519	Switches between continuation and recovery using momentum–volatility path area, with two-bar confirmation and an ATR trail.
+1791225686	Buys easing three-day declines with strong closes above the 200-day average; exits on rebound, time, or fixed ATR stop.
+1791225802	Trades gaps that reverse by the close and materially repair or deepen an existing drawdown.
+1791225893	Buys price breakouts with unusually efficient four-day paths, then exits on a ratcheting ATR trail.
+1791225960	Trades next-day gap direction inferred from rolling gap autocorrelation, with profit and two-bar exits.
+1791226073	Buys breakouts when recent upper-wick rejection gives way to strong closing acceptance, with rank-scaled sizing.
+1791226149	Buys positive trend-slope innovations in the upper-middle price range, then exits on profit or time.
+1791226267	Buys upper-range resilience when short-term ATR concentration exceeds its historical percentile, then exits on profit or time.
+1791226372	Trades two-day drawdown-depth drift inside compressed ranges, with fixed entry ATR stops.
+1791226471	Buys the first relief from an ATR shock, scales exposure by relief, and exits after 18 bars.
+1791226565	Buys down days when a percentile extreme in the variance ratio suggests alternating returns.
+1791226734	Trades the signed path area of overnight gaps and intraday returns, with volatility-scaled entries and reversal exits.
+1791226874	Buys the first partial drawdown recovery confirmed by an expanding-volume up day.
+1791226977	Trades drawdown absorption or acceleration, scaling exposure by signal strength and ATR volatility.
+1791227052	Buys percentile-quiet range contractions two days after a wide-range shock, then exits after four bars.
+1791227160	Trades fractional-difference mean shifts with strength-scaled entries and breakeven ATR trails.
+1791227234	Trades alternating changes in rolling drawdown depth when their measured autocorrelation is negative.
+1791227312	Buys sharp downside energy at the shortest Haar scale while the eight-bar wavelet remains positive.
+1791227393	Trades calendar windows when visibility-graph topology identifies a price trough or peak.
+1791227489	Trades when percentile-ranked candle body conviction and high-low staircase direction agree, with profit and time exits.
+1791227604	Buys broad, distributed return breakouts and exits after a fixed number of bars.
+1791227724	Trades percentile extremes of underwater volume inventory reclamation, with reversal exits and confidence-scaled exposure.
+1791227888	Trades abrupt volume-weighted return participation shifts with hysteresis, breakeven activation, and ratcheting ATR exits.
+1791228143	Trades delayed fractional-difference echoes when lag-two autocorrelation dominates lag-one dependence within the 200-day trend regime.
+1791228379	Trades four-day outcomes of nearest historical range-shape analogs, with mirrored breakeven activation and ratcheting ATR stops.
+1791228515	Trades horizontal visibility edge-span rewiring confirmed by return mean shifts, holding each position for eighteen bars.
+1791228616	Buys accumulated downside range-boundary expansion above the 200-day average, exiting when upside boundary expansion reverses the imbalance.
+1791228761	Fades or follows percentile-extreme accumulated overnight gaps according to percentile-ranked overnight–intraday coupling, exiting on opposite entries.
+1791228871	Switches percentile-extreme MA displacement between fade and continuation using candle-range overlap, holding exactly two sessions.
+1791229042	Buys autocorrelation-predicted fractional-close rebounds confirmed by volume-weighted accumulation, with ratcheting ATR exits and eight-session holds.
+1791229128	Buys sustained price displacement above the range-energy centroid, exiting on an equal opposite ATR-normalized displacement.
+1791229336	Follows efficient momentum when nonoverlapping ordinal patterns exhibit predictive complexity, aligned with the 200-day moving average.
+1791229431	Buys upside gaps exceeding prior ATR capacity when narrow intraday ranges preserve momentum above the 200-day average.
+1791229532	Buys volume pulses after quiet accumulation or contracting selling pressure, switching entry confirmation by regime and holding eighteen sessions.
+1791229687	Buys time-price signature acceleration breakouts above the 200-day average, with ratcheting ATR trails and twenty-session expiry.
+1791229851	Range-change persistence follows midpoint drift; alternating range recoil fades it, with two-bar entries and reversal exits.
+1791229969	Buys fractional-close trough recoveries when positive daily persistence and negative weekly autocorrelation reveal oscillations above the 200-day average.
+1791230062	Trades latent regression-slope innovations inside compressed price ranges, holding long or short positions for eighteen sessions.
+1791230219	Targets volatility on volume–return correlation crossovers above the 200-day average, with breakeven ratchets and ten-session exits.
+1791230373	Fades downside acceleration when fine-scale Haar energy overwhelms coarse energy, exiting on the opposite energy polarity.
+1791230462	Fades alternating intermediate-scale Haar overshoots when wavelet energy concentrates between daily noise and weekly drift, holding eighteen sessions.
+1791230621	Trades fractional-close channel escapes after shock refractory windows, with ratcheting highest-close ATR exits and eighteen-session expiry.
+1791230789	Trades range-expansion shocks using learned weekday response polarity, with fixed entry-ATR stops and two-session expiry.
+1791230898	Trades percentile-extreme price tension when latent slope innovations point toward equilibrium, exiting on profit or ten-session expiry.
+1791231007	Buys autocorrelated fractional-close impulse echoes above the 200-day average, holding eight sessions.
+1791231161	Trades disjoint-window fractional-close mean changepoints with hysteresis, evidence-scaled exposure, and ratcheting exits over eight sessions.
+1791231309	Volatility-targeted moving-average fades require two cooling-volatility confirmations and flatten on opposite displacement.
+1791231487	Buys percentile-extreme drawdown burden crests, scales by recovered depth, and exits on profit target or eight-session expiry.
+1791231637	Trades price–range signature-area reversals as exhaustion changepoints, filtered by the 200-day trend, with breakeven trails.
+1791231739	Trades escapes from the mother range of consecutive inside bars, with profit targets and eighteen-session expiry.
+1791231920	Trades four-session weekday seasonality conditioned on multiscale Haar energy, with conviction-scaled exposure and reversal exits.
+1791232200	Buys visibility-graph recovery analogs with conviction-scaled sizing, breakeven ratchets, and four-day expiry.
+1791232337	Follows momentum when return-order permutation entropy crosses its historical lower percentile, with four-session expiry and ratcheting ATR exits.
+1791232451	Follows consecutive low-overlap daily range translations without volatility expansion, gated by the 200-day average, holding two sessions.
+1791232618	Buys innovation-driven latent slope reversals above the 200-day average, with four-day expiry and ratcheting highest-close ATR exits.
+1791232715	Follows balanced, same-direction weekly fractional-close impulses, exiting at a profit target or eighteen-session expiry.
+1791232824	Trades percentile volatility eruptions, following or fading price direction according to volatility-change autocorrelation, holding two sessions.
+1791233002	Buys partial repayment of downside range spill during drawdowns while daily ranges contract beneath capped highs.
+1791233186	Buys volume-confirmed price-response acceleration after heavy-volume stalls above the 200-day average, with two-session expiry and ratcheting ATR stops.
+1791233362	Switches acceleration entries between momentum continuation and elastic rebounds using return autocorrelation, with four-session breakeven ATR ratchets.
+1791233454	Trades consecutive recovery streaks inside recent excursions, filtered by the 200-day average, exiting on opposing streaks.
+1791233523	Buys percentile breakouts in standardized moving-average distance, rearming after median resets, with profit targets and ten-session expiry.
+1791233597	Fades persistent drawdown basins after initial repair, mirrored for bearish rebounds, with 200-day regimes and fixed ATR stops.
+1791233766	Volatility-targets confirmed positive latent midpoint-slope innovations despite negative overnight gaps, holding eight sessions.
+1791233868	Buys persistent bounded latent-slope innovations within hysteretic 200-day regimes, holding eight sessions with fixed entry-ATR stops.
+1791233993	Trades efficient accelerating trends detected by normalized time–price signature area, holding eighteen sessions.
+1791234181	Trades latent slope innovation outbreaks weighted by remaining directional adoption capacity, with four-session expiry and fixed ATR stops.
+1791234281	Volatility-targets positive latent-slope innovations after alternating forecast errors decay, with conviction sizing and two-session fixed ATR stops.
+1791234404	Volatility-targets bullish gaps escaping accumulated overnight selling pressure, scaling exposure by gap strength and holding four sessions.
+1791234575	Buys ceiling releases after consecutive rising lows compress daily ranges, exiting on closing profit targets or two-session expiry.
+1791234743	Fades negative ROC acceleration exceeding recent selling load above the 200-day average, with fixed ATR stops.
+1791234878	Fades low-volume gaps beyond yesterday's range when next-day high-volume reversals trap overnight participants.
+1791235015	Fades displaced closes when overlapping daily ranges contract, sizing by elastic stretch and exiting on opposite qualifying signals.
+1791235130	Buys volume-backed compression breakouts preceded by bullish volume imbalance, scales conviction, and manages eighteen-session breakeven ATR trails.
+1791235310	Trades volume-confirmed moves when price impact abruptly escapes an absorption regime, with four-day breakeven trails.
+1791235410	Trades drawdown repair when opposite return shocks share visibility-graph neighbors, with four-day breakeven ATR ratchets.
+1791235593	Buys month-opening drawdown tension above the 200-day average, with two-session expiry and breakeven ATR ratchets.
+1791235675	Buys repeated negative-gap absorption when positive close-to-close returns overwhelm losses, using ratcheting ATR trails.
+1791235837	Trades geometric multiweek gap forecasts from overnight autocorrelation, scaling conviction with fixed entry-ATR stops.
+1791235977	Fades percentile-extreme eight-day returns when accumulated candle-wick rejection agrees, exiting only on opposite qualifying setups.
+1791236086	Trades completed historical percentile-path analog outcomes, scaling exposure by directional agreement and exiting through ratcheting close trails.
+1791236219	Fades twice-confirmed percentile extremes in unweighted versus volume-weighted return divergence, with profit targets and eight-session expiry.
+1791236374	Percentile-ranked range overlap switches extreme weekly moves between propagation and congestion reversal, with ratcheting close stops.
+1791236575	Trades twice-confirmed ROC acceleration turns when immediate persistence and delayed inhibition identify oscillatory price cycles.
+1791236695	Trades daily boundary breakouts when accumulated high-low translation dominates range breathing, exiting on opposite qualifying breakouts.
+1791236816	Buys upward time-price signature curvature when directional return energy shifts positively from its preceding regime.
+1791236924	Trades conditional second-lag autocorrelation in fractional-differenced close innovations, scaling forecast conviction with two-session ratcheting high-water exits.
+1791237108	Volume concentration switches confirmed moves between continuation and rejection fades, with conviction sizing and four-day breakeven trails.
+1791237259	Buys twice-confirmed narrow price shelves inside substantial drawdowns, with fixed entry-ATR stops and eight-session expiry.
+1791237376	Buys percentile-extreme upside gaps after overnight dormancy, requiring daytime acceptance and holding two sessions.
+1791237542	Fades rejected continuation gaps when daily ranges contract immediately after directional range shocks.
+1791237639	Trades anchored drawdown repair or deterioration only when multiweek volume-weighted closing pressure agrees; exits on opposite agreement.
+1791237773	Buys negative returns when downside-conditioned serial response predicts rebounds while upside-conditioned response shows exhaustion.
+1791237950	Buys rising-low inside bars near corridor bottoms when signed turnover turns positive; freezes entry-ATR stops for four-session holds.
+1791238148	Buys two volume-backed advances beyond high-turnover compressed ranges, with breakeven ATR ratchets and ten-session expiry.
+1791238303	Fades gaps that increase squared displacement from a historical price corridor midpoint, with fixed ATR stops and four-session expiry.
+1791238443	Buys two accepted upside gaps when overnight impulses shrink and daytime buying strengthens, with fixed ATR stops.
+1791238596	Trades twice-confirmed volume-backed escapes from opposing directional volume cost anchors, with fixed entry-ATR stops and four-session expiry.
+1791238680	Buys consecutive rising lows with upper-half closes and positive fortnight drift, holding twenty sessions with fixed entry-ATR stops.
+1791238872	Trades percentile-extreme midpoint slope innovations during range compression when closing prices lag the emerging direction.
+1791239047	Buys prior-high breakouts only when ordinal permutation entropy contracts, exiting at a profit target or eight-session expiry.
+1791239122	Buys volatility-scaled drawdowns when damage accumulation decelerates, targeting daily volatility and exiting when eligibility reverses.
+1791239286	Trades volume-confirmed escapes from closing-price quartiles while intraday range headroom remains, with fixed entry-ATR stops.
+1791239404	Buys twice-confirmed clusters of percentile-extreme overnight discounts absorbed by daytime buying, with profit targets and eighteen-session expiry.
+1791239567	Trades two-bar reclaim or rejection of drawdown-depth barriers breached by downside gaps, with ratcheting high-water exits.
+1791239717	Buys early-month pullbacks when seasonal return premiums are positive above the 200-day average, with fixed entry-ATR stops.
+1791239812	Buys latent trend forecast breakouts confirmed by volatility-normalized regression slope innovations; exits when the identical condition reverses.
+1791239913	Trades narrow, fully separated gap-day ranges as directional acceptance, gated by the 200-day average, with breakeven ATR trails.
+1791240006	Trades acceleration bursts in early drawdown repair and acceleration collapse in mature rebounds, with conviction sizing and two-session holds.
+1791240122	Fades failed compressed-range probes when elevated-volume reversal candles agree, holding exactly two sessions.
+1791240281	Buys twice-confirmed percentile strength in the weaker of two adjacent trend legs, exiting when eligibility reverses.
+1791240445	Buys expanding bullish visibility-graph hubs with hysteretic regime switching, topology-scaled exposure, and ratcheting ATR exits.
+1791240611	Trades directional volatility polarization when opposing volatility evaporates, gated by the 200-day average, with profit targets and expiry.
+1791240719	Buys twice-confirmed drawdown excursions below their local underwater centroid, exiting when the depth imbalance disappears.
+1791240803	Buys turning negative MA z-score excursions around stationary centroids, scales exposure by displacement, and exits with ratcheting ATR trails.
+1791240883	Trades persistent fractional-difference directional efficiency, rearms after strength resets, and exits after four sessions.
+1791240992	Buys quarterly expiration-to-month-end MA z-score discounts, scales exposure by discount depth, and exits when eligibility reverses.
+1791241081	Buys retained upward range-midpoint displacement after range shocks relax, with conviction-scaled volatility targeting and eighteen-session holds.
+1791241174	Buys partial drawdown repairs when recovery streaks follow sustained decline streaks, sizing by streak parity with fixed entry-ATR stops.
+1791241268	Buys percentile-rare positive MA displacement inside compressed ranges, with two-session expiry and breakeven ATR trails.
+1791241521	Buys variance-collapse changepoints with positive drift, scales exposure by changepoint strength, and exits through breakeven ATR trails.
+1791241679	Fades price displacement when spanning visibility triangles reveal rounded reversals, requiring two-bar confirmation and exiting on opposite topology.
+1791241818	Buys negative-return range recoveries confirmed by high intraday closing position, with profit targets and four-day expiry.
+1791241947	Buys fractional-difference discount rebounds in elastic regimes when volume pressure agrees, with profit targets and ten-session expiry.
+1791242122	Trades fractional-close excursions confirmed by compressed-box breakouts, with ratcheting ATR trails and eight-session expiry.
+1791242270	Trades volatility-contracting ROC polarity takeovers, with acceleration-scaled risk budgets, two-session expiry, and breakeven ATR trails.
+1791242442	Buys month-end sell-to-buy volume signature rotations confirmed by bullish closing pressure, holding exactly eighteen sessions.
+1791242594	Buys twice-confirmed fractional-close state contagion through a negative-state reservoir, targeting volatility and holding four sessions.
+1791242725	Trades percentile-extreme volume pressure hidden within cancelling candle moves, with volatility-targeted sizing, profit targets, and four-session exits.
+1791242863	Buys accelerating returns during ordinal entropy contraction, scales exposure by pattern conviction, and exits when eligibility reverses.
+1791242981	Buys consecutive range-ceiling tests after two small-upper-wick confirmations, holding exactly four sessions.
+1791243071	Fades rejected repeat gaps after an overnight shock and two quiet sessions, holding exactly seven trading bars.
+1791243230	Fades range extremes with asymmetric horizontal visibility hub degrees, holding exactly two trading bars.
+1791243417	Trades drawdown-adjusted trend strength crossings with conviction sizing, ratcheting ATR trails, and four-session expiry.
+1791243512	Trades autocorrelated returns when coarse Haar wavelet energy dominates, aligned with the 200-day regime and fixed ATR stops.
+1791243590	Buys percentile-rare higher-low recovery streaks emerging from historically deep drawdowns, holding exactly eighteen sessions.
+1791243700	Trades candle-center slope innovations inside compressed ranges before price breakouts, with breakeven ATR trails and four-session expiry.
+1791243779	Switches between pullback recovery and impulse continuation using natural-visibility terminal-edge triangle closure, holding exactly two sessions.
+1791243930	Buys deep, decelerating drawdowns above the 200-day average, with ratcheting ATR exits and four-session expiry.
+1791244013	Buys volume-backed impulse reclaims after quiet consolidation, using breakeven activation, ratcheting ATR trails, and ten-session expiry.
+1791244076	Buys percentile-deep drawdowns reclaiming sellers’ volume-weighted cost basis with unusually strong buying participation and breakeven ATR trails.
+1791244204	Buys below-anchor prices when persistent long-edge natural-visibility mass favors valleys over reflected crests, exiting on condition reversal.
+1791244337	Buys compressed-range breakouts when intraday-range ordinal statistical complexity indicates structured volatility, sizing by complexity strength.
+1791244516	Ordinal transition complexity switches between trend continuation and cyclic mean reversion, with conviction sizing and target-or-time exits.
+1791244649	Trades gap-repair streak breakdowns in the overnight direction, scaling exposure by streak length and intraday release strength.
+1791244768	Buys latent slope acceleration exceeding learned weekday expectations on acceleration-favorable weekdays, holding exactly four sessions.
+1791244952	Trades percentile-extreme overnight volatility shocks accepted by unusually quiet intraday ranges, with ratcheting ATR exits.
+1791245189	Trades opposing-gap discounts after two fractional-close confirmations, using fixed entry-ATR stops and four-session expiry.
+1791245359	Trades twice-confirmed latent slope revisions from local-linear forecast errors within volatility-scaled drawdowns, exiting on opposing conditions.
+1791245564	Volatility feedback switches between clustered momentum and alternating-shock rebounds, with conviction sizing, ratcheting ATR trails, and four-session expiry.
+1791245711	Trades channel breakouts when Haar wavelet energy abruptly migrates from coarse scales into the two-bar component.
+1791245877	Fades consecutive daily streaks only when historical month-phase seasonal drift agrees, with fixed entry-ATR stops and seven-session expiry.
+1791246012	Trades drawdown recovery and failure using percentile-extreme price–buying-pressure signature area, exiting at profit targets or eighteen sessions.
+1791246170	Buys deep drawdowns with decelerating loss contagion, targeting volatility with exhaustion-scaled sizing and two-session target-or-time exits.
+1791246298	Carries a monthly allocation verdict from early-month close-return strength, exiting when the next seasonal verdict reverses.
+1791246412	Buys drawdowns when return-mass centroids migrate from earlier losses to later gains across two confirmed sessions.
+1791246522	Buys statistically significant upward shifts in average overnight gaps above the 200-day moving average.
+1791246623	Buys noise-normalized close ROC acceleration when daily lows accelerate alongside it, holding exactly four sessions.
+1791246775	Fades expanded ranges that breach recent boundaries and close inside, rearming after range normalization.
+1791246865	Buys upside gap releases after percentile-extreme clustered downside gap volatility, exiting at a profit target or four sessions.
+1791247030	Trades month-turn accumulation and midmonth distribution when mirrored natural-visibility graphs show opposing triangle-density imbalances.
+1791247204	Buys overnight slope inflections after partial gap giveback, scaling conviction with slope innovation and freezing entry-ATR stops.
+1791247335	Downside variance regimes switch volume-confirmed entries between monthly breakouts and weekly recoveries, with fixed entry-ATR stops.
+1791247431	Matches fractional-differenced price shapes to matured four-day historical outcomes, sizing longs by analog forecast strength.
+1791247594	Matches local slope-innovation shapes to matured next-day outcomes, trading both directions until opposite evidence triggers a flat exit.
+1791247763	Trades percentile-extreme latent slope revisions normalized by forecast uncertainty, with ratcheting ATR trails and four-session expiry.
+1791247921	Buys sustained agreement among latent slope revisions above the 200-day average, targeting volatility with ratcheting ATR exits.
+1791248039	Buys easing fractional-close selling pressure relative to the same weekday last week, with profit-target and four-session exits.
+1791248170	Volatility-targeted price-volume signature rotation trades only with matching close-location pressure, holding four sessions.
+1791248268	Buys persistent percentile shifts in volume-adjusted price impact, scaling exposure as a liquidity-release wave strengthens.
+1791248409	Ordinal statistical complexity switches daily shocks between continuation and reversal within the 200-day regime, holding four sessions.
+1791248494	Trades acceleration relays from fast to medium momentum within the 200-day regime, with fixed ATR stops.
+1791248603	Trades expanding ranges with synchronized boundary migration, targeting volatility and scaling conviction with directional range transport.
+1791248727	Buys percentile-extreme ROC acceleration while price rises within a historically depressed channel position, using ratcheting ATR exits.
+1791248886	Buys upside releases from percentile-rare compression streaks, with breakeven-armed ATR ratchets and two-session expiry.
+1791249095	Matches ATR-scaled drawdown trajectories to matured analog outcomes, trading percentile-extreme forecasts with ratcheting stops and eight-session expiry.
+1791249235	Fades consecutive daily price streaks before monthly third-Friday expiry, scaling exposure by streak length and holding four sessions.
+1791249376	Buys two-bar-confirmed upward visibility-graph reach, holding accelerating trends with breakeven-armed ATR ratchets.
+1791249517	Fades percentile-extreme overnight displacements when opposing intraday returns confirm rejection, using breakeven ATR trails and eighteen-session expiry.
+1791249617	Trades weekly echoes in fractional-close innovations when five-day autocorrelation dominates immediate persistence, with breakeven ATR trails.
+1791249724	Fades channel extremes as fine-scale Haar energy dissipates, scaling positions by spectral dominance and displacement.
+1791249915	Buys coarse Haar energy regimes confirmed by buying-volume participation, with ratcheting ATR exits and ten-session expiry.
+1791250025	Switches between continuation and reversal as volatility shockwaves expand or dissipate across consecutive weekly blocks.
+1791250109	Buys overnight selling absorbed by simpler intraday ordinal patterns, exiting when four-session evidence reverses.
+1791250287	Trades percentile-extreme fractional-close location changepoints with ten-session expiry and ratcheting close-watermark exits.
+1791250368	Buys detrended residual median reclaims when latent regression slope innovations exceed their historical percentile.
+1791250439	Buys efficient upward paths with positive time-price signature area, capturing backloaded momentum over two sessions.
+1791250508	Trades percentile-extreme asymmetry between average positive and negative overnight gaps, holding each position for eighteen sessions.
+1791250591	Buys twice-confirmed compression-to-buying rotations measured by range-pressure signature area, exiting at a closing profit target or two sessions.
+1791250683	Buys smoothed price breakouts when percentile-ranked price-volume signature area detects participation leading returns.
+1791250790	Matches multiscale Haar energy migration to matured historical analogs, buying percentile-ranked forecasts with profit targets and monthly time stops.
+1791250935	Trades overnight crossings and closing recoveries of fractional-memory equilibrium within the 200-day regime, using fixed ATR stops.
+1791251087	Buys return-shock replication confirmed by upper-range close acceptance, holding two sessions with breakeven ATR ratchets.
+1791251248	Trades energy-weighted autocorrelation echoes across nonoverlapping Haar packets, scaling conviction and protecting gains with breakeven ATR ratchets.
+1791251386	Buys percentile forecast-corridor breakouts confirmed by latent midpoint slope innovations, holding exactly four sessions.
+1791251545	Fades fractional-close extremes only when opposing intraday candle pressure confirms rejection, with ratcheting ATR trails and two-session expiry.
+1791251628	Volatility-targeted trend exhaustion fades require rising ordinal entropy and opposing volume-weighted wick rejection.
+1791251766	Buys compressed ranges when volume visibility hubs concentrate bullish candle acceptance, scaling exposure by smoothed graph conviction.
+1791251854	Buys percentile-ranked collapses in downside-gap propagation after concentrated selling waves, scaling exposure by depletion strength.
+1791251964	Buys twice-confirmed gap-repair analog forecasts, holding two sessions with a ratcheting ATR close-watermark stop.
+1791252093	Buys distribution-wide upward return changepoints, scaling exposure by the weakest quartile displacement and exiting on reversal.
+1791252238	Trades twice-confirmed gaps, switching continuation versus reversal using historical overnight-to-intraday coupling, with fixed ATR stops.
+1791252390	Buys deepening week-opening drawdowns above the 200-day average, with four-session expiry and breakeven ATR ratchets.
+1791252548	Buys rebound rotations in lagged-return signature area under negative autocorrelation, with ratcheting ATR trails and two-session expiry.
+1791252643	Trades percentile-tail double-trough recoveries when price makes a new extreme but moving-average z-score refuses to confirm.
+1791252811	Buys twice-confirmed low price percentiles with upper-tail volume-per-range congestion, exiting on close-based profit targets or two-session expiry.
+1791252901	Buys percentile-ranked recovery escapes after unusually persistent underwater occupancy, with fixed entry-ATR stops and eight-session expiry.
+1791252998	Trades MA z-score recoveries with opposing reference drift, gated by the 200-day trend, targeting profits within eighteen sessions.
+1791253166	Trades twice-confirmed latent slope innovations filtered by forecast-error noise, with ratcheting ATR exits and four-session expiry.
+1791253287	Buys expanding long-range natural visibility connections in accelerating price trends, with ratcheting ATR trails and eighteen-session expiry.
+1791253399	Trades compressed price-range signature rotations only when candle closing pressure agrees, exiting on opposite agreement.
+1791253584	Buys return troughs when inverted visibility neighbors forecast negative lag-one autocorrelation and a rebound.
+1791253740	Trades fractional-close channel escapes after inner-channel resets, sizes by breakout excess, and holds eighteen sessions.
+1791253909	Buys weekday-specific two-session seasonal edges conditioned on coarse Haar energy dominance, sizing by normalized conditional expectancy.
+1791254019	Buys entropy-weighted bullish ordinal dominance and exits on equally strong bearish ordinal dominance.
+1791254186	Trades percentile-tail changes in upper versus lower horizontal-visibility hubs, holding until an opposite topology shock.
+1791254268	Buys accumulating defended upside gaps that overcome intraday selling, with breakeven ATR ratchets and eighteen-session expiry.
+1791254389	Buys bullish fine-scale Haar energy releases after synchronized multiscale compression above the 200-day average, with ratcheting ATR exits.
+1791254540	Buys fractional-close mean reclaims inside unresolved drawdowns above the 200-day average, exiting when recovery conditions reverse.
+1791254674	Trades percentile-extreme drawdowns using drawdown-impulse autocorrelation to distinguish propagating selloffs from reversing shockwaves, holding eighteen sessions.
+1791254754	Trades MA z-score departures only when cash-session displacement exceeds overnight gap noise, with frozen ATR stops and four-session expiry.
+1791254901	Trades twice-confirmed shifts from balanced return-percentile occupancy, with breakeven ATR ratchets and ten-session expiry.
+1791254990	Buys reversing negative latent-slope innovation impulses below reconstructed trend, with frozen entry ATR stops and eighteen-session expiry.
+1791255191	Buys recovering negative MA z-scores when nearest historical z-score shapes predict profitable two-session rebounds, with frozen ATR stops.
+1791255298	Buys volume-confirmed six-day shape analogs whose matured eight-day outcomes rank above historical forecast percentiles.
+1791255404	Buys dissipating downside range shockwaves when three nested contractions defend the shock low and closing direction recovers.
+1791255521	Trades twice-confirmed ATR stretches from a quiet-session weighted price anchor during volatility compression, exiting on opposite stretches.
+1791255692	Switches confirmed gap trades between continuation and reversal using hysteretic overnight-session coupling, with fixed ATR stops and four-day expiry.
+1791255826	Buys recovering percentile-cheap MA distances before monthly options expiry, holding eight sessions with frozen entry ATR stops.
+1791255999	Buys fading downside semivolatility when turnover-adjusted selling impact also falls, using breakeven ATR ratchets and ten-session expiry.
+1791256154	Trades twice-confirmed historical analog forecasts from overnight-gap versus intraday-return signature area, with frozen ATR stops.
+1791256262	Fades recovering MA z-score excursions after accumulated stretch, scaling exposure by excursion persistence around a stable anchor.
+1791256375	Buys Wednesday fractional-close strength exceeding recent noise, capturing hypothesized weekly demand with an exact seven-session hold.
+1791256511	Trades mirrored historical analogs of variance-clock price signature area, exiting symmetrically when the opposite forecast crosses its entry threshold.
+1791256585	Fades MA z-score extremes only when volume-weighted closing-location pressure confirms absorption, holding exactly eighteen sessions.
+1791256758	Trades twice-confirmed drawdown and drawup reversals as ordinal-pattern entropy contracts, with ratcheting high-water exits and four-session expiry.
+1791256886	Buys fractional-close thrust crossing a shrinking range's pressure threshold, with profit targets and eight-session expiry.
+1791257018	Fades percentile-extreme, low-participation price excursions after reversal confirmation, gated by the 200-day average, with ratcheting exits.
+1791257115	Buys unfilled range-displacing opening gaps AND efficient upward price paths, holding exactly four sessions.
+1791257203	Trades weekly echo polarity when rolling autocorrelation ranks enter extreme regimes, with eight-session holds and fixed ATR stops.
+1791257366	Buys unexpected latent-slope recovery near local range lows above the 200-day average, with fixed ATR stops.
+1791257452	Buys fractional-memory drawdown rebounds only when intraday gains repay overnight gap debt, using breakeven ATR trails.
+1791257533	Buys upward escapes from percentile-ranked shared auction cores during range compression above the 200-day average.
+1791257637	Trades recovering drawdowns through natural visibility-graph bridge formation, filtered by the 200-day average, with breakeven ATR trails.
+1791257775	Range-pulse analogs transfer historical closing-pressure continuation or reversal into two-session directional trades with fixed ATR stops.
+1791257847	Trades accelerating time-price signature area aligned with efficient short trends, holding exactly two sessions.
+1791257930	Trades twice-confirmed innovation decay into strengthening latent slopes, with ratcheting ATR trails and two-session expiry.
+1791258112	Trades percentile-extreme forecasts from historical Haar-wavelet energy analogs, with eighteen-session expiry and ratcheting ATR trails.
+1791258203	Trades percentile-extreme standardized innovations between adjacent latent drift estimates, holding until an opposite changepoint triggers a flat exit.
+1791258318	Follows first-Friday volume-confirmed directional candles for four sessions, with fixed entry-ATR stops.
+1791258434	Buys twice-confirmed negative Haar-wavelet stretch when fast-scale energy dominates, exiting when that configuration reverses.
+1791258507	Trades volume-weighted liquidation debt repayment in drawdown recoveries and mirrored drawup failures within 200-day regimes.
+1791258661	Follows consecutive return streaks emerging from strict alternation, with spike cooldowns and four-session holds.
+1791258777	Fades volatility shocks after abrupt range contraction and directional reversal, scaling exposure by exhaustion strength.
+1791258865	Buys resistance-clearing gaps only when efficient bullish intraday bodies confirm acceptance, exiting on profit targets or two-session expiry.
+1791258959	Trades latent slope innovations in range-occupancy log odds within 200-day regimes, with ratcheting close-watermark exits.
+1791259098	Trades twice-confirmed fractional-close impulse transmission while directional adoption remains unsaturated, with profit targets and eight-session expiry.
+1791259212	Trades latent slope surprises during recoveries toward drifting volume-weighted cost bases, with 200-day regimes and ratcheting exits.
+1791259305	Trades consecutive closes establishing new 200-day regimes, with eighteen-session expiry and ratcheting ATR watermark stops.
+1791259411	Trades consecutive range-midpoint migration confirmed by directional signal-to-noise, with close-armed breakeven ATR trails and four-session expiry.
+1791259528	Trades twice-confirmed directional shock reconnections in return visibility graphs, with eighteen-session expiry and breakeven ATR trails.
+1791259650	Trades energy-weighted Haar autocorrelation forecasts across scales, holding until an equally strong opposite forecast triggers a flat exit.
+1791259751	Buys percentile release of ATR-normalized elastic displacement, scaling conviction by stretch and exposure by inverse volatility.
+1791259890	Buys resistance breakouts during rapid Haar energy migration toward the daily scale, exiting symmetrically when that condition reverses.
+1791259974	Trades two-bar recoveries from concentrated return shocks, mirroring drawup failures, with mandatory two-session exits.
+1791260105	Buys upward range discovery retained at closing auctions, scales conviction, and uses fixed entry-ATR stops with eight-session expiry.
+1791260292	Trades twice-confirmed autocorrelation of unfilled overnight gaps, holding gap clusters with ratcheting close-high ATR exits.
+1791260413	Trades ROC acceleration reversals when short-channel extremes oppose long-channel location, exiting on profit targets or eighteen-session expiry.
+1791260481	Trades distributed overnight gap pressure, rejecting single-gap dominance and exiting when equally strong opposite pressure emerges.
+1791260548	Trades rejected overnight gaps sized against inherited six-session drawdown depth, holding positions for four sessions.
+1791260675	Buys down days when concentrated ordinal patterns and negative return autocorrelation jointly predict short-lived rebounds.
+1791260747	Buys sustained upward gap overflow beyond recent intraday range capacity, exiting when the overflow condition reverses.
+1791260859	Trades moderate moving-average z-score displacement confirmed by expanding directional candle participation, with close-observed profit targets and two-session expiry.
+1791260940	Trades channel breakouts when volume-price signature area shows participation preceding directional release, filtered by the 200-day average.
+1791261034	Trades volume-confirmed overnight reversals of prior intraday pressure within 200-day regimes, exiting when entry conditions reverse.
+1791261162	Buys low energy-weighted range positions when downward daily Haar energy dominates an upward multiscale background; exits on condition reversal.
+1791261236	Buys percentile-extreme underwater burden when ROC acceleration signals recovery, exiting at a profit target or eighteen sessions.
+1791261335	Buys percentile-depressed MA displacement shapes whose nearest historical analogs predict percentile-strong rebounds, holding exactly eight sessions.
+1791261408	Buys twice-confirmed positive forecast innovations during drawdowns while the latent regression slope remains negative.
+1791261544	Buys abrupt daily-range downshifts confirmed by persistent positive overnight gaps, exiting at profit targets or eighteen sessions.
+1791261676	Buys prolonged negative MA-z-score congestion releases above the 200-day average, with ratcheting ATR trails and eighteen-session expiry.
+1791261812	Trades contracting ordinal-pattern entropy when directional pattern dominance and intraday body efficiency agree, with breakeven ATR trails.
+1791261941	Fades asymmetric overnight gap semivariance when opposing gaps cancel net drift, holding long or short for eighteen sessions.
+1791262086	Fades partially repaid ROC acceleration impulses within 200-day regimes, using breakeven ATR trails and eighteen-session expiry.
+1791262183	Fades countertrend reopening volatility shocks after weekend closures within 200-day regimes, holding exactly four sessions.
+1791262334	Trades time–price signature-area reversals confirmed by candle-pressure changepoints, with two-session expiry and ratcheting high-close stops.
+1791262437	Trades ATR compression toward the quieter price boundary, sizing by high-versus-low volatility asymmetry and holding eight sessions.
+1791262566	Buys negative fractional-difference dislocations in noisy price paths and exits after exactly eight sessions.
+1791262720	Buys positive midpoint–close signature area only when sustained upper-range positioning confirms acceptance.
+1791262786	Buys percentile-extreme acceleration divergence when short-term momentum strengthens inside a positive but decelerating longer trend.
+1791262863	Buys upward natural-visibility hubs whose long-range connections reveal accelerating trend strength, holding a fixed number of sessions.
+1791262938	Buys deep drawdown shelves above the 200-day average, exiting through breakeven ATR trails within ten sessions.
+1791263136	Trades MA z-score breakouts with expanding displacement and contracting dispersion, using 200-day regimes and four-session ATR trails.
+1791263265	Buys consecutive shrinking-range declines on increasing volume, anticipating exhausted selling with profit targets and two-session expiry.
+1791263416	Buys fractional-memory breakouts inside compressed price envelopes, exiting at a profit target or eighteen sessions.
+1791263635	Trades volatility-release versus drawdown-repair hysteresis, sizing by phase divergence and exiting at profit targets or four sessions.
+1791263782	Buys quiet retests holding a high-volume upward gap shelf, exiting at a profit target or eighteen sessions.
+1791263935	Switches continuation versus elastic reversal using multiscale volatility ratios, with conviction-scaled sizing, profit targets, and eight-session expiry.
+1791264084	Trades percentile-ranked midmonth cash-flow pressure with conviction-scaled exposure, fixed entry ATR stops, and eighteen-session expiry.
+1791264185	Buys twice-confirmed positive returns when two-day return echoes dominate adjacent-day correlation, with four-session expiry and fixed ATR stops.
+1791264369	Trades post-shock range migration with volume exhaustion inside drawdowns, using fixed ATR stops and two-session expiry.
+1791264490	Buys bullish historical return-shape analogs only when volume overload subsides, with two-session expiry and ratcheting ATR exits.
+1791264609	Buys prior-range breakouts after consecutive rising lows, scales exposure by streak length, and exits exactly two sessions after entry.
+1791264701	Switches trend continuation and elastic rebound entries using price–range signature area, with profit targets and eighteen-session expiry.
+1791264931	Fades consecutive close streaks after two range-captive reversal closes, using breakeven ATR trails and four-session expiry.
+1791265029	Buys intraday rejection of percentile-extreme drawdown boundaries, with two-session expiry and breakeven ATR trails.
+1791265161	Switches continuation and reversal using gain–loss path signature area and directional efficiency, exiting on symmetric opposite signals.
+1791265260	Switches fractional-close level versus acceleration by gap transmission, accumulating bounded conviction and exiting only on conviction reversal.
+1791265338	Trades persistent momentum when coarse Haar wavelet energy dominates daily noise, holding until opposite energy-qualified momentum appears.
+1791265476	Fades return-corridor overshoots against the 200-day trend, exiting at a profit target or two-session expiry.
+1791265589	Trades fractional-close shape analog forecasts only when signed accumulation agrees, holding eighteen sessions with fixed entry ATR stops.
+1791265738	Buys positive differences between next-day forecasts from historical return-shape analogs and their sign-inverted counterparts, exiting on condition reversal.
+1791265832	Trades abrupt sustained range expansion with directional close placement and a 200-day regime filter, holding eight sessions.
+1791265971	Buys twice-confirmed fractional-close recoveries from seasonal winter discounts, holding eighteen sessions with fixed entry ATR stops.
+1791266054	Fades large gaps in clustered overnight regimes, follows them in alternating regimes, and exits after four sessions.
+1791266187	Trades twice-confirmed ROC acceleration projected to repay drawdown debt within four sessions, exiting on opposite recovery conditions.
+1791266304	Fades asymmetric eighteen-session variance queues after volatility cools, requiring two-bar entry confirmation and exiting on opposite pressure.
+1791266410	Fades moving-average dislocations when alternating autocorrelation reveals two-day shockwaves, aligned with the 200-day regime.
+1791266557	Fades expanded gaps rejected into prior territory after a contained range contraction confirms exhausted breakout pressure.
+1791266700	Trades confirmed return shocks when next-day gaps underreact relative to historical return-to-gap coupling, holding four sessions.
+1791266781	Trades abrupt fine-scale wavelet energy localization only when directional volume pressure agrees, with profit targets and two-session expiry.
+1791266880	Buys positive latent slope updates from regression forecast surprises above the 200-day average, exiting when qualification reverses.
+1791266971	Fades signed multiscale Haar excursions during energy compression only when persistent wick rejection agrees, exiting on opposite agreement.
+1791267122	Trades autocorrelation-predicted range expansion only when directional volume agrees, with ratcheting ATR trails and eighteen-session expiry.
+1791267177	Buys sustained overnight gaps preserved through settlement, exiting on equally strong negative surviving-gap pressure.
+1791267252	Buys moving-average discounts when standardized intraday polarity abruptly switches from selling to buying, with target and two-day expiry.
+1791267344	Buys volume-confirmed crossings above the downside-volume seller distribution, filtered by MA200, with ratcheting ATR exits.
+1791267418	Trades fractional-close innovation reversals that exceed volume-adjusted absorption capacity, holding exactly four sessions.
+1791267617	Trades calendar-month transmission of latent slope innovations, scaling conviction with learned seasonal response and ratcheting ATR exits.
+1791267756	Trades overnight wavelet energy overtaking opposing intraday energy, following emerging gap direction with profit targets and time stops.
+1791267937	Trades twice-confirmed candle-range migration streaks with limited overlap, profit targets, eight-session expiry, and reset-gated reentry.
+1791268013	Trades compressed-channel escapes only when fractional-differenced close agrees, holding exactly eight trading bars.
+1791268175	Trades volume-confirmed midpoint recrossings of exceptional-volume auctions after a refractory pause, with breakeven ATR trails and two-session expiry.
+1791268304	Buys high-volume gaps clearing recent highs after clustered quiet downside gaps above MA200, with profit targets and eight-session expiry.
+1791268439	Follows directional excess-volume overflow beyond recent trading capacity, holding until opposing overflow triggers a flat exit.
+1791268586	Buys fully reclaimed downside gaps within deep drawdowns, holding two sessions with a ratcheting close-high ATR stop.
+1791268728	Trades ROC-accelerating channel breakouts after repeated failed boundary probes, with breakeven ATR ratchets and eighteen-session expiry.
+1791268827	Fades turning fractional-close oscillations inside compressed daily ranges, holding until an opposite compressed turning phase triggers exit.
+1791268960	Trades calendar-phase wavelet resonance when exceptional slow-scale energy aligns with historically learned seasonal returns.
+1791269093	Buys downside gaps when overnight responses invert against strengthening fractional-close innovations, holding a fixed number of sessions.
+1791269330	Permutation entropy switches ordinal rank pressure between continuation and contrarian regimes, scaling exposure by conviction.
+1791269498	Buys concentrated ordinal motifs AND sustained lower-channel displacement, exiting when either primitive withdraws agreement.
+1791269674	Fades consecutive close streaks with collapsing return per unit volume, scales exposure by exhaustion, and holds eighteen sessions.
+1791270470	Buys percentile-compressed ranges with bullish time-price signature curvature, using fixed entry ATR stops and two-session expiry.
+1791270705	Buys fine-scale wavelet energy dissipation AND positive volume-weighted settlement pressure, targeting volatility with four-session breakeven trails.
+1791270907	Directional ordinal entropy asymmetry AND lagged calendar-month drift select eighteen-session trades with fixed entry ATR stops.
+1791271126	Follows latent slope innovations only when nonoverlapping auction ranges confirm directional relocation, with profit targets and eighteen-session expiry.
+1791271309	Buys percentile breakthroughs in fractional-close trend consistency, with next-open entries, breakeven ATR ratchets, and eighteen-session expiry.
+1791271379	Buys noise-filtered five-day ROC acceleration around month boundaries, holding eight sessions with a fixed entry ATR stop.
+1791271463	Drawdown depth AND return-autocorrelation forecasts select deep-pullback longs and near-peak shorts with two-session expiry.
+1791271624	Fades accumulated latent-slope forecast innovations as shock intensity cools, with MA200 entry gates and opposite-setup exits.
+1791271843	Trades overnight–intraday slope divergence using intraday innovations, conviction-scaled exposure, and breakeven ATR ratchets.
+1791271989	Trades channel breakouts after consecutive rejected opposite-side sweeps, exiting when the opposite breakout qualifies.
+1791272114	Follows percentile-extreme directional range migration, scaling exposure by dominance and rank with fixed entry ATR stops.
+1791272225	Volatility-term-structure hysteresis switches daily shocks between reversal and continuation, gated by MA200 with two-session ratcheting exits.
+1791272360	Volatility-targeted fractional innovation pressure uses symmetric reversal thresholds to switch between long exposure and cash.
+1791272479	Fades range edges when directional true-range energy switches inward, scaling exposure by edge depth and volatility imbalance.
+1791272649	Trades ranked cancellation of opposing overnight gaps when settlement-pressure percentiles confirm the latest gap direction, holding two sessions.
+1791272764	Trades autocorrelated ROC acceleration recovering countertrend moves within MA200 regimes, with breakeven ATR trails and ten-session expiry.
+1791272919	Matches direction-reflected Haar energy fingerprints to matured historical analogs, trading their projected outcomes for four sessions.
+1791273063	Buys downside semivolatility collapse within strong upward displacement, holding four sessions with a frozen entry ATR stop.
+1791273296	Follows directional volatility arrival-time asymmetry during volatility expansion, with breakeven ATR ratchets and ten-session expiry.
+1791273398	Trades twice-confirmed directional Haar energy distributed across scales, with ratcheting ATR trails and ten-session expiry.
+1791273542	Buys return-feedback changepoints from alternation to positive persistence, exiting at a profit target or eighteen sessions.
+1791273658	Switches price–volume signature orientation by volatility regime, requiring two confirmations and exiting through breakeven ATR ratchets.
+1791273809	Trades fine-to-coarse wavelet energy changepoints confirmed by signed volume pressure, with ratcheting stops and eighteen-session expiry.
+1791273995	Fades fractional-close range extremes when volume-weighted settlement pressure reverses, using fixed entry ATR stops and four-session expiry.
+1791274115	Buys orderly partial repairs of downside gaps above MA200, exiting on gap completion, ratcheting ATR trails, or two sessions.
+1791274288	Buys percentile-ranked price–calendar signature area around month boundaries, exiting when seasonal qualification reverses.
+1791274405	Buys ATR-expanding breakouts after repeated volatility-scaled resistance tests above MA200, with breakeven ratchets and ten-session expiry.
+1791274551	Fades percentile-extreme fine-scale Haar energy against learned weekday drift, using four-session holds and frozen ATR stops.
+1791274727	Buys twice-confirmed drawdown rebounds when ordinal permutation entropy contracts, holding exactly two sessions.
+1791274890	Switches between gap continuation and reversal using overnight–intraday regression hysteresis, with coupling-scaled exposure and fixed ATR stops.
+1791275083	Volatility-targeted z-score dip buying requires fading volume-normalized selling impact, with two-session expiry and frozen ATR stops.
+1791275174	Trades latent-slope surprises against established trends near channel extremes, exiting at a profit target or ten sessions.
+1791275262	Buys consecutive upside repair after a downside streak, holding until the mirrored streak sequence reverses the signal.
+1791275460	Trades twice-confirmed latent slope innovations, switching continuation versus reversal by innovation autocorrelation, with ratcheting ATR trails.
+1791275591	Follows jointly shifting return quantiles, fades widening return distributions, and holds eight sessions with frozen entry ATR stops.
+1791275776	Matches three-bar MA-z trajectories to completed historical outcomes, requiring consecutive directional forecasts before fixed two-session trades.
+1791275944	Buys positive MA-z tension reloads below recent highs, with breakeven ATR ratchets and two-session expiry.
+1791276030	Buys Monday overnight-to-intraday signature-area percentile extremes, holding exactly two sessions.
+1791276131	Trades directional range escapes after consecutive range-and-volume starvation, with ratcheting ATR trails and four-session expiry.
+1791276235	Trades four-day MA-z displacement forecasts from two-lag autocorrelation, exiting only when opposite entry evidence appears.
+1791276377	Buys drawdown-depth recovery barrier breakouts above MA200, with ratcheting ATR trails and eight-session expiry.
+1791276543	Buys twice-confirmed volatility-capacity releases with inverse-volatility sizing, frozen ATR stops, and two-session expiry.
+1791276745	Buys contracting positive gaps after two confirmations in persistent gap-autocorrelation regimes, with profit-target and two-session exits.
+1791276900	Buys ROC acceleration reversals inside compressed ranges above MA200, exiting through ratcheting ATR trails or ten-session expiry.
+1791277025	Fades closing-price slope innovations unsupported by latent range-center repricing, with surprise-scaled exposure and four-session expiry.
+1791277130	Trades overnight-gap restitution inside drawdowns, scaling exposure by repair strength and exiting on opposite gap-repair evidence.
+1791277297	Buys positive ROC acceleration concentrated on quiet-volume days despite loud-volume deceleration, exiting at profit target or time limit.
+1791277412	Fades weekday-aligned volatility shocks, requiring historical next-session seasonality and exiting only on opposite joint evidence.
+1791277516	Fades persistent trough-dominated horizontal visibility networks when their connectivity imbalance exceeds its historical percentile.
+1791277691	Buys percentile-extreme natural-visibility edge spans in rising prices, targeting volatility over eighteen-session holds with fixed entry-ATR stops.
+1791277876	Fades percentile-extreme signed volume with percentile-low price impact, holding four sessions with frozen entry-ATR stops.
+1791278032	Trades percentile-extreme directional streaks, following persistent regimes and fading alternating regimes, with profit targets and two-session exits.
+1791278285	Trades twice-confirmed fractional-close shape analog forecasts with a ratcheting highest-close barrier and four-day expiry.
+1791278385	Trades recruitment and depletion of deep-drawdown occupancy, holding each long or short position for exactly eighteen sessions.
+1791278535	Trades twice-confirmed price–semimonthly-clock signature rotation, exiting only when opposite seasonal evidence appears.
+1791278625	Trades ATR-normalized translation of both daily range boundaries, holding until opposite translation triggers a flat exit.
+1791278841	Trades predictable ordinal range-midpoint transitions aligned with efficient drift, using strength-scaled sizing and profit-target or two-session exits.
+1791278978	Buys twice-confirmed coarse-to-fine wavelet energy cascades with positive momentum, exiting when cascade conditions reverse.
+1791279162	Buys positive variance-clock ROC acceleration, exits on negative acceleration, and targets annualized volatility.
+1791279288	Trades efficient ROC acceleration inside compressed price envelopes, with acceleration-scaled exposure, frozen ATR stops, and eight-session holds.
+1791279482	Trades twice-confirmed acceleration transfers between overnight gaps and intraday returns, exiting on opposite transfer evidence.
+1791280161	Buys contracting downside Haar shocks inside persistent drawdowns, sizing by recovery strength and holding exactly two sessions.
+1791280273	Buys twice-confirmed positive drift with coherent one-day and two-day return autocorrelation, holding exactly seven sessions.
+1791280384	Buys newly emerging ascending close-location permutations after ordinal diversity, near range lows, holding exactly two sessions.
+1791280610	Forecast-error persistence switches latent slope innovations between trend assimilation and elastic recovery, with strength-scaled sizing and breakeven trails.
+1791280685	Buys bullish contractions when daily range innovations alternate predictably, sizing by reversal strength and holding eight sessions.
+1791280868	Trades weekday-specific propagation of latent slope innovations, filtering entries by MA200 and exiting on opposite seasonal evidence.
+1791281043	Buys downside gaps spilling below channel floors and refilling inside, scaling exposure by overflow depth and recovery.
+1791281208	Trades fractional-close innovation bursts after range compression, aligned with MA200, using ratcheting trails and two-session expiry.
+1791281375	Trades fractional-close autocorrelation reversals confirmed by volume-weighted intraday absorption, with fixed ATR stops and eight-session holds.
+1791281474	Buys twice-confirmed upward return CUSUM changepoints and holds each position for exactly eight sessions.
+1791281575	Trades percentile-ranked recovery speed within unusually deep drawdowns, exiting when recovery direction reverses into the opposite percentile tail.
+1791281696	Trades directional volatility imbalance in unfilled overnight gaps within MA200 regimes, exiting only on opposite entry evidence.
+1791281840	Trades drawdown-debt-normalized ROC acceleration during partial recoveries, exiting only when opposite entry evidence appears.
+1791281958	Buys asymmetric return compression when downside energy disappears but upside energy survives, sizing by depletion strength.
+1791282061	Fades percentile-extreme drawdown depths when thin-volume wick rejection signals exhaustion, with profit targets and two-session expiry.
+1791282232	Buys channel-clearing overnight gaps after two closes accept frozen gap support, exiting when acceptance reverses.
+1791282344	Buys twice-confirmed gap-purged ROC acceleration, targets realized volatility, and exits when bullish acceleration evidence disappears.
+1791282434	Trades recovering MA z-score excursions only when adverse return energy contracts, with profit targets and twenty-session expiry.
+1791282598	Fades twice-confirmed price stretches when return ordinal entropy and disequilibrium reveal structured complexity, with profit targets and eight-session expiry.
+1791283396	Fades channel extremes when growing fine-scale Haar energy turns inward against the coarse-scale price cycle.
+1791283577	Buys return contagion when susceptibility-adjusted upside transmission exceeds recovery, scaling exposure by propagation strength.
+1791283743	Buys deep drawdown reversals when weekly drawdown innovations anticorrelate, using ratcheting ATR trails and an eighteen-session cap.
+1791283841	Trades volatility-scaled overnight shocks when intraday acceptance exceeds the recent gap-response regression, exiting on mirrored evidence.
+1791283955	Buys resistance breakouts after percentile-extreme support encroachment, scales exposure by encroachment strength, and holds eight sessions.
+1791284109	Trades sustained MA z-score changepoints after low excursion occupancy, with frozen ATR stops and eighteen-session holds.
+1791284279	Buys backloaded time–price signature momentum confirmed by volume-weighted body pressure, with breakeven ATR ratchets and four-session expiry.
+1791284438	Buys clockwise price–volume signature loops confirmed by lower-channel recovery, holding exactly eight sessions.
+1791284565	Trades delayed gap backlog release after two accelerating close-return confirmations, holding exactly four sessions.
+1791284717	Trades directional ordinal-pattern recurrence when low sequence complexity confirms short-term trend strength, holding exactly two sessions.
+1791284829	Trades channel breakouts when latent slope innovations confirm deformation beyond recent drift, filtered by MA200 with ratcheting ATR exits.
+1791285007	Buys volume-confirmed rallies before monthly options expiry, holding eighteen sessions with breakeven-activated ATR trailing stops.
+1791285187	Trades percentile-extreme gap scores from asymmetric gap-sign autocorrelation, with frozen entry ATR stops and two-session expiry.
+1791285347	Trades twice-confirmed autocorrelated return-cycle turns identified by lagged-return signature area, with breakeven trails and eighteen-session expiry.
+1791285454	Trades consecutive unfilled directional gaps during quiet sessions, anticipating persistent overnight repricing; holds exactly eighteen bars.
+1791285544	Buys displaced declines when ordinal entropy rebounds twice, signaling selling-cycle disorder; holds eighteen sessions with fixed ATR stops.
+1791285688	Fades unusually concentrated eight-session Haar energy, treating intermediate-scale displacement as elastic strain and exiting on mirrored entry evidence.
+1791285781	Buys compressed ranges when a new natural-visibility hub emerges, holding exactly eight sessions.
+1791285933	Buys twice-confirmed recovery below a volatility-weighted price anchor as downside volatility decays; exits on profit or four-session expiry.
+1791286124	Trades percentile-extreme semivariance reversals confirmed by opposing candle pressure, with volatility-targeted sizing and ratcheting ATR exits.
+1791286256	Trades statistically separated MA z-score sign inversions, scales exposure by changepoint strength, and holds eighteen sessions.
+1791286360	Trades range-breaking gaps that survive an intraday boundary retest, exiting on closing profit targets or two-session expiry.
+1791286489	Buys return trends surviving deletion of their strongest day above MA200, with frozen ATR stops and eight-session expiry.
+1791286654	Buys persistent positive time–channel-position signature area above channel equilibrium, exiting when the geometric condition reverses.
+1791286766	Trades consecutive return streaks when direction-specific historical streak survival confirms persistence, with fixed ATR stops and eight-session expiry.
+1791286878	Trades signed acceleration-shape analog consensus over eighteen sessions, exiting at closing profit targets or time expiry.
+1791286977	Trades monthly risk-budget resets when volatility compression or expansion agrees with intermediate momentum; exits on joint reversal.
+1791287174	Buys volume-loaded narrow-channel breakouts, scales exposure by turnover and penetration, and exits within two sessions using frozen ATR stops.
+1791287283	Buys persistent positive latent-slope innovations, holding eight sessions with entry-open anchored fixed ATR stops.
+1791287391	Trades drawdown contraction against negative overnight gaps and drawdown expansion against positive gaps, holding eight sessions.
+1791287530	Buys controlled range decompression after compression, confirmed by rising range floors; holds eighteen sessions with frozen ATR stops.
+1791287705	Buys two confirmed closes inside a repair corridor anchored by consecutive lower lows; exits when corridor membership reverses.
+1791287809	Trades percentile MA-distance breakouts after equilibrium resets, with hysteresis rearming and ratcheting ATR trails.
+1791287969	Fades weekday-standardized volatility shocks only when closing range rejection agrees, using frozen ATR stops and two-session expiry.
+1791288131	Trades expanding ordinal complexity during drawdown recovery and mirrored rally rejection, with profit targets and eighteen-session expiry.
+1791288302	Buys matched opposite opening gaps when the second gap fully repairs on declining volume; exits by profit or time.
+1791288489	Buys consecutive negative-Friday streak exhaustion above MA200, capturing early-week recovery with breakeven ATR trails.
+1791288627	Trades consecutive fresh channel breakouts confirmed by directional intraday pressure, holding exactly eight sessions.
+1791288716	Buys percentile-extreme synchronized upward migration of daily range edges, with ratcheting ATR trails and two-session expiry.
+1791288817	Trades twice-confirmed acceleration in volatility-normalized momentum when risk-budget capacity permits, with profit targets and eight-session expiry.
+1791289015	Trades MA-distance retention through two countertrend candles, with frozen ATR stops and eight-session expiry.
+1791289166	Buys negative MA-distance recoveries confirmed by an adjacent-window candle-pressure sign changepoint; holds exactly two sessions.
+1791289347	Buys twice-confirmed percentile strength in the weakest two-day advance, exiting through breakeven ATR trails or four-session expiry.
+1791289492	Trades accelerating momentum identified by directional natural-visibility triangles connecting the latest two closes to older anchors.
+1791289586	Buys twice-confirmed drawdown-shape analog forecasts, holding eight sessions with entry-open anchored fixed ATR stops.
+1791289715	Switches close-streak continuation versus exhaustion by path efficiency, requiring independent closing-location pressure agreement.
+1791289873	Trades twice-confirmed auction-cost reclamation after percentile-extreme directional turnover, with frozen ATR stops and eight-session expiry.
+1791289989	Trades cumulative changepoints in fractional-close innovations, gated by MA200, with profit targets and eighteen-session expiry.
+1791290241	Buys twice-confirmed volume-backed advances whose joint price-volume shape analogs predict four-day continuation, with breakeven ATR trails.
+1791290347	Buys percentile-extreme ROC acceleration driven by strengthening intraday momentum despite fading overnight momentum, with ratcheting ATR exits.
+1791290463	Trades MA-distance compression breakouts after declining volume reverses upward, holding exactly four sessions.
+1791290685	Buys twice-confirmed volatility-shape analog forecasts, with entry-open breakeven ATR trails and a two-session maximum hold.
+1791290791	Trades directional gap visibility bridges only when intraday acceptance agrees, using fixed entry ATR stops and twenty-session expiry.
+1791290865	Buys fractional-close strength escaping its local range while raw price remains depressed, holding exactly eight sessions.
+1791290971	Trades closes lagging an accelerating latent range center, using slope forecast innovations and four-session profit/time exits.
+1791291098	Trades weekly echoes of latent slope innovations when lag-five and lag-ten autocorrelation support MA200-aligned continuation.
+1791291214	Buys breakouts when price-volume signature area shows unusually strong volume-leading price release, with ratcheting ATR exits.
+1791291393	Buys percentile-extreme range recycling unwinds, targets range-implied volatility, and exits through breakeven ATR trails or twenty-session expiry.
+1791291610	Ordinal transition entropy switches candle-body continuation versus reversal, with two-bar entry confirmation and opposing-evidence exits.
+1791291761	Buys ROC acceleration regime breaks between disjoint windows, exiting at a profit target or eighteen-session expiry.
+1791291970	Trades percentile-extreme historical forecasts conditioned on paired consecutive-streak counts, with four-day expiry and ratcheting high-water exits.
+1791292079	Trades four-day drawdown-depth forecasts from lag-four autoregression, retaining positions until opposing forecast evidence appears.
+1791292191	Buys accelerating recoveries after downside gaps breach and reclaim yesterday’s low while remaining partially unfilled.
+1791292368	Buys percentile-hysteresis MA-distance re-expansions after bullish cooling, with breakeven ATR trails and ten-session expiry.
+1791292512	Trades asymmetric range extensions rejected into consecutive sessions' overlap, with MA200-filtered entries and opposing-rejection exits.
+1791292650	Buys standardized positive gap shocks after intraday range compression, scales by release strength, and holds eight sessions.
+1791292839	Trades drawdown recovery and mirrored drawup unwinds only when signed turnover repays the preceding opposite volume impulse.
+1791292971	Fades percentile-extreme variance concentration on low-percentile volume, with entry-frozen volatility targeting and four-session holds.
+1791293074	Buys upside escapes from overlapping compressed ranges after a bearish range shock, above MA200, with profit/time exits.
+1791293285	Trades historical time–price signature-area analog forecasts only when candle-location pressure agrees, using profit targets and eighteen-session expiry.
+1791293412	Targets volatility during bullish fine-to-coarse Haar energy migration, scaling exposure by directional coherence with breakeven ATR trails.
+1791293590	Buys deep drawdowns with braking descent and upper-range closes, scales by exhaustion strength, and trails for two sessions.
+1791293759	MA200 switches lower-half close streaks between contracting-range bullish exhaustion and expanding-range bearish continuation, with profit and time exits.
+1791293954	Buys persistent drawdown-tail escapes beneath unchanged peak anchors, with breakeven ATR trails and ten-session expiry.
+1791294119	Fades overnight volatility shocks when opposing volume-weighted closing pressure confirms absorption, with fixed ATR stops and two-session expiry.
+1791294251	Fades session-count crowding when minority-direction returns dominate total displacement, holding until opposite divergence triggers a flat exit.
+1791294535	Buys twice-confirmed selloffs with deficient negative-return continuation, using breakeven ATR ratchets and two-session expiry.
+1791294672	Trades twice-confirmed fractional-close record escapes inside compressed price ranges, holding long or short for exactly eighteen sessions.
+1791294784	Trades persistent modest gap ratchets inside compressed ranges only when volume-weighted intraday bodies agree.
+1791294968	Buys percentile-extreme four-session upside capture, exiting when closing gains stop retaining unusually much available upside.
+1791295084	Buys accelerating upward crossings of the rolling range midpoint above MA200, with ratcheting ATR trails and two-session expiry.
+1791295297	Volatility-targeted gap fades require historical overnight/session cancellation and two closing confirmations, followed by breakeven ATR trails.
+1791295501	Volatility-targeted recovery trades require return–variation signature area and positive signed-volume agreement, with profit targets and four-session expiry.
+1791295599	Buys breakouts from compressed ranges when a smoothed trend slope exceeds its forecast, with a fixed ATR stop.
+1791295710	Ranks smoothed wick asymmetry, sizes by percentile extremity, and exits when the opposite tail appears.
+1791295825	Trades deepening drawdowns by depth-change autocorrelation, scales exposure by signal strength, and exits through breakeven ATR trails.
+1791295972	Buys percentile acceleration snapbacks after sharp deceleration in rising trends, then ratchets breakeven ATR exits.
+1791296068	Trades four-day return patterns that repeat across adjacent blocks.
+1791296236	Six-pattern ordinal entropy switches three-day return signals between trend following and reversal.
+1791296357	Trades close streaks that survive an opposing overnight gap, then exits at a profit target or time stop.
+1791296516	Fades percentile-extreme final-week moves at the month boundary with a four-session hold and ATR trailing stop.
+1791296626	Buys the first volatility compression after a shock above the 200-day average, with an entry-fixed ATR stop.
+1791296746	Buys upward gaps that overturn a falling latent slope and hold through the close.
+1791296850	Volatility regimes switch latent slope innovations between continuation and reversal, with breakeven ATR trails.
+1791296974	Fades three same-direction gaps when overnight pressure decays and the final cash session rejects the gap.
+1791297053	Buys persistent increases in latent trend slope and exits when slope strength or persistence reverses.
+1791297206	Trades aligned fine and coarse Haar waves when middle-scale energy forms a spectral notch, with strength-scaled sizing.
+1791297272	Buys rising latent slope innovation when SPY holds the upper half of its eight-bar range.
+1791297365	Trades accelerating price momentum on quiet volume, gated by the 200-day average and held eight bars.
+1791297530	Buys two confirmed breakouts after range compression when fractional-differenced close shows sustained pressure.
+1791297650	Buys downside-gap recovery rotations when a session-strength changepoint confirms, then trails the highest close.
+1791297790	Buys volume-backed intraday absorption at drawdown depths set by the broader drawdown regime.
+1791297924	Trades gaps with the direction of recent gap persistence or against recent gap alternation, exiting after two bars.
+1791298072	Trades changes in the directional span of each close’s visibility-graph connections.
+1791298160	Buys defended dips when the 200-day trend rises and stronger close-slope innovations when it falls.
+1791298337	Buys shallow pullback rebounds when two-day rate of change re-accelerates above the 200-day average.
+1791298416	Trades confirmed drawdown turns using signed area between drawdown changes and relative volume changes.
+1791298534	Fades gaps that erase the prior session’s move and begin repairing in the 200-day trend direction.
+1791298692	Fades deep drawdowns and near-peak stalls when an inside day interrupts the move.
+1791298832	Trades the remaining reversal after an outsized return receives two days of partial, diminishing correction.
+1791298950	Volatility regime switches percentile-extreme MA displacements between fading and following, with volatility sizing and breakeven ATR trails.
+1791299054	Buys accelerating price after a one-day range shock contracts, with volatility-targeted sizing and an eight-bar exit.
+1791299204	Trades ranked intraday traversals from the opposite half of a prior range through its boundary.
+1791299656	Buys reversals in range-center migration during percentile-deep drawdowns, then uses a breakeven ATR trail.
+1791299741	Buys two-day-confirmed volatility lulls around month turn and exits when the lull or calendar window ends.
+1791299848	Trades percentile-extreme loops between fast and slow channel positions, exiting when the loop reverses.
+1791299963	Buys percentile-deep drawdown plateaus when drawdown movement compresses, then exits after four bars.
+1791300064	Trades percentile-extreme MA displacements when price retests a low or high but the displacement weakens.
+1791300202	Buys two accelerating intraday recoveries from down gaps, scales by volatility, and exits on profit or time.
+1791300326	Buys when bullish wavelet energy shifts from short to longer scales, with conviction-scaled sizing and an eight-bar exit.
+1791300437	Fades stretched returns when trading volume absorbs price movement, with a ratcheting ATR trail.
+1791300573	Trades two-bar-confirmed historical outcomes of streak length and compression, with a fixed ATR stop.
+1791300729	Buys when price outranks recent ordinal-pattern complexity; exits when that relationship reverses.
+1791300853	Wavelet energy switches five-day displacement between reversal and continuation inside a 200-day trend regime.
+1791300925	Buys two-bar breakouts in cumulative opening gaps and exits on confirmed downside gap breakouts.
+1791301048	Matches three-day volume-weighted move shapes to resolved historical analogs, then trades their seven-day outcomes.
+1791301138	Buys price breakouts when the surprise above estimated daily trend reaches a historical percentile.
+1791301249	Trades rebound and relapse crossings in drawdown depth relative to its recent maximum.
+1791301349	Trades four-day outcomes of matching distance-from-MA shapes, with a breakeven ATR trail.
+1791301424	Trades ordinal-pattern entropy shifts during drawdowns, then exits after a fixed holding period.
+1791301579	Trades confirmed slope forecast errors during drawdown rebounds, exiting when the errors reverse.
+1791301671	Trades an opposite-edge close after the daily high-low range shifts within a 200-day trend regime.
+1791301756	Buys positive price-volume path area above its historical percentile, then follows a ratcheting ATR trail.
+1791301845	Trades partial recoil after a three-day return shock, with breakeven ATR trailing exits.
+1791301942	Trades MA z-score displacement confirmed by directional return energy, with volatility sizing and an ATR trail.
+1791302041	Trades pullbacks against percentile-extreme fractional trends with volatility sizing and profit or time exits.
+1791302183	Buys the first abrupt drawdown-depth jump rejected intraday above the 200-day average.
+1791302257	Buys expanding horizontal-visibility connections to prior lows and exits after eight bars.
+1791302387	Trades drawdown-depth distribution shifts confirmed by volume-weighted closing pressure, with breakeven trails and eighteen-session exits.
+1791302512	Trades abrupt Haar energy migration from fine to coarse scales, sizing by changepoint strength with breakeven trailing exits.
+1791302618	Volatility-targeted signed-root return voting follows quiet accumulation and exits on a symmetric negative vote reversal.
+1791302721	Buys favorable MA-displacement excursion analogs only when lower-wick rejection agrees; exits after four sessions.
+1791302892	Buys percentile-high retained ROC acceleration distributed across multiple pushes; exits when the qualifying condition reverses.
+1791303090	Trades natural-visibility bridge polarity flips near range edges within 200-day regimes, using breakeven ATR trails.
+1791303195	Fades MA z-score percentile reentry after two extreme closes, with ratcheting ATR stops and four-session exits.
+1791303383	Trades calendar-phase seasonal drift when bidirectional natural-visibility hub degree exceeds its historical percentile.
+1791303484	Fades extreme MA displacement when five-day displacement changes exhibit negatively correlated weekly echoes, holding seven sessions.
+1791303588	Trades persistent fractional drawdown erosion or expansion beneath unchanged peaks, gated by the 200-day trend and ratcheting ATR stops.
+1791303694	Buys decelerating three-gap selloff shockwaves with inverse-volatility sizing, closing profit targets, and four-session time stops.
+1791303896	Matches historical volatility expansion and contraction shapes, trading consensus subsequent returns with profit targets and time stops.
+1791304043	Buys two-close MA z-score breakouts above compressed displacement bands, holding exactly eighteen sessions.
+1791304247	Trades volume-confirmed traversals from range-edge quartiles through the midpoint, aligned with the 200-day trend.
+1791304386	Buys two consecutive range breakouts with positive latent slope and oversized trend forecast innovations, holding four sessions.
+1791304475	Volatility-targeted orderly pullbacks filtered by four-session Haar approximation energy relative to multiscale detail energy.
+1791304638	Volatility-targeted fractional-memory directional efficiency requires two confirmations, with spike cooldown and breakeven ATR trails.
+1791304871	Volatility-targeted fractional-close serial-dependence flips above the 200-day average, with profit targets and four-session exits.
+1791305024	Trades weekday-conditioned holding-period seasonality when standardized fractional-close direction confirms twice, exiting after exactly four sessions.
+1791305171	Trades candle-body pressure after consecutive range contractions, flattening only on an opposite compression setup.
+1791305287	Matches signed streak-count histories to matured four-session outcomes, trading learned continuation or recoil with profit targets and time stops.
+1791305462	Trades breakouts from compressed drawdown shelves beneath unchanged peaks, filtered by the 200-day average with ratcheting ATR exits.
+1791305593	Volatility-targeted continuation of percentile-extreme gaps reversing recent overnight flow, confirmed by intraday reinforcement, with two-session exits.
+1791305765	Switches between shock reinforcement and gradual shock repair, requiring two confirming closes and using breakeven ATR trails.
+1791305889	Buys fractional-close pullbacks when positive second-lag transmission overcomes negative first-lag dependence, sizing by forecast strength.
+1791306056	Daily range overlap switches downside-frontier fades and upside-frontier continuation above the 200-day moving average.
+1791306156	Return autocorrelation switches smoothed MA z-score between continuation and pullback accumulation, requiring two bullish closes.
+1791306260	Fades percentile-extreme drawdowns and runups on unusually thin volume, holding exactly two sessions.
+1791306377	Buys upside semivolatility dominance as downside volatility contracts above the 200-day average, with breakeven ATR trails.
+1791306494	Buys percentile-extreme weakest-link momentum: unusually strong minimum daily returns across three sessions, held exactly two sessions.
+1791306604	Buys drawdown recoveries when latent slope innovations turn positive and volume-weighted selling impulses dissipate, holding four sessions.
+1791306832	Expanded-range midpoint motion switches between edge fades and directional continuation within 200-day regimes, with breakeven ATR trails.
+1791306979	Buys percentile-deep drawdowns when downside-shock autocorrelation predicts repair, exiting at a profit target or four-session limit.
+1791307207	Trades calendar-phase expectancy conditioned on multiscale Haar energy, with conviction sizing and breakeven ATR trails.
+1791307384	Buys two-bar fractional-close range reclaims after lower-band arming, using hysteresis and eighteen-session fixed exits.
+1791307570	Buys natural-visibility edge-pattern analogs with favorable matured eight-session outcomes, exiting at profit targets or time stops.
+1791307724	Trades overnight drawdown creation versus intraday repair around a half-retracement boundary, exiting when the directional condition flips.
+1791307855	Buys drawdown ROC acceleration confirmed by a rising rolling-low frontier, exiting when their joint condition reverses.
+1791308091	Buys drawdown recoveries as shock-concentrated high-low ranges regain broad participation above the 200-day average, using ratcheting ATR trails.
+1791308310	Buys slope changepoints confirmed by persistent support displacement, using breakeven trails and four-session exits.
+1791308456	Buys autocorrelated positive latent-slope innovations forecasting continued acceleration, exiting at a profit target or eight-session limit.
+1791308583	Trades twice-confirmed ROC acceleration when two-day acceleration recurrence dominates one-day persistence, with fixed ATR stops and four-session holds.
+1791308770	Buys positive gaps when delayed overnight-to-intraday propagation confirms efficient uptrends, with fixed entry-ATR stops and eight-session holds.
+1791308906	Buys percentile-extreme lower-half closing streaks during range compression and declining prices, holding exactly eighteen sessions.
+1791309028	Fades weekday-specific fractional-close dislocations within 200-day moving-average regimes, holding positions exactly four sessions.
+1791309126	Fades channel-relative displacement crossing ATR tension thresholds through volatility contraction, exiting at profit targets or eight-session limits.
+1791309226	Buys renewed MA-distance expansion after a positive-deviation shelf, excluding recent spikes, with profit targets and eight-session time stops.
+1791309377	Buys return-shape analogs whose matured two-day median outcome exceeds its historical percentile, exiting when that condition reverses.
+1791309577	Buys upside range separation after overlapping auctions, with conviction sizing, ratcheting ATR trails, and four-session maximum holds.
+1791309720	Buys percentile-extreme temporal separation between aging losses and fresh gains, with fixed entry-ATR stops and two-day holds.
+1791309844	Price–auction-pressure signature area switches between trend continuation and elastic recovery, exiting when the active condition reverses.
+1791310059	Trades acceleration-budget takeovers during countertrend pullbacks within 200-day regimes, using monthly holds and breakeven trails.
+1791310261	Buys MA-distance shape recurrences whose eight-day analog returns outperform time-reversed controls, with ratcheting ATR exits.
+1791310465	Trades range escapes triggered by rare ordinal transitions within complex regimes, using 200-day filtering and ratcheting ATR exits.
+1791310606	Trades MA-distance changepoints confirmed by volume-weighted candle-body pressure shifts, holding until both primitives reverse.
+1791310775	Buys drawdown rebounds when depleted ordinal-pattern diversity refills, scaling exposure by repertoire expansion and enforcing monthly target exits.
+1791310954	Buys drawdown-depth halfway reclaims that break three-day closing highs, with ratcheting ATR exits and ten-session holds.
+1791311063	Trades percentile-extreme ROC acceleration, following overnight-led price discovery and fading intraday-led overreaction, with fixed entry-ATR stops.
+1791311180	Fades incoherent selling after an uptick, using return-order permutation entropy, volatility-targeted sizing, and fixed two-session holds.
+1791311297	Buys upward Haar phase synchronization after percentile-extreme destructive interference, targeting volatility with profit targets and two-day exits.
+1791311406	Trades strengthening ordinal motif imbalance under intermediate pattern complexity, with conviction sizing and fixed two-session exits.
+1791311517	Trades half-month calendar tides when intraday ordinal complexity indicates coherent auctions, exiting on opposite seasonal qualification.
+1791311667	Buys percentile-extreme overnight-to-intraday wavelet energy transfers on bullish sessions, targeting volatility and exiting on signal reversal.
+1791311850	Trades standardized latent-slope forecast surprises aligned with 200-day regimes, using profit targets and four-session time stops.
+1791311995	Buys month-turn recovery when negative overnight–intraday signature area reveals selling preceding demand, with ratcheting ATR exits.
+1791312159	Trades accumulated range-capacity deficits overflowing into regime-aligned channel breaks, with breakeven ATR trails.
+1791312372	Buys partially repaired downside gaps when range ordinal statistical complexity identifies structured volatility, with two-session breakeven trails.
+1791312481	Trades momentum-envelope breakouts when ROC acceleration exceeds its recent noise floor, exiting on symmetric opposite qualification.
+1791312678	Trades overnight gap catch-up after persistent close-to-close momentum absorbs opposing gaps, with 200-day filtering and breakeven trails.
+1791312791	Weights lagged-return autocorrelation forecasts by causal Haar wavelet energy, requiring two-bar agreement before monthly long or short positions.
+1791312896	Trades volume-confirmed moves when nearby normalized three-session historical analogs predict continuation, with profit targets and four-session time stops.
+1791313109	Trades volume-leading price signature area aligned with efficient trends, scaling conviction and ratcheting ATR trails.
+1791313197	Buys short-lived downside shockwaves when signed squared returns reveal unusually concentrated selling, exiting when the pressure condition flips.
+1791313365	Fades repeated gaps when volume-adjusted gap pressure reaches extreme percentiles and the closing auction rejects the opening direction.
+1791313555	Trades percentile-extreme accumulated drawdown debt, buying monthly deformation repair and shorting persistent deformation.
+1791313753	Follows percentile-extreme range-clearing gaps after overnight quiet, requiring gap acceptance and alignment with the 200-day regime.
+1791313948	Fades two-bar percentile extremes in volume-weighted closing pressure as pressure eases, using four-day holds and breakeven ATR trails.
+1791314135	Buys positively autocorrelated volatility decay after expansion and bullish closes, scaling exposure by predicted contraction with breakeven ATR trails.
+1791314260	Buys percentile-extreme price–range signature loops during declines, exiting when the loop-based recovery condition reverses.
+1791314430	Buys support-led momentum when daily-low percentile outruns daily-high percentile, with ratcheting ATR trails and two-session exits.
+1791314608	Trades natural visibility degree changepoints confirmed by ATR-scaled displacement, with ratcheting stops and four-day holds.
+1791314764	Buys compressed drawdown plateaus above the 200-day average, exiting through breakeven ATR ratchets within ten sessions.
+1791315011	Volume–range rank imbalance switches extreme-return trades between absorption reversals and liquidity-vacuum continuation, with ratcheting trails and two-session holds.
+1791315131	Trades percentile-extreme range overlap restitution after downward range separation, using two-session breakeven ATR trails.
+1791315300	Trades aligned multiscale Haar energy bursts with conviction-scaled exposure, fixed entry-volatility stops, and four-session exits.
+1791315459	Buys Monday discount gaps after Monday repair and Tuesday recapture, with four-session holds and breakeven ATR trails.
+1791315567	Trades renewed outward MA-distance z-score pulses within the 200-day regime, exiting when pulse direction reverses.
+1791315726	Matches signed multiscale wavelet energy transitions to historical two-session outcomes, scaling exposure by analog conviction and exiting on reversal.
+1791315807	Trades alternating weekly overnight-gap echoes when five-day anticorrelation and ten-day correlation reveal a persistent standing-wave regime.
+1791315980	Trades two-bar-confirmed wavelet energy concentration with falling spectral entropy, fixed entry-ATR stops, and four-session holds.
+1791316064	Buys confirmed coarse-scale wavelet energy changepoints during fine-scale quiet, with hysteresis rearming and monthly profit-target exits.
+1791316292	Follows volume-confirmed moves on weekdays with learned continuation seasonality, scaling conviction and using breakeven ATR trails.
+1791316414	Historical gap transmission switches between gap continuation and gap repair, requiring two confirmations before four-day ratcheting-trail positions.
+1791316517	Buys twice-confirmed upward pressure when range-width Haar energy collapses across scales, holding exactly eight sessions.
+1791316644	Buys coarse-to-fine wavelet energy transfers confirmed by accelerating volume-weighted buying pressure, with fixed ATR stops and two-session holds.
+1791316722	Buys twice-confirmed recoveries from MA-distance discounts when daily returns exhibit negative autocorrelation, holding exactly eight sessions.
+1791316881	Fades isolated return shocks after high return cancellation, with directional 200-day regime gates and two-session profit-target exits.
+1791316982	Buys downside gaps escaping compressed overlapping ranges when the close recaptures their shared core, holding four sessions.
+1791317097	Buys diffusion-normalized four-day drift, scaling volatility-targeted exposure by drift conviction and continuous-variance share, exiting on signal reversal.
+1791317198	Buys bearish-candle supply-ceiling breakouts AND positive excess-volume pressure; exits immediately when either primitive loses agreement.
+1791317309	Follows trends carried by small daily returns, requiring two consecutive confirmations and exiting after four sessions.
+1791317437	Trades weekly recurring horizontal-visibility motifs using last week's corresponding session direction, with profit targets and two-day exits.
+1791317589	Ordinal entropy percentiles switch hysteretic regimes between drift continuation and reversal, with profit targets and eight-session time stops.
+1791317786	Buys retained upward displacement after percentile-defined volatility stress relaxes, using breakeven ATR trails and twenty-session exits.
+1791317928	Buys twice-confirmed overnight gap-drift sign changepoints, holding eighteen sessions with a ratcheting ATR trail.
+1791318056	Buys fresh price lows diverging from positive ROC acceleration, scales exposure by curvature strength, and holds eighteen sessions.
+1791318143	Buys upside semivariance dominance AND positive return–volume-change covariance; exits when either primitive loses agreement.
+1791318279	Follows extreme intraday displacement outranking volume participation, with directional closing pressure and fixed two-session holds.
+1791318396	Buys MA-distance discounts AND contracting downside price impact per dollar traded, holding exactly eight sessions.
+1791318492	Historical gap–intraday correlation percentiles switch extreme overnight gaps between continuation and reversal, with profit targets and eighteen-session exits.
+1791318637	Range-overlap regimes adapt volume-confirmed advances AND midpoint migration thresholds, with ratcheting ATR trails and eight-session holds.
+1791318755	Trades four-session gap forecasts from signed overnight autocorrelation, scaling entry exposure by conviction and exiting on forecast reversal.
+1791318907	Buys percentile-ranked downside recovery efficiency, targets realized volatility, and exits when the recovery condition reverses.
+1791319103	Buys bullish ordinal successor pruning as branching regimes become deterministic, with breakeven ATR trails and two-session exits.
+1791319219	Buys twice-confirmed compression of accumulated drawdown burden across adjacent eighteen-session windows, exiting when compression reverses.
+1791319347	Buys twice-confirmed downside-gap repairs under intermediate ordinal motif complexity, exiting when the repair condition reverses.
+1791319466	Fades consecutive edge-closing streaks during range compression, scaling exposure by pressure persistence and exiting on opposite compression signals.
+1791319554	Trades exceptional gaps agreeing with prior wick absorption, exiting at a close-based profit target or four-session time stop.
+1791319688	Trades drawdown recoveries and failed rebounds using horizontal visibility degree expansions, holding exactly two sessions.
+1791319803	Buys twice-confirmed price-driven MA discount repairs, rejecting average-drift recoveries, with fixed ATR stops and four-session holds.
+1791319894	Trades autocorrelated directional range expansion only when four-day candle pressure agrees; exits on opposite agreement.
+1791320023	Buys three-bar narrowing breakouts below historical range percentiles, with four-session holds and ratcheting ATR trails.
+1791320116	Fades extreme 63-session MA z-scores on third Fridays, holding eighteen sessions through the post-expiration unwind.
+1791320204	Trades outside-day auction winners when two-sided range expansion exceeds its historical percentile, holding exactly two sessions.
+1791320283	Trades competing drawdown and drawup depth reclaims, exiting when the opposite symmetric reclaim condition activates.
+1791320387	Trades deformation-adjusted range translation AND persistent overnight acceptance, exiting only on opposite agreement.
+1791320481	Trades synchronized Haar acceleration during medium-scale energy migration, scaling volatility-targeted exposure by cross-scale balance.
+1791320585	Buys ATR-scaled drawdowns when upside semivolatility takes control, holding until downside volatility reverses the recovery regime.
+1791320729	Fades twice-confirmed channel extremes when multiscale Haar energy is evenly distributed, exiting on profit targets or eighteen-session time stops.
+1791320826	Trades acceleration threshold crossings inside drawdowns, sizing by reversal strength with ratcheting ATR trails and four-session exits.
+1791320969	Trades historical price–volume signature-area analogs only when independent candle-pressure analogs agree on eighteen-session returns.
+1791321115	Buys time–price signature-area acceleration breakouts, scales entry exposure by area strength, and exits through ratcheting ATR trails.
+1791321199	Fades displaced prices when opposing rate-of-change acceleration partially cancels a prior impulse, holding exactly eighteen sessions.
+1791321322	Trades calendar-half polarity of five-day high-low range expansion, holding through neutral readings until opposite conditions trigger flat exits.
+1791321407	Fades weekday-specific latent slope innovation surprises for two sessions using fixed entry-anchored ATR stops.
+1791321504	Buys percentile-extreme horizontal-visibility reconnections during drawdown recoveries, exiting when the topology recovery condition reverses.
+1791321629	Fades intraday-rejected gaps when overnight Haar energy concentrates at the fastest scale, sizing by rejection strength.
+1791321710	Buys two consecutive noise-filtered fractional-close channel breakouts, exiting at a profit target or eighteen-session time stop.
+1791321797	Trades volume-confirmed moves matching historical same-month auction pressure and the 200-day regime, holding eighteen sessions.
+1791321959	Trades channel-position pullbacks against strengthening latent slopes, scaling by innovation strength and holding exactly eight sessions.
+1791322051	Buys volume-confirmed return changepoints only when closing auction position jumps from prior weakness to upper-range acceptance.
+1791322150	Trades accepted versus surrendered gap-debt repayments inside drawdowns, with fixed five-to-ten-session holds.
+1791322342	Matches mirrored gap-sequence analogs for eight-session forecasts, filters by the 200-day regime, and exits through breakeven ATR trails.
+1791322454	Matches consecutive-streak transition shapes to historical two-session outcomes, requiring two favorable forecasts before buying.
+1791322582	Trades fractional-close memory reversals during drawdowns, scaling exposure by reversal strength and holding exactly eighteen sessions.
+1791322823	Buys percentile-confirmed volume surges when volume-clock price-path analogs forecast strong eight-session returns, using breakeven ATR trails.
+1791322921	Fades volume-confirmed price shocks AND expanding ranges with stationary midpoints, holding exactly two sessions.
+1791323077	Buys capped ROC-acceleration reservoir overflows above the 200-day average, targeting volatility with fixed entry-anchored ATR stops.
+1791323136	Buys ATR-normalized drawdown tension releases as volatility contracts and lows stabilize, with fixed stops and eight-session holds.
+1791323258	Trades percentile crossings in fractional-close drift coherence, targeting entry volatility and holding exactly eighteen sessions.
+1791323389	Trades price pressure through ATR-shock autocorrelation, following predicted volatility expansion and fading predicted contraction.
+1791323466	Buys accepted positive gaps after downside gap amplitudes contract within drawdowns, scaling exposure by recovery strength.
+1791323557	Buys breakouts with positive price–range signature area above the 200-day average, exiting at profit targets or two sessions.
+1791323699	Buys downside-volatility percentile rotations into positive momentum, targeting volatility with hysteresis and breakeven ATR trails.
+1791323881	Buys percentile-extreme upside gaps after quiet support retests and renewed volume breakouts, using breakeven ATR trails.
+1791323995	Buys percentile-extreme intraday drawdowns reclaimed into shallow closing depths, following rejection momentum for two sessions.
+1791324081	Trades percentile-extreme gap-neutral ROC acceleration aligned with closing momentum, holding exactly two sessions.
+1791324269	Trades closing streaks aligned with volume-weighted range-location pressure, using breakeven ATR trails and two-session expiry.
+1791324355	Trades price–volume signature-area phase flips into volume-led repricing, with four-session expiry and fixed entry-volatility stops.
+1791324467	Trades directional return releases after compressed, mutually cancelling daily moves, exiting at a profit target or two sessions.
+1791324586	Trades percentile-extreme streaks of changing volume-normalized price impact, exiting flat when an opposite impact streak confirms.
+1791324692	Switches MA-z-score polarity by path efficiency, requiring aligned closing-location pressure, with profit targets and eighteen-session expiry.
+1791324785	Buys percentile-ranked discounts to volume-weighted value AND persistent accumulation, exiting when either condition reverses.
+1791324904	Fades percentile-extreme failed range extensions, scaling exposure by overshoot rarity with fixed ATR stops and four-session expiry.
+1791324992	Buys upward mean changepoints in fractional-differenced close above the 200-day average, with fixed ATR stops and four-day expiry.
+1791325064	Fades close-edge pressure during balanced range dilation after contraction, with fixed entry-ATR stops and two-session expiry.
+1791325148	Trades changepoints between adjacent four-session return-percentile distributions, exiting flat only when an opposite changepoint qualifies.
+1791325261	Buys positive covariance-adjusted horizon drift, targeting serial-dependence-aware volatility with conviction-scaled exposure and score-reversal exits.
+1791325361	Buys drawdown recoveries when ordinal-pattern entropy contracts toward ascending order above the 200-day average.
+1791325421	Trades learned weekday-by-month-half return seasonality, holding each long or short position for exactly four sessions.
+1791325520	Buys repeated upside returns beyond a volatility yield band, sizing by plastic drift dominance and holding eight sessions.
+1791325599	Buys twice-confirmed ordinal-transition complexity expansions when orderly selling breaks into positive drift, holding eight sessions.
+1791325687	Buys consecutive losing streaks in negatively autocorrelated return regimes, with ratcheting high-water ATR stops and four-session expiry.
+1791325876	Buys twice-confirmed slope-innovation shape analogs with favorable matured outcomes, using breakeven ratcheting ATR exits.
+1791326023	Buys month-turn flows during percentile-extreme ordinal entropy in intraday returns, exiting at a profit target or two sessions.
+1791326113	Buys twice-confirmed post-expiration recoveries after pre-expiration losing streaks, with profit targets and eighteen-session expiry.
+1791326235	Buys overnight gap-mean changepoints confirmed by high-volume intraday advances, exiting at four percent profit or eighteen sessions.
+1791326312	Trades range-capacity overflow, following disjoint price migration and fading overlapping congestion, with eighteen-session fixed exits.
+1791326403	Fades visibility-graph triangle imbalance confirmed by rejection wicks, with fixed entry-ATR stops and four-session expiry.
+1791326480	Follows percentile-extreme ROC acceleration during early-month flow buildup and fades it during late-month flow exhaustion.
+1791326569	Buys favorable historical volatility-wave analogs AND efficient price rebounds, holding exactly eighteen sessions.
+1791326760	Buys damped bearish echoes of recent bullish Haar energy shapes, holding exactly eighteen sessions.
+1791326849	Trades weekday seasonality conditioned on visibility-graph bridge density, with conviction sizing and breakeven ATR trails.
+1791326951	Buys twice-confirmed fractional-close shape analogs whose matured histories frequently reached a four-day rebound target.
+1791327069	Buys overnight-to-intraday signature rotation AND positive volume-weighted closing pressure, with ratcheting ATR trails and eight-session expiry.
+1791327176	Fades stretched prices when fine-scale wavelet energy dissipates beneath persistent coarse energy, with volatility-targeted exposure and eighteen-session holds.
+1791327294	Buys negative overnight-gap streaks AND reversing cross-session return echoes, with ratcheting ATR trails and four-session expiry.
+1791327389	Follows closing pressure during range expansion, fades it during contraction, and volatility-scales exposure with symmetric reversal exits.
+1791327456	Trades twice-confirmed MA-distance tension around a calendar-shifting equilibrium, exiting only on confirmed opposite tension.
+1791327545	Buys Wednesday after Monday–Tuesday ATR compression confirms, using breakeven ratcheting trails and four-session expiry.
+1791327689	Buys dissipating volume shocks with profitable joint return-volume percentile-shape analogs above the 200-day average.
+1791327851	Trades percentile-selected historical range-shockwave shapes using matured two-session outcomes and fixed entry-ATR stops.
+1791327961	Buys channel breakouts after downside range extensions yield to upside dominance, sizing by takeover strength and holding eight sessions.
+1791328045	Trades volume-backed channel escapes AND gap-following auction expansion, with profit targets and four-session expiry.
+1791328131	Buys accelerating short-term ROC before medium-term momentum recovers, with volatility targeting, a 200-day regime filter, and ratcheting trails.
+1791328229	Buys twice-confirmed positive forecasts from autocorrelated eighteen-session overnight-gap budgets, exiting when the forecast reverses.
+1791328308	Buys downside natural-visibility hubs AND positive autocorrelation reversal forecasts, exiting at a profit target or two-session expiry.
+1791328398	Buys full-range separation above a standardized short moving average, exiting on mirrored full-range separation below it.
+1791328468	Buys percentile-extreme higher-low streaks with positive medium-term drift, holding exactly eight sessions.
+1791328566	Trades declining overlap between consecutive range envelopes near channel edges, gated by the 200-day average, with ratcheting ATR exits.
+1791328685	Buys weekday-aligned overnight-gap echoes, scales exposure by forecast confidence, and exits through breakeven ATR ratchets.
+1791328863	Fades energy-normalized price displacement from a wavelet-weighted equilibrium when multiscale energy entropy indicates dispersed oscillations.
+1791328998	Haar energy weights multiscale autocorrelation echoes into seven-day return forecasts, exiting only on qualified opposite forecasts.
+1791329189	Follows latent slope innovations in efficient trends, fades them in congestion, and scales exposure by innovation strength.
+1791329277	Matches four-lobe range envelopes to historical analogs, buying positive twenty-session excess forecasts and exiting on symmetric negative forecasts.
+1791329377	Range-change autocorrelation switches candle-direction trades between continuation and reversal, with ratcheting close trails and four-session expiry.
+1791329487	Follows percentile range shocks when the next session contracts and preserves the shock's directional half.
+1791329621	Buys autocorrelation-predicted decay of elevated high-low ranges with strong closes above the 200-day average.
+1791329726	Buys percentile crossings in upside-minus-downside volatility balance with positive drift, exiting at a profit target or eighteen sessions.
+1791329955	Matches cumulative gap trajectories to historical analogs, sizes by forecast conviction, and exits through breakeven ATR ratchets.
+1791330024	Buys persistent coordinated upward range translation relative to boundary churn, exiting when translation strength reverses.
+1791330120	Buys percentile-extreme autocorrelation forecasts of smoothed ROC acceleration, exiting when the forecast predicate reverses.
+1791330269	Buys favorable drawdown-depth trajectory analogs confirmed by improving intraday close location, with ratcheting trails and two-session expiry.
+1791330401	Trades directional visibility-graph degree asymmetry in efficient momentum, gated by the 200-day average, with target and four-session exits.
+1791330515	Buys confirmed downside-streak reversals in directionally antipersistent markets, exiting at a profit target or eighteen sessions.
+1791330693	Buys compressed ranges after two midpoint-slope surprises confirm recovery of below-midpoint closes; exits through fixed entry-ATR stops.
+1791330859	Trades learned calendar-phase returns when natural visibility graphs have sparse triangle closure, requiring two consecutive confirmations.
+1791330986	Buys decelerating upside streaks with positive sign autocorrelation above the 200-day average; exits at target or four sessions.
+1791331202	Buys alternating two-day ROC-acceleration echoes confirmed by a volume-weighted closing-pressure reversal, with breakeven ATR trails.
+1791331346	Trades persistent, volatility-normalized fractional-difference trends within the 200-day regime, exiting at profit targets or eighteen sessions.
+1791331479	Fades rejected overnight gaps when horizontal visibility reconnects unusually distant gap shocks, using percentile thresholds and eighteen-session exits.
+1791331610	Fades retreating latent slope forecast innovations in stable trends, with symmetric breakeven ATR ratchets and five-session expiry.
+1791331758	Trades drawdown backlog release and accumulation, scaling exposure by displacement strength with profit targets and eight-session expiry.
+1791331865	Fades fine-scale Haar energy concentration during multiscale compression near the 200-day average, exiting on opposite setups.
+1791331950	Trades drawdown recovery when time–price signature area reveals elastic recoil within the 200-day moving-average regime.
+1791332020	Buys low-ranked prices with unusually strong intraday closing location, using ratcheting ATR trails and four-session expiry.
+1791332101	Buys fractional-difference trough reversals, then protects recovery with breakeven ATR ratchets and a ten-session expiry.
+1791332180	Volume–move coupling switches consecutive return streaks between continuation and reversal, with fixed four-session holds.
+1791332336	Buys slope-innovation channel breakouts confirmed by overnight-to-intraday gap transmission, with fixed entry-ATR stops and eight-session expiry.
+1791332419	Buys twice-confirmed drawdown recoveries when downside return energy subsides, with ratcheting high-water ATR stops and eighteen-session expiry.
+1791332545	Buys month-turn seasonality when absent ordinal patterns revive, using ratcheting high-water ATR stops and eight-session expiry.
+1791332687	Fades selloffs when reflected natural visibility graphs gain percentile-extreme edge span relative to ordinary price graphs.
+1791332809	Percentile extremes in range autocorrelation switch price displacement between continuation and reversal, with profit targets and eighteen-session expiry.
+1791332898	Buys twice-confirmed upward coarse-scale Haar energy dominance, exiting when the trend-energy predicate reverses.
+1791332967	Trades volume-surging range escapes after alternating price swings on declining volume, holding exactly four sessions.
+1791333043	Buys compressed-volatility pullbacks when standardized returns exhibit a positive two-day echo but weak one-day persistence.
+1791333147	Buys persistent upward renewal of overlapping daily ranges, with a fixed entry-volatility stop and eight-session expiry.
+1791333254	Fades two consecutive same-direction gaps rejected inside compressed ranges, exiting at a profit target or four-session expiry.
+1791333365	Buys consecutive intraday loss streaks during a two-weekday seasonal window above the 200-day average, exiting on predicate reversal.
+1791333506	Fades percentile-extreme first-week monthly returns against historical first-week observations, exiting at a profit target or eighteen sessions.
+1791333645	Trades acceleration between adjacent four-session gap clusters, targeting volatility with pressure-scaled exposure and opposite-pressure exits.
+1791333787	Trades price breakouts after volume visibility graphs develop central connectivity bottlenecks, holding exactly eight sessions.
+1791333907	Buys Friday intraday weakness amid high ordinal entropy above the 200-day average, with profit targets and two-session expiry.
+1791334025	Trades closing-pressure versus return percentile divergence with volatility-targeted, divergence-scaled exposure and fixed four-session holds.
+1791334141	Buys shrinking fresh-low range invasion near channel bottoms above the 200-day average, with profit targets and two-session expiry.
+1791334236	Buys recovering MA-displacement troughs with negative half-cycle and positive full-cycle autocorrelation above the 200-day MA.
+1791334291	Trades persistent range-center displacement exceeding cumulative range-width deformation, exiting on symmetric opposite displacement.
+1791334434	Volatility-targeted auction-efficiency improvement streaks trade with persistent capital pressure, exiting on opposite joint agreement.
+1791334531	Buys unfilled downside gaps contained within an expanded prior range as range compression signals exhausted selling above the 200-day MA.
+1791334624	Buys persistent above-median daily return percentiles, exiting on symmetric ordinal momentum reversal.
+1791334759	Trades twice-confirmed percentile shifts in rolling return floors and ceilings, with breakeven ATR ratchets and four-session expiry.
+1791334841	Buys twice-confirmed drift beyond a frozen ATR budget during persistent volatility compression, with profit targets and eighteen-session expiry.
+1791334939	Buys higher-low streaks during partial drawdown recoveries above the 200-day average, with breakeven ATR ratchets and eighteen-session expiry.
+1791335020	Buys upward changepoints in below-average price displacement, scaling exposure by the displacement shift relative to prior noise.
+1791335177	Buys bullish historical time–price signature-area analogs above the 200-day average, with profit targets and eighteen-session expiry.
+1791335347	Trades calendar-conditioned gap responses learned from matured outcomes, with conviction-scaled sizing and ratcheting ATR exits.
+1791335507	Fades fractional-memory extremes after high-volume absorption and a directional turn, using fixed ATR stops and eighteen-session expiry.
+1791335603	Trades acceleration aligned with a monthly calendar tide, scaling conviction and exiting through breakeven ATR ratchets.
+1791335766	Buys fractional-memory percentile leadership before price-range breakout, with ratcheting ATR stops and four-session expiry.
+1791335912	Buys twice-confirmed negative-to-positive overnight gap changepoints, exiting through ratcheting ATR trailing stops or four-session expiry.
+1791336024	Trades high-volume, low-progress percentile bottlenecks against local pressure within 200-day MA regimes, holding eighteen sessions.
+1791336111	Fades noise-normalized negative ROC acceleration crossing into losses above the 200-day average, with fixed ATR stops.
+1791336188	Buys shallow drawdowns despite repeated selling above the 200-day average, with ratcheting ATR stops and two-session expiry.
+1791336300	Trades range breakouts when repeated overnight gaps exceed recent intraday absorption capacity, with fixed ATR stops and four-session holds.
+1791336418	Buys recovering weekly-return percentiles during negative ten-session rank autocorrelation, exiting at a profit target or eighteen sessions.
+1791336511	Buys negative overnight gaps reversed into closing range breakouts, sizing by failed-gap intensity with profit targets and eighteen-session expiry.
+1791336656	Buys return-order entropy collapses confirmed by rising volume-weighted price centroids, with ratcheting ATR trails and ten-session expiry.
+1791336754	Trades twice-confirmed underwater volume-cost reclaims and failures, exiting when opposite volume dominance reverses the signal.
+1791336830	Trades percentile extremes of range-normalized ROC acceleration after persistent compression, exiting only on opposite entry signals.
+1791337069	Trades weekday-conditioned visibility-graph hub imbalance after two confirmations, with breakeven ATR ratchets and eight-session expiry.
+1791337211	Trades coherent overnight gap variance jumps from balanced regimes when closing prices retain the displacement, holding eight sessions.
+1791337359	Trades range breakouts as Haar wavelet energy migrates toward slower scales, sizing exposure by shock strength.
+1791337433	Trades persistent drawdown-depth level shifts between adjacent monthly windows, exiting when the opposite shift appears.
+1791337518	Trades drawdown escape and breakdown through asymmetric depth thresholds, with breakeven ATR ratchets and eighteen-session expiry.
+1791337654	Trades MA z-score momentum confirmed by shock-excluded directional breadth within 200-day regimes, using ratcheting ATR trails.
+1791337746	Buys upward changepoints in time–intraday-return signature area, exiting on equal-magnitude downward changepoints.
+1791337849	Trades ATR-driven reclassification into prior-range corridors during quiet closes, aligned with 200-day regimes and fixed volatility stops.
+1791337929	Buys coherent positive return pairs using harmonic transport flux; exits on equally strong negative return pairs.
+1791338025	Fades percentile-extreme overnight ROC acceleration when intraday trading partially absorbs the expanding gap.
+1791338207	Trades historical time–return signature-area analog forecasts, scaling positions by forecast strength with breakeven ATR trails.
+1791338322	Trades MA-stretch recoveries released from overlapping price ranges on fading volume, with stretch-scaled sizing and four-session holds.
+1791338492	Buys twice-confirmed range compression after the monthly third Friday, holding exactly eight sessions.
+1791338660	Volatility-targeted momentum follows collapsing ordinal transition entropy within 200-day regimes, using ratcheting highest-close stops and eight-session expiry.
+1791338855	Dual-polarity visibility density selects recovery regimes for four-session longs with breakeven ATR ratchets.
+1791339029	Fades contracting coarse Haar wavelet energy after fast-scale reversal, sizing positions by stored tension.
+1791339159	Fades accumulated overnight displacement when gap–session signature area reveals delayed absorption, scaling exposure by area strength.
+1791339320	Matches historical dual-polarity visibility edge fingerprints to forecast two-session returns, scaling exposure by analog agreement.
+1791339429	Buys percentile-strong forecasts from correlated return-sequence analogs, holding eighteen sessions with ratcheting highest-close ATR exits.
+1791339531	Trades outward MA z-score percentile escapes after repeated equilibrium crossings, holding each direction for exactly four sessions.
+1791339637	Buys Thursday selling-streak exhaustion, scales exposure by streak length, and exits through breakeven ATR ratchets or four-session expiry.
+1791339775	Switches close-streak continuation versus reversal by directional efficiency, requiring intraday candle agreement and four-session breakeven ATR trails.
+1791339855	Trades directional range shockwaves when sudden expansion relaxes while candle midpoints continue migrating, holding exactly eighteen sessions.
+1791339955	Buys percentile-extreme volume-backed advances during quarter-end window dressing, holding exactly four sessions.
+1791340050	Switches between return persistence and alternating-return regimes using two-lag phase coherence, with two-session expiry and fixed entry-ATR stops.
+1791340130	Buys percentile-extreme breakout pressure when trading volume exceeds recent market capacity; exits when overflow confirmation disappears.
+1791340237	Trades price-leading-volume signature area for two-session momentum, with area-scaled exposure and fixed entry-ATR stops.
+1791340337	Buys short-window percentile recoveries within long-window price weakness, with four-session expiry and ratcheting highest-close ATR stops.
+1791340477	Trades partial recovery streaks from volatility-scaled drawdowns and rallies within 200-day regimes, using fixed entry-ATR stops.
+1791340591	Buys bullish range expansions when negative range-change autocorrelation forecasts recoil, above the 200-day average, with ratcheting ATR exits.
+1791340768	Trades visibility-edge span imbalance aligned with efficient price displacement, using strength-scaled exposure and two-session ratcheting ATR exits.
+1791340867	Buys rebounds after percentile-extreme inverted visibility hubs lose connectivity while price remains low in its local range.
+1791340952	Fades percentile-extreme overnight gap consensus after close-to-close return breadth reverses, holding eighteen sessions.
+1791341031	Buys expanding drawdown-depth waves and exits on equally strong contraction, using symmetric volatility-normalized reversal thresholds.
+1791341126	Trades drawdown recoveries and rally failures when ordinal entropy contracts, scaling exposure by directional ordering strength.
+1791341243	Buys percentile-extreme recycled trading ranges when expanding auctions produce diminishing new lows; exits at profit target or two sessions.
+1791341365	Switches ROC acceleration between auction-flow continuation and absorption regimes using daily range overlap, with profit targets and expiry.
+1791341456	Buys twice-confirmed upward Haar wavelet energy concentration, with breakeven activation, upward-only ATR trails, and ten-session expiry.
+1791341546	Buys drawdown recoveries when diverse ordinal return patterns agree with positive three-week price-path efficiency; exits on condition reversal.
+1791341620	Buys delayed weekly echoes of latent slope innovations after a refractory pause, holding eighteen sessions with fixed ATR stops.
+1791341739	Trades fractional-close equilibrium crossings when overnight gap convoys overcome opposing intraday flow, with ratcheting ATR exits.
+1791341820	Buys percentile MA-displacement ceiling breaks after a compact positive displacement shelf, holding exactly four sessions.
+1791341907	Trades twice-confirmed directional range-expansion diffusion, holding eighteen sessions with fixed entry-ATR stops.
+1791342061	Buys higher-low streaks confirmed by upside semivariance dominance, targeting volatility with breakeven ATR ratchets and eighteen-session expiry.
+1791342280	Trades delayed shock-candle midpoint repairs during range contraction, with 200-day regime gates and ratcheting ATR exits.
+1791342358	Buys relaxing negative MA stretch during volatility contraction above the 200-day average, with volatility-targeted exposure and four-day expiry.
+1791342444	Trades return–variation signature rotations during negative autocorrelation, gated by the 200-day average, with four-session expiry.
+1791342540	Trades retained momentum after ROC acceleration bursts cool, using profit targets and eight-session expiry.
+1791342698	Trades nearest historical gap sequences with disjoint three-week outcomes, 200-day regime gates, and ratcheting ATR trails.
+1791342902	Buys percentile-stressed drawdowns when crowded ordinal successor branching meets a bullish recovery candle; holds up to two sessions.
+1791343052	Trades twice-confirmed price streaks when mature-run continuation exceeds fresh-run persistence, with ratcheting high-water exits and eighteen-session expiry.
+1791343206	Fades percentile-extreme gaps rejected back into percentile-compressed ranges, holding eight sessions with fixed entry-ATR stops.
+1791343357	Trades percentile-stressed drawdowns when multi-horizon underwater breadth turns toward recovery or renewed contagion.
+1791343515	Buys fractional-close surprise breakouts outside shock refractory periods, with signal-scaled volatility targeting and fixed four-session exits.
+1791343596	Buys distributed positive drift after deleting the largest daily gain, scaling exposure by residual directional efficiency.
+1791343674	Buys persistent upside gaps after frequent overnight polarity alternation above the 200-day average, holding eight sessions.
+1791343777	Fades persistent MA z-score extremes when trading volume collapses, holding exactly eight sessions.
+1791343902	Trades sign-conditioned return autocorrelation forecasts confirmed by candle-body direction, with four-session expiry and fixed entry-ATR stops.
+1791344061	Trades volume-confirmed breakouts against prior opposing-volume inventory, scaling exposure by breakout conviction with ratcheting ATR exits.
+1791344208	Trades fortnight-specific historical range polarity only when current weekly momentum agrees, holding until both primitives reverse.
+1791344313	Buys drawdown recoveries when horizontal visibility reconnects across a trough, sizing by topology strength and holding four sessions.
+1791344391	Trades containment of a drawdown range shock, separating recovery from relapse by the inside candle's closing location.
+1791344541	Trades percentile-selected historical cohorts of gap imbalance and pressure migration, holding eighteen sessions with fixed entry-ATR stops.
+1791344650	Buys sustained lower-quartile MA z-score strength above the 200-day average, exiting when the qualifying condition reverses.
+1791344787	Trades twice-confirmed directional range breathing: expansion with the trend and contraction against it, holding exactly eight sessions.
+1791344891	Buys percentile-ranked momentum when upside price impact exceeds downside impact, holding exactly four sessions.
+1791344991	Buys intervening down gaps when partial lag-two gap autocorrelation reveals overnight echoes above the 200-day average.
+1791345119	Buys upside gaps that bridge bearish candle midpoints and remain accepted throughout a bullish session.
+1791345216	Trades overnight gap drift emerging through noise contraction when intraday directional efficiency agrees, with ratcheting ATR trails.
+1791345388	Buys percentile-extreme closing-location autocorrelation confirmed by bullish volume pressure, with ratcheting ATR exits and eighteen-session holding caps.
+1791345513	Buys drawdowns when persistent positive latent-trend forecast errors lift a negative slope; exits after eighteen sessions.
+1791345611	Switches between continuation and elastic reversal using dual natural-visibility graph connectivity, with ratcheting close-based ATR exits.
+1791345732	Fades percentile-extreme, volume-capacity-adjusted MA stretch with volatility-targeted sizing and four-session expiry.
+1791345837	Trades twice-confirmed calendar-month forecasts learned from signed time-price signature areas, holding until the forecast reverses.
+1791345942	Trades percentile-extreme latent slope innovations against an adaptive persistence forecast, holding each direction exactly four sessions.
+1791346044	Trades percentile-extreme return-distribution relocations, scaling entry exposure by displacement strength and holding exactly eighteen sessions.

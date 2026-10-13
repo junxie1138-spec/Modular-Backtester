@@ -1,16 +1,38 @@
 from __future__ import annotations
 
+import json
 import logging
+import sqlite3
+import webbrowser
 from pathlib import Path
 from typing import Any
 
 from flask import Flask, jsonify, render_template
+from werkzeug.serving import make_server
 
 from factory.notify import extract_metric
 from factory.results import read_records
 from factory.settings_loader import Settings, load_settings
 
 log = logging.getLogger(__name__)
+
+
+def _discovery_candidates(root: Path) -> list[dict]:
+    path = root / "discovery/state.sqlite"
+    if not path.is_file():
+        return []
+    with sqlite3.connect(path) as db:
+        rows = db.execute("SELECT id,source_id,status,evidence,error FROM candidates ORDER BY id DESC").fetchall()
+    candidates = []
+    for sid, source_id, status, raw_evidence, error in rows:
+        evidence = json.loads(raw_evidence)
+        candidates.append({
+            "id": sid, "source_id": source_id, "status": status,
+            "idea": evidence.get("analysis", {}).get("summary"),
+            "oos_sortino": evidence.get("wfo", {}).get("parsed", {}).get("oos_sortino"),
+            "gates": evidence.get("gates"), "error": error,
+        })
+    return candidates
 
 
 def _enrich(records: list[dict], threshold_metric: str, threshold: float) -> list[dict]:
@@ -30,6 +52,7 @@ def _enrich(records: list[dict], threshold_metric: str, threshold: float) -> lis
 def _aggregate(records: list[dict], threshold_metric: str, threshold: float) -> dict[str, Any]:
     total = len(records)
     completes = sum(1 for r in records if r.get("status") == "complete")
+    skipped_duplicates = sum(1 for r in records if r.get("status") == "skipped_duplicate")
     failures_by_stage: dict[str, int] = {}
     above_threshold = 0
     promoted = 0
@@ -64,6 +87,7 @@ def _aggregate(records: list[dict], threshold_metric: str, threshold: float) -> 
     return {
         "total_cycles": total,
         "completes": completes,
+        "skipped_duplicates": skipped_duplicates,
         "failures_by_stage": failures_by_stage,
         "above_threshold": above_threshold,
         "promotion_attempted": promotion_attempted,
@@ -103,6 +127,7 @@ def create_app(*, settings: Settings) -> Flask:
         return render_template(
             "overview.html",
             records=enriched,
+            discovery_candidates=_discovery_candidates(settings.paths.backtester_root),
             summary=summary,
             auto_refresh_sec=settings.dashboard.auto_refresh_sec,
         )
@@ -111,6 +136,10 @@ def create_app(*, settings: Settings) -> Flask:
     def api_records():
         records = read_records(settings.paths.results_dir)
         return jsonify(records)
+
+    @app.get("/api/discovery")
+    def api_discovery():
+        return jsonify(_discovery_candidates(settings.paths.backtester_root))
 
     @app.get("/api/summary")
     def api_summary():
@@ -140,10 +169,20 @@ def main(argv: list[str] | None = None) -> int:
         default="factory/config/settings.toml",
         type=Path,
     )
+    parser.add_argument("--no-browser", action="store_true",
+                        help="Serve the dashboard without opening a browser")
     args = parser.parse_args(argv)
     s = load_settings(args.settings)
     app = create_app(settings=s)
-    app.run(host=s.dashboard.host, port=s.dashboard.port, debug=False)
+    with make_server(s.dashboard.host, s.dashboard.port, app, threaded=True) as server:
+        url = f"http://{s.dashboard.host}:{server.server_port}/"
+        print(f"Dashboard: {url}\nResults: {s.paths.results_dir}", flush=True)
+        if not args.no_browser:
+            try:
+                webbrowser.open(url)
+            except webbrowser.Error as exc:
+                log.warning("could not open browser: %s; open %s manually", exc, url)
+        server.serve_forever()
     return 0
 
 

@@ -83,7 +83,8 @@ def _seed_promotion_bundle(output_runs_dir: Path, run_name: str, oos_sortino: fl
     }), encoding="utf-8")
 
 
-def test_promote_strategy_passes_when_all_tickers_clear_avg_threshold(tmp_path: Path) -> None:
+def test_promote_strategy_passes_when_all_tickers_clear_avg_threshold(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.delenv("BACKTESTER_SAVE_HISTORY", raising=False)
     canonical = tmp_path / "cfg.yaml"
     canonical.write_text(_canonical_config("gen_x"), encoding="utf-8")
     output_runs = tmp_path / "output" / "runs"
@@ -93,7 +94,7 @@ def test_promote_strategy_passes_when_all_tickers_clear_avg_threshold(tmp_path: 
     _seed_promotion_bundle(output_runs, "gen_x_promo_DIA_wfo", 0.7)
 
     fake_proc = mock.Mock(returncode=0, stdout="", stderr="")
-    with mock.patch("factory.promote.subprocess.run", return_value=fake_proc):
+    with mock.patch("factory.promote.subprocess.run", return_value=fake_proc) as run_mock:
         result = promote_strategy(
             strategy_id="gen_x",
             optimized_params={"size": 1.0, "fast": 20},
@@ -110,6 +111,9 @@ def test_promote_strategy_passes_when_all_tickers_clear_avg_threshold(tmp_path: 
     assert set(result.per_ticker.keys()) == {"AAPL", "QQQ", "DIA"}
     assert result.per_ticker["AAPL"]["oos_sortino"] == pytest.approx(0.9)
     assert result.error is None
+    for call in run_mock.call_args_list:
+        assert call.kwargs["env"]["BACKTESTER_SAVE_HISTORY"] == "0"
+        assert call.kwargs["env"]["BACKTESTER_OUTPUT_ROOT"] == str(output_runs.resolve())
 
 
 def test_promote_strategy_fails_when_avg_below_threshold(tmp_path: Path) -> None:

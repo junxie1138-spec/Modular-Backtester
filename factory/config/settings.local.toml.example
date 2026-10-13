@@ -49,18 +49,13 @@ telegram_chat_id   = ""        # e.g. "-1001234567890"
 enabled = false                # set to true to join the distributed pool
 
 # --- generation (optional) --------------------------------------------------
-# The default provider is Claude Code via `claude -p`. Override the model with
-# the provider-neutral flags key. settings.toml passes no --model flag, so the
-# factory defaults to your Claude Code default (Opus). Uncomment to use a
-# cheaper/faster model -- "sonnet" or "haiku".
+# The default provider is Codex via `codex exec --sandbox read-only -`.
+# To use Claude Code instead, override all three provider settings:
 #
 # IMPORTANT: --model must come BEFORE --allowedTools. --allowedTools is variadic
 # and would otherwise swallow the model name as a tool name.
 # [generation]
-# flags = ["-p", "--output-format", "json", "--model", "sonnet", "--allowedTools", "Read"]
+# provider = "claude"
+# cmd = "claude"
+# flags = ["-p", "--output-format", "json", "--allowedTools", "Read"]
 #
-# To use OpenAI Codex CLI instead, use stdin mode:
-# [generation]
-# provider = "codex"
-# cmd = "codex"
-# flags = ["exec", "-"]

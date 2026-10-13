@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import logging
+import os
 from pathlib import Path
 
 from backtester.config.loader import load_run_config
@@ -27,7 +28,7 @@ def main(argv: list[str] | None = None) -> int:
     if len(rc.data.symbols) != 1:
         raise SystemExit("run_backtest expects exactly one symbol; use run_batch for many")
 
-    writer = ArtifactWriter(root=rc.output_root, run_name=rc.run_name)
+    writer = ArtifactWriter(root=os.environ.get("BACKTESTER_OUTPUT_ROOT", rc.output_root), run_name=rc.run_name)
     log = configure_logging(writer.log_path())
     log.info("run_dir=%s", writer.run_dir)
 

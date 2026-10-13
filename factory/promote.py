@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import subprocess
 import sys
 from dataclasses import dataclass, field
@@ -84,6 +85,9 @@ def _run_promotion_wfo(
     """Run a single held-out WFO subprocess and parse its summary.json."""
     cmd = [sys.executable, "-m", "backtester.runners.run_wfo", "--config", str(cfg_path)]
     log.info("promotion wfo: run_name=%s cmd=%s", run_name, cmd)
+    env = os.environ.copy()
+    env["BACKTESTER_OUTPUT_ROOT"] = str(output_runs_dir.resolve())
+    env.setdefault("BACKTESTER_SAVE_HISTORY", "0")
     try:
         proc = subprocess.run(
             cmd,
@@ -93,6 +97,7 @@ def _run_promotion_wfo(
             check=False,
             cwd=str(backtester_root) if backtester_root else None,
             encoding="utf-8",
+            env=env,
         )
     except subprocess.TimeoutExpired as exc:
         raise StageError(f"promotion wfo {run_name} timed out after {timeout_sec}s") from exc

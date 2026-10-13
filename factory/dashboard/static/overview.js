@@ -59,10 +59,10 @@
   async function refresh() {
     try {
       const [recsResp, sumResp] = await Promise.all([
-        fetch("/api/records"),
-        fetch("/api/summary"),
+        fetch("/api/records", { cache: "no-store" }),
+        fetch("/api/summary", { cache: "no-store" }),
       ]);
-      if (!recsResp.ok || !sumResp.ok) return;
+      if (!recsResp.ok || !sumResp.ok) throw new Error("Results refresh request failed");
       const records = await recsResp.json();
       const summary = await sumResp.json();
 
@@ -72,14 +72,24 @@
       const t = document.getElementById("c-total");       if (t) t.textContent = summary.total_cycles;
       const c = document.getElementById("c-complete");    if (c) c.textContent = summary.completes;
       const f = document.getElementById("c-failures");    if (f) f.textContent =
-        (summary.total_cycles - summary.completes) + " (" +
+        Object.values(summary.failures_by_stage).reduce((a, b) => a + b, 0) + " (" +
         Object.entries(summary.failures_by_stage).map(([k, v]) => `${k}=${v}`).join(", ") + ")";
+      const d = document.getElementById("c-duplicates"); if (d) d.textContent = summary.skipped_duplicates;
       const a = document.getElementById("c-above");       if (a) a.textContent = summary.above_threshold;
       const p = document.getElementById("c-promoted");    if (p) p.textContent = summary.promoted;
       const sc = document.getElementById("c-screened");    if (sc) sc.textContent = summary.screened;
       const s = document.getElementById("c-spend");       if (s) s.textContent = "$" + Number(summary.cumulative_spend_usd).toFixed(2);
+      const status = document.getElementById("refresh-status");
+      if (status) status.textContent = "Updated " + new Date().toLocaleTimeString();
+
+      fetch("/api/discovery", { cache: "no-store" })
+        .then(response => response.ok ? response.json() : null)
+        .then(discovery => { if (discovery !== null) renderDiscovery(discovery); })
+        .catch(err => console.warn("discovery refresh failed", err));
     } catch (err) {
       console.warn("refresh failed", err);
+      const status = document.getElementById("refresh-status");
+      if (status) status.textContent = "Refresh failed; retrying.";
     }
   }
 
@@ -120,6 +130,26 @@
     }
     tbody.innerHTML = "";
     for (const rec of ordered) tbody.appendChild(rowFor(rec));
+  }
+
+  function renderDiscovery(candidates) {
+    const tbody = document.getElementById("discovery-body");
+    if (!tbody) return;
+    tbody.replaceChildren();
+    if (!candidates.length) {
+      const row = tbody.insertRow();
+      const cell = row.insertCell();
+      cell.colSpan = 7;
+      cell.textContent = "No discovery candidates yet.";
+    }
+    for (const c of candidates) {
+      const row = tbody.insertRow();
+      const gates = c.gates ? `${Object.values(c.gates).filter(Boolean).length}/${Object.keys(c.gates).length}` : "";
+      for (const value of [c.id, c.source_id, c.idea || "", c.status,
+        c.oos_sortino == null ? "" : fmt(c.oos_sortino), gates, c.error || ""]) {
+        row.insertCell().textContent = value;
+      }
+    }
   }
 
   document.addEventListener("click", function (ev) {

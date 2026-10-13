@@ -71,8 +71,17 @@ class PortfolioSimulator:
         position_rows = []
 
         index = data.index
+        closes = data["close"].to_numpy()
+        highs = data["high"].to_numpy()
+        lows = data["low"].to_numpy()
+        signal_values = signals[sig_col].to_numpy() if sig_col in signals.columns else None
+        size_values = signals[size_col].to_numpy() if size_col and size_col in signals.columns else None
+        price_values = signals[price_col].to_numpy() if price_col and price_col in signals.columns else None
         for i, ts in enumerate(index):
-            bar = data.iloc[i]
+            # The broker needs a labelled bar only when an order is pending.
+            if pending_stop is not None or pending_signal is not None:
+                bar = data.iloc[i]
+            close_px = float(closes[i])
             prev_sign_at_bar_start = _sign(pos.qty)
             stop_filled = False
 
@@ -108,10 +117,10 @@ class PortfolioSimulator:
                     # Signal-driven exit to flat (stop-driven exit already disarmed in 1a).
                     trailing.disarm()
             if trailing.armed:
-                trailing.update(high=float(bar["high"]), low=float(bar["low"]))
+                trailing.update(high=float(highs[i]), low=float(lows[i]))
 
             # 2. Read this bar's signal.
-            sig = int(signals[sig_col].iloc[i]) if sig_col in signals.columns else 0
+            sig = int(signal_values[i]) if signal_values is not None else 0
             if sig == -1 and not broker.allow_short:
                 raise ShortNotAllowedError(
                     f"strategy emitted SHORT signal at bar {i} ({ts}) but "
@@ -125,7 +134,6 @@ class PortfolioSimulator:
                 target_sign = sig
 
                 if cur_sign != target_sign:
-                    close_px = float(bar["close"])
                     if target_sign == 0:
                         # Close current position fully.
                         order_qty = abs(pos.qty)
@@ -135,8 +143,8 @@ class PortfolioSimulator:
                     else:
                         equity_now = cash + pos.market_value(close_px)
                         size = (
-                            float(signals[size_col].iloc[i])
-                            if size_col and size_col in signals.columns
+                            float(size_values[i])
+                            if size_values is not None
                             else 1.0
                         )
                         alloc = equity_now * self.config.size * size
@@ -150,12 +158,11 @@ class PortfolioSimulator:
                         # LIMIT only when entering from flat.
                         if (
                             cur_sign == 0
-                            and price_col
-                            and price_col in signals.columns
-                            and pd.notna(signals[price_col].iloc[i])
+                            and price_values is not None
+                            and pd.notna(price_values[i])
                         ):
                             order_type = OrderType.LIMIT
-                            limit_price = float(signals[price_col].iloc[i])
+                            limit_price = float(price_values[i])
                         else:
                             order_type = OrderType.MARKET
                             limit_price = None
@@ -185,10 +192,10 @@ class PortfolioSimulator:
                         )
 
             # 5. Mark to market at close.
-            mv = pos.market_value(float(bar["close"]))
+            mv = pos.market_value(close_px)
             equity = cash + mv
             equity_rows.append({"timestamp": ts, "cash": cash, "position_value": mv, "equity": equity})
-            position_rows.append({"timestamp": ts, "qty": pos.qty, "avg_cost": pos.avg_cost, "close": float(bar["close"])})
+            position_rows.append({"timestamp": ts, "qty": pos.qty, "avg_cost": pos.avg_cost, "close": close_px})
 
         equity_curve = pd.DataFrame(equity_rows).set_index("timestamp")
         positions_df = pd.DataFrame(position_rows).set_index("timestamp")

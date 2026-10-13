@@ -13,9 +13,9 @@ factory_log      = "factory/logs/factory.log"
 tmp_dir          = "factory/data/_tmp"
 
 [generation]
-provider               = "claude"  # "claude" or "codex"; override per machine in settings.local.toml
-cmd                    = "claude"
-flags                  = ["-p", "--output-format", "json", "--allowedTools", "Read"]
+provider               = "codex"  # "codex" or "claude"; override per machine in settings.local.toml
+cmd                    = "codex"
+flags                  = ["exec", "--sandbox", "read-only", "--ephemeral", "-c", 'model_reasoning_effort="medium"', "-"]
 # Legacy aliases kept so older machines/configs keep working during rollout.
 claude_cmd             = "claude"
 claude_flags           = ["-p", "--output-format", "json", "--allowedTools", "Read"]
@@ -29,7 +29,7 @@ alert_threshold_metric = "wfo.oos_sortino"
 alert_threshold        = 1.0
 telegram_bot_token     = ""       # real value goes in config/settings.local.toml (gitignored)
 telegram_chat_id       = ""       # real value goes in config/settings.local.toml (gitignored)
-dashboard_base_url     = "http://127.0.0.1:8787"
+dashboard_base_url     = "http://127.0.0.1:8788"
 
 [loop]
 mode                  = "continuous"
@@ -38,7 +38,7 @@ max_cycles            = 0   # 0 = unlimited
 
 [dashboard]
 host             = "127.0.0.1"
-port             = 8787
+port             = 8788
 auto_refresh_sec = 10
 
 [promotion]

@@ -57,6 +57,22 @@ def test_loader_fetches_via_yfinance_when_csv_absent(tmp_path: Path) -> None:
     assert len(df) == 5
 
 
+def test_failed_cache_write_never_publishes_partial_csv(tmp_path: Path) -> None:
+    from backtester.data.yfinance_loader import load_yfinance_cached
+
+    def fail_write(frame, cache):
+        cache.write("timestamp,open\n")
+        assert not (tmp_path / "FAKE.csv").exists()
+        raise OSError("disk full")
+
+    with patch("backtester.data.yfinance_loader._yfinance_download", side_effect=_fake_yf_history), \
+         patch.object(pd.DataFrame, "to_csv", fail_write), \
+         pytest.raises(OSError, match="disk full"):
+        load_yfinance_cached(symbol="FAKE", root=str(tmp_path),
+                             start="2020-01-01", end="2020-01-10")
+    assert list(tmp_path.iterdir()) == []
+
+
 def test_loader_raises_when_cache_does_not_cover_range(tmp_path: Path) -> None:
     from backtester.data.yfinance_loader import load_yfinance_cached
     sym_path = tmp_path / "FAKE.csv"

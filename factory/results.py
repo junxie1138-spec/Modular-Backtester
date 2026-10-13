@@ -9,7 +9,7 @@ log = logging.getLogger(__name__)
 
 Record = dict[str, Any]
 
-FAILED_STAGES = frozenset({"generation", "validation", "backtest", "optimize", "wfo"})
+FAILED_STAGES = frozenset({"generation", "duplicate", "validation", "backtest", "optimize", "wfo"})
 
 
 def build_record(

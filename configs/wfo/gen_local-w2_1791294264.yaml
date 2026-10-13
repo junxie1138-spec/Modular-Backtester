@@ -1,0 +1,27 @@
+run_name: gen_local-w2_1791294264
+strategy: gen_local-w2_1791294264
+strategy_params: {lookback: 20, selloff_window: 5, selloff_z: 0.8, continuation_deficit: 0.10, atr_period: 14, breakeven_pct: 0.004, trail_atr: 1.0, max_hold: 2}
+data:
+  symbols: ["SPY"]
+  timeframe: "1d"
+  start: "2015-01-02"
+  end: "2024-12-31"
+  source: "csv"
+  root: "data/raw"
+execution:
+  initial_cash: 100000
+  commission_bps: 2
+  slippage_bps: 5
+  allow_fractional: false
+  allow_short: false
+portfolio:
+  sizing_mode: "percent_equity"
+  size: 0.95
+optimization:
+  objective: sortino
+  param_space: {lookback: [15, 20, 30], selloff_z: [0.6, 0.8, 1.0], continuation_deficit: [0.05, 0.10, 0.15]}
+wfo:
+  enabled: true
+  train_bars: 756
+  test_bars: 252
+  step_bars: 252

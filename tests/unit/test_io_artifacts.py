@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pandas as pd
+import pytest
 
 from backtester.config.models import (
     DataConfig, ExecutionConfig, PortfolioConfig, RunConfig,
@@ -48,3 +49,25 @@ def test_writer_creates_run_dir_with_artifacts(tmp_path: Path):
 def test_run_dir_name_format(tmp_path: Path):
     w = ArtifactWriter(root=tmp_path, run_name="foo", now="20260514_0114")
     assert w.run_dir.name == "20260514_0114_foo"
+
+
+def test_compact_writer_keeps_summary_and_trades(tmp_path: Path, monkeypatch):
+    monkeypatch.setenv("BACKTESTER_SAVE_HISTORY", "0")
+    w = ArtifactWriter(root=tmp_path, run_name="compact")
+    result = _result()
+    w.write_config(_config())
+    w.write_result(result)
+    w.write_csv("oos_equity_curve.csv", result.equity_curve, history=True)
+    w.write_csv("oos_trades.csv", result.trades, index=False)
+    assert {p.name for p in w.run_dir.iterdir()} == {
+        "config_resolved.yaml", "summary.json", "trades.csv", "oos_trades.csv",
+    }
+    pd.testing.assert_frame_equal(
+        pd.read_csv(w.run_dir / "trades.csv", parse_dates=["timestamp"]), result.trades,
+    )
+
+
+def test_writer_rejects_invalid_history_setting(tmp_path: Path, monkeypatch):
+    monkeypatch.setenv("BACKTESTER_SAVE_HISTORY", "false")
+    with pytest.raises(ValueError, match="BACKTESTER_SAVE_HISTORY"):
+        ArtifactWriter(root=tmp_path, run_name="invalid")

@@ -1,6 +1,6 @@
 # Strategy Factory
 
-An unattended loop that mass-produces trading-strategy ideas with a configured LLM CLI provider (`claude -p` by default, or `codex exec -`), validates each one, runs it through the full backtest → optimize → WFO pipeline, and surfaces the survivors on a local dashboard and via Telegram. It wraps the Modular-Backtester and edits no backtester source file — generated strategies are picked up by registry auto-discovery.
+An unattended loop that mass-produces trading-strategy ideas with a configured LLM CLI provider (`codex exec -` by default, or `claude -p`), validates each one, runs it through the full backtest → optimize → WFO pipeline, and surfaces the survivors on a local dashboard and via Telegram. It wraps the Modular-Backtester and edits no backtester source file — generated strategies are picked up by registry auto-discovery.
 
 This README covers running the factory on **one machine** and, in detail, running it as a **distributed multi-machine pool** coordinated through git.
 
@@ -19,7 +19,7 @@ pull pool  →  claim idea slots from the slot-pool DB
            →  push pool
 ```
 
-Every cycle writes one results record — `complete`, `complete (screened)`, or `failed` — to this machine's results shard. The `pull pool` / `push pool` steps are no-ops unless distributed mode is enabled.
+Every cycle writes one results record — `complete`, `complete (screened)`, `skipped_duplicate`, or `failed` — to this machine's results shard. The `pull pool` / `push pool` steps are no-ops unless distributed mode is enabled.
 
 **Critical framing:** at the factory's throughput, some strategies post OOS Sharpe > 1.0 on luck alone. WFO mitigates but does not eliminate multiple-comparisons risk. The dashboard "good" flag and the Telegram alert are **shortlist signals, not verdicts** — the held-out promotion gate (alternate tickers) is the first real filter, and a human review is still required before trusting any row.
 
@@ -35,7 +35,7 @@ pip install -e .[data]    # yfinance — needed by held-out promotion's default 
 pip install Flask         # the dashboard's only extra runtime dependency
 ```
 
-You also need a supported **generation CLI** authenticated on this machine and on `PATH`. The default is Claude Code (`claude -p`); OpenAI Codex CLI can be used with `codex exec -`. The factory invokes the CLI as a subprocess and pipes the prompt through stdin.
+You also need a supported **generation CLI** authenticated on this machine and on `PATH`. The default is OpenAI Codex CLI (`codex exec --sandbox read-only -`); Claude Code can be selected in per-machine settings. The factory invokes the CLI as a subprocess and pipes the prompt through stdin.
 
 ---
 
@@ -45,15 +45,52 @@ You also need a supported **generation CLI** authenticated on this machine and o
 2. Put secrets in `factory/config/settings.local.toml` (gitignored — see [Configuration](#configuration)). For Telegram alerts, set `telegram_bot_token` and `telegram_chat_id` there.
 3. Run the loop:
    ```bash
-   python -m factory.loop
+   ./factory/scripts/run_factory.sh
    ```
 4. In a second terminal, run the dashboard:
    ```bash
-   python -m factory.dashboard.server
+   ./factory/scripts/run_dashboard.sh
    ```
-5. Open <http://127.0.0.1:8787>.
+5. The dashboard opens <http://127.0.0.1:8788> automatically. Both launchers use this checkout's settings, so the factory writes to the same `results_dir` the dashboard reads and refreshes. The dashboard prints its URL and results directory at startup. Use `--no-browser` for a headless session.
 
-The loop runs until `Ctrl-C` (graceful — it finishes the current cycle), or until a cycle limit is reached. `python -m factory.loop --seed 42` makes idea-slot draws reproducible; `--settings <path>` points at an alternate settings file.
+The launcher changes to its own checkout before starting Python. Startup logs show `code_root` and `data_root`; edits in another worktree do not update a running process. Restart the launcher after deploying changes. Codex factory defaults use medium reasoning and ephemeral sessions; update `settings.local.toml` too if it overrides `flags`.
+
+Factory stages, including held-out promotion, skip per-bar equity and position
+CSVs by default. Summaries, trade logs, configs, logs, optimization scores and
+WFO window results are retained. To save full histories, launch with
+`BACKTESTER_SAVE_HISTORY=1 ./factory/scripts/run_factory.sh`. Manual backtester
+runs still save full histories unless this environment variable is set to `0`.
+Existing bundles are left as they are.
+
+The loop runs until `Ctrl-C` (graceful — it finishes the current cycle), a cycle limit is reached, or the slot pool is exhausted. `python -m factory.loop --seed 42` makes idea-slot draws reproducible; `--settings <path>` points at an alternate settings file.
+
+### Running several strategies at once
+
+Stop the existing factory loop, then start one launcher with multiple workers:
+
+```bash
+./factory/scripts/run_factory.sh --workers 2
+./factory/scripts/run_factory.sh --workers 4 --max-cycles 25
+```
+
+`--workers` defaults to `1`. Each worker runs the full generation → backtest →
+optimize → WFO pipeline independently; stages within a strategy stay sequential.
+The backtester stages already run in separate processes, so they can use multiple
+CPU cores. Start with two workers and increase while CPU, RAM, and generation
+provider limits permit. More workers also increase concurrent LLM usage.
+
+Workers share the atomic SQLite slot pool and one discovery worker. Worker 1
+keeps the configured `node_id`; other workers use `<node_id>-w2`, `-w3`, etc., with
+separate results/dedup shards and temporary directories. The existing dashboard
+reads all shards. Use one launcher per checkout so each shard has one writer.
+`--max-cycles` is the **total across workers**, split as evenly as possible.
+`--seed` seeds each worker, but concurrent claim order depends on scheduling.
+`Ctrl-C` stops new cycles and lets current cycles finish. A generation login
+failure also stops new cycles across all workers.
+
+Parallel workers require `[sync] enabled = false`; the launcher rejects a
+combination with distributed git sync. For multiple machines, use the existing
+distributed mode with one worker per checkout.
 
 ### Choosing how many strategies to generate
 
@@ -74,11 +111,13 @@ python -m factory.loop --max-cycles 25   # run 25 cycles, then exit cleanly
 With distributed mode off (the default), this is the whole factory — the per-machine ID scheme and sharded storage described below are still used, they are simply harmless on one machine.
 
 The first cycle also creates `factory/data/slot_pool.sqlite`, a local
-pre-populated SQLite database containing every valid slot combination. Each
-cycle claims one unused combination and marks it consumed when the attempt
-finishes, so slot uniqueness no longer depends on the old "last 30 ideas"
-prompt context. The `dedup/` shard is still written as historical idea
-metadata for records and dashboards.
+pre-populated SQLite database containing 71,680 combinations of the six
+required strategy slots. Each cycle draws a loose inspiration anchor for its
+prompt; the anchor does not multiply the pool. An existing seven-slot pool is
+migrated on first use, keeping attempted claims as history. Generation failures
+release their claim for another attempt. If the configured CLI is not logged in,
+the loop stops with a login instruction instead of repeatedly failing.
+The `dedup/` shard remains historical idea metadata for records and dashboards.
 
 ---
 
@@ -128,13 +167,13 @@ telegram_chat_id   = "-100..."
 enabled = true
 ```
 
-To use Codex on a specific machine, put this in `settings.local.toml`:
+To use Claude Code on a specific machine, put this in `settings.local.toml`:
 
 ```toml
 [generation]
-provider = "codex"
-cmd = "codex"
-flags = ["exec", "-"]
+provider = "claude"
+cmd = "claude"
+flags = ["-p", "--output-format", "json", "--allowedTools", "Read"]
 ```
 
 Older Claude-only configs remain valid. If `provider` / `cmd` / `flags` are absent, the loader falls back to `claude_cmd` / `claude_flags` and behaves as before.
@@ -269,7 +308,7 @@ An upgrade discards no generated work:
 
 - **Strategy and config files** (`strategies/gen_*.py`, `configs/wfo/gen_*.yaml`) are plain files on disk — untouched. The registry auto-discovers them, including older `gen_<timestamp>.py` ids minted before the `gen_<node_id>_<timestamp>` scheme.
 - **Results records are forward-compatible.** Token tracking adds a `generation_tokens` field to *new* records only; older records have no such field and are read as "no token data" — the detail view shows `n/a` for them and they contribute `0` to the cumulative-tokens total. No migration, no data loss.
-- **Generation-provider settings are backward-compatible.** Existing `claude_cmd` / `claude_flags` configs keep working. Codex machines only need a local `[generation]` override; no archived strategy, dedup, or results data changes format.
+- **Generation-provider settings are backward-compatible.** Existing `claude_cmd` / `claude_flags` configs keep working. Codex is the tracked default; no archived strategy, dedup, or results data changes format.
 
 ### Archived strategies are migrated to OOS Sortino automatically
 
@@ -313,3 +352,39 @@ The factory has a fast unit suite plus slower integration tests. Slow tests (Tie
 - Token tracking — [`docs/superpowers/specs/2026-05-16-factory-token-tracking-design.md`](../docs/superpowers/specs/2026-05-16-factory-token-tracking-design.md)
 - Sortino archive migration — [`docs/superpowers/specs/2026-05-17-sortino-archive-migration-design.md`](../docs/superpowers/specs/2026-05-17-sortino-archive-migration-design.md)
 - Original factory build — [`docs/superpowers/plans/2026-05-15-strategy-factory-v020.md`](../docs/superpowers/plans/2026-05-15-strategy-factory-v020.md)
+# Stock discovery
+
+The factory loop starts a daemon discovery worker in-process. It records each
+newly persisted factory strategy and queues a batch after every 200 creations;
+existing queued batches resume on restart. The worker uses the SPY-specific
+discovery pipeline below for sources with matching WFO evidence, then generates
+and evaluates candidates under `discovery/`. Failed batches retry after one
+hour. Strategies without matching WFO evidence are skipped by the background
+worker and can use the manual backfill command.
+
+The same commands remain available for manual indexing, backfill, generation,
+evaluation, and review:
+
+Run from the repository root:
+
+```bash
+python -m factory.discovery index
+python -m factory.discovery backfill gen_jay_1778895960
+python -m factory.discovery generate gen_jay_1778895960
+python -m factory.discovery evaluate disc_<id>
+python -m factory.discovery review disc_<id>
+python -m factory.discovery list
+```
+
+`index` snapshots SPY daily bars from 2015-01-02 through 2024-12-31 and reports
+missing WFO artifacts. `generate` requires a source with readable WFO summary
+and window artifacts. Backfill and candidate runs stay in `discovery/`; candidate
+WFO uses 504 training, 126 test, and 126 step bars. `evaluate` records novelty,
+cost stress, and paired OOS incrementality before shortlisting. `review` is an
+explicit command for shortlisted candidates and pins 2025-01-01 through
+2026-05-14. This is **review data**, since existing stock tests have used 2025.
+An approved candidate gets a hashed handoff in `discovery/handoffs/`.
+
+The local SQLite state and generated files are ignored by git. Existing factory
+output is not backfilled into the creation ledger; only strategies persisted
+after the worker is introduced count toward the 200-strategy trigger.

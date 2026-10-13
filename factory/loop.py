@@ -8,11 +8,16 @@ import signal
 import sys
 import threading
 import time
+from concurrent.futures import ThreadPoolExecutor
+from dataclasses import replace
 from pathlib import Path
 from typing import Optional
 
 from factory.cycle import run_cycle
+from factory.discovery import DiscoveryWorker
+from factory.generate import GeneratorUnavailable
 from factory.settings_loader import Settings, load_settings
+from factory.slot_pool import SlotPoolExhausted, initialize_slot_pool
 from factory.sync import (
     bootstrap,
     check_sync_ready,
@@ -22,7 +27,7 @@ from factory.sync import (
 )
 from factory.sortino_migration import drain_one_retro_promotion, migrate_shard
 
-log = logging.getLogger(__name__)
+log = logging.getLogger("factory.loop")
 
 
 class _ShutdownFlag:
@@ -95,6 +100,18 @@ def _install_signal_handlers(flag: _ShutdownFlag) -> None:
         signal.signal(signal.SIGTERM, _handler)
 
 
+def _start_discovery_worker(settings: Settings) -> threading.Event:
+    wake = threading.Event()
+    try:
+        worker = DiscoveryWorker(settings.paths.backtester_root)
+        thread = threading.Thread(target=worker.run_forever, name="discovery-worker", daemon=True)
+        thread.start()
+        return worker.wake_event
+    except Exception:
+        log.exception("discovery worker failed to start (factory continues)")
+        return wake
+
+
 def _nonneg_int(value: str) -> int:
     """argparse `type` for --max-cycles: a non-negative integer."""
     try:
@@ -106,27 +123,79 @@ def _nonneg_int(value: str) -> int:
     return n
 
 
+def _positive_int(value: str) -> int:
+    n = _nonneg_int(value)
+    if n == 0:
+        raise argparse.ArgumentTypeError("must be >= 1")
+    return n
+
+
+def _run_parallel_loops(
+    settings: Settings, *, rng: random.Random, flag: _ShutdownFlag,
+    max_cycles: int, workers: int,
+) -> int:
+    if settings.sync.enabled:
+        raise ValueError("--workers > 1 requires [sync] enabled = false; "
+                         "use separate checkouts for distributed instances")
+    workers = min(workers, max_cycles) if max_cycles else workers
+    initialize_slot_pool(settings.paths.slot_pool_db)
+    discovery_wake = _start_discovery_worker(settings)
+
+    def run_worker(s: Settings, seed: int, limit: int) -> int:
+        try:
+            return run_loop(s, rng=random.Random(seed), shutdown_flag=flag,
+                            max_cycles_override=limit, discovery_wake=discovery_wake)
+        except Exception:
+            flag.set()
+            raise
+
+    # Each shard has one writer; worker 1 retains this node's existing history.
+    # ponytail: split finite budgets evenly; use a shared counter if tail latency matters.
+    with ThreadPoolExecutor(max_workers=workers, thread_name_prefix="factory") as pool:
+        futures = []
+        try:
+            for i in range(workers):
+                node_id = settings.node_id if i == 0 else f"{settings.node_id}-w{i + 1}"
+                paths = replace(settings.paths, tmp_dir=settings.paths.tmp_dir / node_id)
+                worker_settings = replace(settings, node_id=node_id, paths=paths)
+                limit = max_cycles // workers + (i < max_cycles % workers) if max_cycles else 0
+                futures.append(pool.submit(run_worker, worker_settings, rng.getrandbits(64), limit))
+            return sum(future.result() for future in futures)
+        except BaseException:
+            flag.set()
+            raise
+
+
 def run_loop(
     settings: Settings,
     *,
     rng: random.Random,
     shutdown_flag: Optional[_ShutdownFlag] = None,
     max_cycles_override: Optional[int] = None,
+    workers: int = 1,
+    discovery_wake: Optional[threading.Event] = None,
 ) -> int:
     """Run cycles in a loop. Returns the number of cycles completed.
 
     Stops when shutdown_flag is set OR when max_cycles (>0) is reached.
     max_cycles_override (if provided) wins over settings.loop.max_cycles.
+    With multiple workers, max_cycles is the total across their independent loops.
     """
     flag = shutdown_flag or _ShutdownFlag()
     max_cycles = max_cycles_override if max_cycles_override is not None else settings.loop.max_cycles
+    if workers < 1:
+        raise ValueError("workers must be >= 1")
+    if workers > 1:
+        return _run_parallel_loops(settings, rng=rng, flag=flag,
+                                   max_cycles=max_cycles, workers=workers)
     sleep_sec = settings.loop.inter_cycle_sleep_sec
 
     mode = "distributed" if settings.sync.enabled else "standalone"
     model = _generation_display(settings.generation.provider, settings.generation.flags)
     log.info(
-        "factory loop starting: node=%s mode=%s model=%s",
-        settings.node_id, mode, model,
+        "factory loop starting: node=%s mode=%s model=%s code_root=%s data_root=%s",
+        settings.node_id, mode, model, Path(__file__).resolve().parent.parent,
+        settings.paths.backtester_root,
     )
 
     try:
@@ -138,6 +207,9 @@ def run_loop(
         migrate_shard(settings)
     except Exception as exc:
         log.exception("sortino migration failed (continuing): %s", exc)
+
+    if discovery_wake is None:
+        discovery_wake = _start_discovery_worker(settings)
 
     completed = 0
     while not flag.is_set():
@@ -154,10 +226,18 @@ def run_loop(
                 log.exception("sync_pull failed (continuing): %s", exc)
             try:
                 outcome = run_cycle(settings, rng=rng)
-                log.info("cycle %d outcome=%s id=%s",
-                         completed + 1, outcome.status, outcome.strategy_id)
+                log.info("node=%s cycle %d outcome=%s id=%s",
+                         settings.node_id, completed + 1, outcome.status, outcome.strategy_id)
+            except GeneratorUnavailable as exc:
+                log.error("generator unavailable; stopping factory: %s", exc)
+                raise
+            except SlotPoolExhausted:
+                log.info("slot pool exhausted; stopping factory")
+                break
             except Exception as exc:
                 log.exception("unexpected exception in run_cycle: %s", exc)
+            finally:
+                discovery_wake.set()
             try:
                 drain_one_retro_promotion(settings)
             except Exception as exc:
@@ -194,6 +274,9 @@ def main(argv: Optional[list[str]] = None) -> int:
     )
     parser.add_argument("--seed", type=int, default=None,
                         help="Optional random seed for slot pulls")
+    parser.add_argument("--workers", type=_positive_int, default=1,
+                        help="Concurrent strategy workers on this machine (default: 1). "
+                             "Requires distributed sync to be disabled.")
     parser.add_argument(
         "--max-cycles", type=_nonneg_int, default=None,
         help="Stop after N cycles (strategy attempts). 0 = unlimited. "
@@ -202,12 +285,18 @@ def main(argv: Optional[list[str]] = None) -> int:
     args = parser.parse_args(argv)
 
     s = load_settings(args.settings)
+    if args.workers > 1 and s.sync.enabled:
+        parser.error("--workers > 1 requires [sync] enabled = false; "
+                     "use separate checkouts for distributed instances")
     configure_logging(s.paths.factory_log)
     flag = _ShutdownFlag()
     _install_signal_handlers(flag)
     rng = random.Random(args.seed) if args.seed is not None else random.Random()
-    run_loop(s, rng=rng, shutdown_flag=flag,
-             max_cycles_override=args.max_cycles)
+    try:
+        run_loop(s, rng=rng, shutdown_flag=flag,
+                 max_cycles_override=args.max_cycles, workers=args.workers)
+    except GeneratorUnavailable:
+        return 1
     return 0
 
 

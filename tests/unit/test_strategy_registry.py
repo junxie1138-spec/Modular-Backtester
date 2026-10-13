@@ -65,6 +65,16 @@ def test_curated_strategies_registered_on_import() -> None:
     assert reg.get_strategy_class("mean_reversion_atr") is not None
 
 
+def test_discovery_strategy_loads_from_isolated_directory(tmp_path, monkeypatch) -> None:
+    source = Path("factory/tests/fixtures/valid_strategy.py").read_text(encoding="utf-8")
+    folder = tmp_path / "discovery/strategies"
+    folder.mkdir(parents=True)
+    (folder / "disc_test.py").write_text(source.replace('"gen_test_valid"', '"disc_test"'), encoding="utf-8")
+    monkeypatch.setenv("DISCOVERY_STRATEGY_DIR", str(folder))
+    assert get_strategy_class("disc_test").strategy_id == "disc_test"
+    STRATEGY_REGISTRY.pop("disc_test", None)
+
+
 def test_discover_only_imports_gen_modules_in_sorted_order() -> None:
     """discover_generated_strategies imports only strategies.gen_* modules,
     in sorted (deterministic) order."""

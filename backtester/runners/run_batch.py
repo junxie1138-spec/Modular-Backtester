@@ -55,8 +55,8 @@ def _run_legacy_per_symbol(*, rc, strategy, params, writer, log) -> int:
             engine = BacktestEngine(broker=broker, portfolio=portfolio)
             result = engine.run(strategy, data, params, symbol=symbol, timeframe=rc.data.timeframe)
             by_symbol[symbol] = result.summary
-            result.equity_curve.to_csv(writer.run_dir / f"{symbol}_equity_curve.csv", index_label="timestamp")
-            result.trades.to_csv(writer.run_dir / f"{symbol}_trades.csv", index=False)
+            writer.write_csv(f"{symbol}_equity_curve.csv", result.equity_curve, history=True, index_label="timestamp")
+            writer.write_csv(f"{symbol}_trades.csv", result.trades, index=False)
             log.info("%s: total_return=%.4f sharpe=%.3f", symbol,
                      result.summary["total_return"], result.summary["sharpe"])
         except Exception as exc:
@@ -121,7 +121,7 @@ def _run_multi_symbol(*, rc, strategy, params, writer, log) -> int:
         # write_config doesn't yet accept resolved_universe — Task 37 adds it.
         writer.write_config(rc)
 
-    result.equity_curve.to_csv(writer.run_dir / "portfolio_equity_curve.csv", index_label="timestamp")
+    writer.write_csv("portfolio_equity_curve.csv", result.equity_curve, history=True, index_label="timestamp")
     write_json(writer.run_dir / "batch_summary.json", {
         "portfolio_total_return": result.portfolio_total_return,
         "portfolio_max_drawdown": result.portfolio_max_drawdown,

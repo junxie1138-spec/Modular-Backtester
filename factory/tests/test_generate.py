@@ -1,10 +1,14 @@
 import json
+import subprocess
 from pathlib import Path
+from unittest import mock
 
 import pytest
 
 from factory.generate import (
     GenerationError,
+    GeneratorUnavailable,
+    call_generator,
     parse_codex_output,
     parse_claude_output,
 )
@@ -164,3 +168,22 @@ def test_codex_parser_accepts_prose_wrapped_json() -> None:
 def test_codex_parser_raises_on_missing_required_keys() -> None:
     with pytest.raises(GenerationError, match="missing"):
         parse_codex_output('{"strategy_id":"gen_bad"}')
+
+
+def test_claude_auth_error_on_stdout_is_actionable() -> None:
+    output = json.dumps({"type": "result", "is_error": True, "result": "Not logged in · Please run /login"})
+    proc = subprocess.CompletedProcess(["claude"], 1, stdout=output, stderr="")
+    with mock.patch("factory.generate._resolve_cmd", return_value="claude"), \
+         mock.patch("factory.generate.subprocess.run", return_value=proc), \
+         pytest.raises(GeneratorUnavailable, match="claude auth login"):
+        call_generator(prompt="test", provider="claude", cmd="claude", flags=("-p",), timeout_sec=5)
+
+
+def test_codex_auth_error_on_stderr_is_actionable() -> None:
+    proc = subprocess.CompletedProcess(
+        ["codex"], 1, stdout="", stderr="ERROR: unexpected status 401 Unauthorized: Missing bearer authentication",
+    )
+    with mock.patch("factory.generate._resolve_cmd", return_value="codex"), \
+         mock.patch("factory.generate.subprocess.run", return_value=proc), \
+         pytest.raises(GeneratorUnavailable, match="codex login"):
+        call_generator(prompt="test", provider="codex", cmd="codex", flags=("exec", "-"), timeout_sec=5)

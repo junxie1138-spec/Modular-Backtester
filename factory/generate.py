@@ -28,6 +28,10 @@ class GenerationError(RuntimeError):
     """Raised when generator CLI output cannot be parsed into the expected shape."""
 
 
+class GeneratorUnavailable(GenerationError):
+    """Raised when the configured generator needs operator intervention."""
+
+
 @dataclass(slots=True, frozen=True)
 class GenerationResult:
     parsed: dict[str, Any]
@@ -245,10 +249,25 @@ def call_generator(
     except OSError as exc:
         raise GenerationError(f"{provider_norm} subprocess failed to start: {exc}") from exc
 
+    envelope = {}
+    if provider_norm == "claude":
+        try:
+            envelope = _find_envelope_with_result(proc.stdout)
+        except GenerationError:
+            pass
+        if envelope.get("is_error") and "not logged in" in str(envelope.get("result", "")).lower():
+            raise GeneratorUnavailable("Claude CLI is not logged in; run `claude auth login` on this machine")
+    if provider_norm in {"codex", "gpt", "openai"} and proc.returncode != 0:
+        diagnostic = (proc.stderr or "")[-2000:].lower()
+        if "401 unauthorized" in diagnostic or "not logged in" in diagnostic:
+            raise GeneratorUnavailable("Codex CLI is not logged in; run `codex login` on this machine")
+
     if proc.returncode != 0:
-        tail = (proc.stderr or "")[-500:]
+        if envelope.get("is_error") and envelope.get("result"):
+            raise GenerationError(f"{provider_norm} generation error: {envelope['result']}")
+        tail = (proc.stderr or proc.stdout or "<no stderr or stdout>").strip()[-500:]
         raise GenerationError(
-            f"{provider_norm} generation exited {proc.returncode}; stderr tail: {tail}"
+            f"{provider_norm} generation exited {proc.returncode}; CLI output tail: {tail}"
         )
 
     parsed, cost, usage = parse_generator_output(proc.stdout, provider=provider_norm)

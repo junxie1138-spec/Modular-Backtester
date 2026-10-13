@@ -22,23 +22,21 @@ def test_build_prompt_fills_all_placeholders() -> None:
         assert v in text
     # Strategy id appears in the prompt (must match injected value).
     assert "gen_1715800000" in text
-    # The old last-30 dedup prompt block has been removed; uniqueness comes
-    # from the precomputed slot pool.
-    assert "ALREADY-GENERATED IDEAS" not in text
+    assert "ALREADY-GENERATED IDEAS" in text
     # Hard contract markers from Appendix A.
     assert "GeneratedStrategy" in text
     assert "shift(1)" in text
     assert "strict JSON" in text
 
 
-def test_prompt_has_no_dedup_tail_block() -> None:
+def test_prompt_shows_recent_summaries() -> None:
     slots = {n: "x" for n in (
         "strategy_family", "signal_primitive", "holding_horizon",
         "direction", "exit_rule", "constraint_twist", "inspiration_anchor",
     )}
-    text = build_prompt(strategy_id="gen_1", slots=slots)
-    assert "last 30" not in text.lower()
-    assert "(none yet)" not in text
+    text = build_prompt(strategy_id="gen_1", slots=slots, recent_summaries=["older idea", "new idea"])
+    assert "last 30" in text.lower()
+    assert "- older idea\n- new idea" in text
 
 
 def test_exit_rule_placeholder_is_substituted() -> None:

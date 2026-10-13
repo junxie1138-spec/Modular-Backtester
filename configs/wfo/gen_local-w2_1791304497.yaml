@@ -1,0 +1,27 @@
+run_name: gen_local-w2_1791304497
+strategy: gen_local-w2_1791304497
+strategy_params: {fractional_order: 0.40, fractional_window: 32, efficiency_window: 6, baseline_window: 20, volatility_window: 20, atr_window: 14, efficiency_threshold: 0.55, target_volatility: 0.12, breakeven_gain: 0.012, atr_multiple: 2.5, max_holding_bars: 10, spike_multiple: 2.5, refractory_bars: 3}
+data:
+  symbols: ["SPY"]
+  timeframe: "1d"
+  start: "2015-01-02"
+  end: "2024-12-31"
+  source: "csv"
+  root: "data/raw"
+execution:
+  initial_cash: 100000
+  commission_bps: 2
+  slippage_bps: 5
+  allow_fractional: false
+  allow_short: false
+portfolio:
+  sizing_mode: "percent_equity"
+  size: 0.95
+optimization:
+  objective: sortino
+  param_space: {fractional_order: [0.25, 0.40, 0.55], efficiency_threshold: [0.45, 0.55, 0.65], atr_multiple: [2.0, 2.5, 3.0]}
+wfo:
+  enabled: true
+  train_bars: 756
+  test_bars: 252
+  step_bars: 252

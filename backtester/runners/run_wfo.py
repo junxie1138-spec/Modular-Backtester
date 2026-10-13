@@ -81,9 +81,9 @@ def _run_legacy_single_symbol_wfo(*, rc, cls) -> int:
         "n_windows": len(out["window_results"]),
     })
     write_json(writer.run_dir / "window_results.json", out["window_results"])
-    out["oos_equity_curve"].to_csv(writer.run_dir / "oos_equity_curve.csv", index_label="timestamp")
-    out["oos_trades"].to_csv(writer.run_dir / "oos_trades.csv", index=False)
-    out["oos_positions"].to_csv(writer.run_dir / "oos_positions.csv", index_label="timestamp")
+    writer.write_csv("oos_equity_curve.csv", out["oos_equity_curve"], history=True, index_label="timestamp")
+    writer.write_csv("oos_trades.csv", out["oos_trades"], index=False)
+    writer.write_csv("oos_positions.csv", out["oos_positions"], history=True, index_label="timestamp")
 
     log.info("WFO complete: %d windows, oos_sharpe=%.3f",
              len(out["window_results"]), out["oos_summary"].get("sharpe", 0.0))
@@ -168,7 +168,7 @@ def _run_multi_symbol_wfo(*, rc, cls) -> int:
     stitched = stitcher.stitch(window_results)
 
     writer.write_config(rc, resolved_universe=universe)
-    stitched.oos_equity_curve.to_csv(writer.run_dir / "oos_equity_curve.csv", index_label="timestamp")
+    writer.write_csv("oos_equity_curve.csv", stitched.oos_equity_curve, history=True, index_label="timestamp")
     write_json(writer.run_dir / "summary.json", {
         "oos_summary": stitched.oos_summary,
         "parameter_stability": stitched.parameter_stability,

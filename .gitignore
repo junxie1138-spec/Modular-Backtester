@@ -19,3 +19,13 @@ factory/data/_tmp/
 factory/data/slot_pool.sqlite*
 factory/logs/
 output/runs/
+discovery/data/
+discovery/runs/
+discovery/tmp/
+discovery/strategies/
+discovery/configs/
+discovery/handoffs/
+discovery/analysis/
+discovery/backfills/
+discovery/library.json
+discovery/state.sqlite*

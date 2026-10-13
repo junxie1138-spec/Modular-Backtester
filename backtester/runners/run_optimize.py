@@ -132,7 +132,7 @@ def _run_multi_symbol(*, rc, cls, writer, log) -> int:
     )
 
     writer.write_config(rc, resolved_universe=universe)
-    best_result.equity_curve.to_csv(writer.run_dir / "portfolio_equity_curve.csv", index_label="timestamp")
+    writer.write_csv("portfolio_equity_curve.csv", best_result.equity_curve, history=True, index_label="timestamp")
     write_json(writer.run_dir / "summary.json", {
         "best_params": asdict(best_params) if is_dataclass(best_params) else dict(best_params),
         "best_score_objective": rc.optimization.objective,

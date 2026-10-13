@@ -139,10 +139,12 @@ def build_prompt(
     *,
     strategy_id: str,
     slots: Mapping[str, str],
+    recent_summaries: tuple[str, ...] | list[str] = (),
 ) -> str:
     """Fill the Appendix A template with the pre-claimed slot values."""
     filled = PROMPT_TEMPLATE
     for name, value in slots.items():
         filled = filled.replace("{{" + name + "}}", value)
     filled = filled.replace("{{strategy_id}}", strategy_id)
-    return filled
+    recent = "\n".join(f"- {summary}" for summary in recent_summaries) or "(none yet)"
+    return filled + f"\nALREADY-GENERATED IDEAS (last 30; avoid repeating a mechanism):\n{recent}\n"

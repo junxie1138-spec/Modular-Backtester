@@ -52,14 +52,15 @@ def slot_pool_mocks():
         },
     )
     with mock.patch("factory.cycle.claim_slot_combination", return_value=claim) as claim_slot, \
-         mock.patch("factory.cycle.consume_slot_combination") as consume_slot:
-        yield claim, claim_slot, consume_slot
+         mock.patch("factory.cycle.consume_slot_combination") as consume_slot, \
+         mock.patch("factory.cycle.release_slot_combination") as release_slot:
+        yield claim, claim_slot, consume_slot, release_slot
 
 
 def test_generation_failure_writes_failed_record_and_no_dedup_entry(
     tmp_settings_file: Path, tmp_path: Path, slot_pool_mocks,
 ) -> None:
-    claim, claim_slot, consume_slot = slot_pool_mocks
+    claim, claim_slot, consume_slot, release_slot = slot_pool_mocks
     _seed_backtester_tree(tmp_path)
     s = load_settings(tmp_settings_file)
     from factory.generate import GenerationError
@@ -76,21 +77,58 @@ def test_generation_failure_writes_failed_record_and_no_dedup_entry(
     assert records[0]["status"] == "failed"
     assert records[0]["failed_stage"] == "generation"
     claim_slot.assert_called_once()
-    consume_slot.assert_called_once_with(
+    consume_slot.assert_not_called()
+    release_slot.assert_called_once_with(
         s.paths.slot_pool_db,
         combination_id=claim.combination_id,
         claimed_by=claim.claimed_by,
         claimed_at=claim.claimed_at,
-        strategy_id=None,
-        outcome_status="failed",
-        failed_stage="generation",
     )
+
+
+def test_login_failure_releases_claim_and_stops_cycle(
+    tmp_settings_file: Path, tmp_path: Path, slot_pool_mocks,
+) -> None:
+    from factory.generate import GeneratorUnavailable
+
+    claim, _claim_slot, consume_slot, release_slot = slot_pool_mocks
+    _seed_backtester_tree(tmp_path)
+    s = load_settings(tmp_settings_file)
+    with mock.patch("factory.cycle.call_generator", side_effect=GeneratorUnavailable("log in")), \
+         pytest.raises(GeneratorUnavailable, match="log in"):
+        run_cycle(s, rng=random.Random(0))
+    release_slot.assert_called_once_with(
+        s.paths.slot_pool_db, combination_id=claim.combination_id,
+        claimed_by=claim.claimed_by, claimed_at=claim.claimed_at,
+    )
+    consume_slot.assert_not_called()
+
+
+def test_recent_duplicate_is_recorded_once_before_validation(
+    tmp_settings_file: Path, tmp_path: Path, slot_pool_mocks,
+) -> None:
+    from factory.dedup import append_summary, read_tail
+    from factory.results import read_records
+
+    _seed_backtester_tree(tmp_path)
+    s = load_settings(tmp_settings_file)
+    append_summary(s.paths.dedup_dir, "Test compression strategy", node_id="other")
+    fake = _fake_claude_result("gen_cycle_test")
+    fake.parsed["one_line_summary"] = "  TEST   compression strategy  "
+    with mock.patch("factory.cycle.call_generator", return_value=fake), \
+         mock.patch("factory.cycle.validate_static") as validate:
+        outcome = run_cycle(s, rng=random.Random(0))
+    assert outcome.status == "skipped_duplicate"
+    assert outcome.record["failed_stage"] == "duplicate"
+    assert len(read_records(s.paths.results_dir)) == 1
+    assert read_tail(s.paths.dedup_dir, n=10) == ["Test compression strategy"]
+    validate.assert_not_called()
 
 
 def test_validation_failure_writes_dedup_but_no_files(
     tmp_settings_file: Path, tmp_path: Path, slot_pool_mocks,
 ) -> None:
-    claim, _claim_slot, consume_slot = slot_pool_mocks
+    claim, _claim_slot, consume_slot, _release_slot = slot_pool_mocks
     _seed_backtester_tree(tmp_path)
     s = load_settings(tmp_settings_file)
     fake = _fake_claude_result("gen_cycle_test")
@@ -122,7 +160,7 @@ def test_validation_failure_writes_dedup_but_no_files(
 def test_complete_cycle_writes_files_and_record(
     tmp_settings_file: Path, tmp_path: Path, slot_pool_mocks,
 ) -> None:
-    claim, _claim_slot, consume_slot = slot_pool_mocks
+    claim, _claim_slot, consume_slot, _release_slot = slot_pool_mocks
     _seed_backtester_tree(tmp_path)
     s = load_settings(tmp_settings_file)
 
@@ -203,7 +241,7 @@ def test_complete_cycle_writes_files_and_record(
 def test_stage_failure_writes_failed_record_keeps_dedup_and_files(
     tmp_settings_file: Path, tmp_path: Path, slot_pool_mocks,
 ) -> None:
-    claim, _claim_slot, consume_slot = slot_pool_mocks
+    claim, _claim_slot, consume_slot, _release_slot = slot_pool_mocks
     _seed_backtester_tree(tmp_path)
     s = load_settings(tmp_settings_file)
 
@@ -252,7 +290,7 @@ def test_stage_failure_writes_failed_record_keeps_dedup_and_files(
 def test_screened_out_skips_wfo_and_promotion(
     tmp_settings_file: Path, tmp_path: Path, slot_pool_mocks,
 ) -> None:
-    claim, _claim_slot, consume_slot = slot_pool_mocks
+    claim, _claim_slot, consume_slot, _release_slot = slot_pool_mocks
     _seed_backtester_tree(tmp_path)
     s = load_settings(tmp_settings_file)
 

@@ -50,7 +50,7 @@ The backtester and the Strategy Factory both run on macOS unchanged — all file
 
 - **The generation CLI** is just `claude` or `codex` on the `PATH` on macOS, so the factory's default `cmd = "claude"` works as-is — the Windows `.CMD` shim wrinkle does not apply.
 
-Everything else is identical: `python -m pytest -q` runs the full suite, and the factory dashboard still serves on `http://127.0.0.1:8787`.
+Everything else is identical: `python -m pytest -q` runs the full suite, and the factory dashboard serves on `http://127.0.0.1:8788`.
 
 **Mixed Windows + macOS factory pool.** When the distributed factory is enabled (`[sync] enabled = true`), it syncs generated strategies and per-machine result/dedup shards across machines through git. The repo ships a `.gitattributes` that pins those paths to LF line endings, so a pool that mixes Windows and macOS nodes stays conflict-free and `sync_pull` never sees spurious line-ending churn. No action is needed — just give each machine its own `node_id` in `factory/config/settings.local.toml`.
 
@@ -77,6 +77,10 @@ output/runs/20260514_0319_sma_cross_spy/
 ├── equity_curve.csv        # per-bar cash + position_value + equity
 └── logs.txt
 ```
+
+Manual runs save full histories by default. Set `BACKTESTER_SAVE_HISTORY=0`
+to skip per-bar position and equity CSVs while keeping summaries, trade logs,
+configs, optimization scores and WFO window results.
 
 ### 2. Grid parameter optimization
 
@@ -342,8 +346,8 @@ A separate, opt-in subsystem that lives at `factory/` and wraps the backtester. 
 **Critical context**: at ~24 strategies/day on one asset over one historical path, some strategies will post OOS Sharpe > 1.0 on luck alone. WFO mitigates but does not eliminate multiple-comparisons risk. The dashboard's "good" flag and the Telegram alert are explicitly labelled **shortlist signals, not verdicts** — a held-out gate (different symbol or fully unseen period) is required before treating any row as a real candidate. The held-out promotion gate now runs automatically on every strategy that clears WFO.
 
 ```bash
-python -m factory.loop                                    # run the continuous loop
-python -m factory.dashboard.server                        # local dashboard at http://127.0.0.1:8787
+./factory/scripts/run_factory.sh                          # write results using this checkout's settings
+./factory/scripts/run_dashboard.sh                        # opens http://127.0.0.1:8788 and reads the factory's results
 python -m factory.scripts.endurance_check --cycles 100    # validate 100 unattended cycles
 python -m factory.scripts.telegram_smoke                  # verify Telegram credentials
 ```

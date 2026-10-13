@@ -13,7 +13,8 @@ from typing import Iterable, Mapping, Optional
 from factory.slots import SLOT_NAMES, SLOTS, _INCOMPATIBLE
 
 
-POOL_SCHEMA_VERSION = 1
+POOL_SCHEMA_VERSION = 2
+CORE_SLOT_NAMES = SLOT_NAMES[:-1]  # inspiration is chosen per prompt, not a unique strategy
 DEFAULT_STALE_CLAIM_SEC = 24 * 60 * 60
 
 
@@ -32,7 +33,7 @@ class SlotPoolExhausted(RuntimeError):
 
 
 def _canonical_slots(slots: Mapping[str, str]) -> dict[str, str]:
-    return {name: str(slots[name]) for name in SLOT_NAMES}
+    return {name: str(slots[name]) for name in CORE_SLOT_NAMES}
 
 
 def combination_id(slots: Mapping[str, str]) -> str:
@@ -48,10 +49,10 @@ def slot_table_signature(
 ) -> str:
     """Hash of current slot definitions that affect generated combinations."""
     payload = {
-        "slot_names": list(SLOT_NAMES),
+        "slot_names": list(CORE_SLOT_NAMES),
         "slots": {
             name: list(dict.fromkeys(slots_table[name]))
-            for name in SLOT_NAMES
+            for name in CORE_SLOT_NAMES
         },
         "incompatible": sorted(list(pair) for pair in incompatible),
     }
@@ -63,7 +64,7 @@ def iter_valid_combinations(
     slots_table: Mapping[str, Iterable[str]] = SLOTS,
     incompatible: Iterable[tuple[str, str]] = _INCOMPATIBLE,
 ) -> list[dict[str, str]]:
-    """Return every valid slot combination from SLOTS.
+    """Return every valid combination of required strategy slots.
 
     Duplicate values inside a slot, such as the weighted long-only direction,
     are intentionally de-duplicated for the database. Weighting belongs to
@@ -71,12 +72,12 @@ def iter_valid_combinations(
     """
     values_by_slot = [
         tuple(dict.fromkeys(slots_table[name]))
-        for name in SLOT_NAMES
+        for name in CORE_SLOT_NAMES
     ]
     incompatible_set = frozenset(incompatible)
     out: list[dict[str, str]] = []
     for values in itertools.product(*values_by_slot):
-        slots = dict(zip(SLOT_NAMES, values))
+        slots = dict(zip(CORE_SLOT_NAMES, values))
         if (slots["constraint_twist"], slots["exit_rule"]) in incompatible_set:
             continue
         out.append(slots)
@@ -166,10 +167,25 @@ def initialize_slot_pool(
             existing_signature is not None
             and existing_signature["value"] == current_signature
         ):
-            row = conn.execute("SELECT COUNT(*) AS n FROM slot_combinations").fetchone()
+            row = conn.execute(
+                "SELECT COUNT(*) AS n FROM slot_combinations WHERE inspiration_anchor = ''"
+            ).fetchone()
             return int(row["n"])
 
         combinations = iter_valid_combinations(slots_table, incompatible)
+        # Retain attempted legacy rows for audit, but remove their untried
+        # ten-anchor expansion before inserting one row per core combination.
+        consumed_core_ids = {
+            combination_id(row)
+            for row in conn.execute(
+                "SELECT * FROM slot_combinations "
+                "WHERE inspiration_anchor != '' AND status = 'consumed' "
+                "AND COALESCE(failed_stage, '') != 'generation'"
+            )
+        }
+        conn.execute(
+            "DELETE FROM slot_combinations WHERE inspiration_anchor != '' AND status = 'unused'"
+        )
         conn.executemany(
             """
             INSERT INTO slot_combinations (
@@ -177,19 +193,19 @@ def initialize_slot_pool(
                 holding_horizon, direction, exit_rule, constraint_twist,
                 inspiration_anchor
             )
-            VALUES (?, 'unused', ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, '')
             ON CONFLICT(combination_id) DO NOTHING
             """,
             [
                 (
                     combination_id(slots),
+                    'consumed' if combination_id(slots) in consumed_core_ids else 'unused',
                     slots["strategy_family"],
                     slots["signal_primitive"],
                     slots["holding_horizon"],
                     slots["direction"],
                     slots["exit_rule"],
                     slots["constraint_twist"],
-                    slots["inspiration_anchor"],
                 )
                 for slots in combinations
             ],
@@ -210,12 +226,15 @@ def initialize_slot_pool(
             """,
             (str(now),),
         )
-        row = conn.execute("SELECT COUNT(*) AS n FROM slot_combinations").fetchone()
+        row = conn.execute(
+            "SELECT COUNT(*) AS n FROM slot_combinations WHERE inspiration_anchor = ''"
+        ).fetchone()
         return int(row["n"])
 
 
-def _row_to_claim(row: sqlite3.Row) -> SlotClaim:
-    slots = {name: str(row[name]) for name in SLOT_NAMES}
+def _row_to_claim(row: sqlite3.Row, inspiration_anchor: str) -> SlotClaim:
+    slots = {name: str(row[name]) for name in CORE_SLOT_NAMES}
+    slots["inspiration_anchor"] = inspiration_anchor
     return SlotClaim(
         combination_id=str(row["combination_id"]),
         slots=slots,
@@ -244,7 +263,7 @@ def claim_slot_combination(
             """
             SELECT combination_id
             FROM slot_combinations
-            WHERE status = 'claimed'
+            WHERE status = 'claimed' AND inspiration_anchor = ''
               AND claimed_at IS NOT NULL
               AND claimed_at < ?
             """,
@@ -269,7 +288,8 @@ def claim_slot_combination(
             )
 
         count_row = conn.execute(
-            "SELECT COUNT(*) AS n FROM slot_combinations WHERE status = 'unused'"
+            "SELECT COUNT(*) AS n FROM slot_combinations "
+            "WHERE status = 'unused' AND inspiration_anchor = ''"
         ).fetchone()
         unused_count = int(count_row["n"])
         if unused_count <= 0:
@@ -280,7 +300,7 @@ def claim_slot_combination(
             """
             SELECT combination_id
             FROM slot_combinations
-            WHERE status = 'unused'
+            WHERE status = 'unused' AND inspiration_anchor = ''
             ORDER BY combination_id
             LIMIT 1 OFFSET ?
             """,
@@ -315,7 +335,7 @@ def claim_slot_combination(
         ).fetchone()
         if row is None:
             raise RuntimeError(f"claimed slot combination disappeared: {selected_id}")
-        return _row_to_claim(row)
+        return _row_to_claim(row, rng.choice(tuple(slots_table["inspiration_anchor"])))
 
 
 def consume_slot_combination(
@@ -362,6 +382,24 @@ def consume_slot_combination(
             )
 
 
+def release_slot_combination(
+    db_path: Path, *, combination_id: str, claimed_by: str, claimed_at: int,
+) -> None:
+    """Return a claim to the pool when no strategy was generated."""
+    with _connect(db_path) as conn:
+        cur = conn.execute(
+            """
+            UPDATE slot_combinations
+            SET status = 'unused', claimed_by = NULL, claimed_at = NULL
+            WHERE combination_id = ? AND status = 'claimed'
+              AND claimed_by = ? AND claimed_at = ?
+            """,
+            (combination_id, claimed_by, claimed_at),
+        )
+        if cur.rowcount != 1:
+            raise RuntimeError(f"slot combination could not be released from the active claim: {combination_id}")
+
+
 def slot_pool_counts(
     db_path: Path,
     *,
@@ -372,7 +410,8 @@ def slot_pool_counts(
     initialize_slot_pool(db_path, slots_table=slots_table, incompatible=incompatible)
     with _connect(db_path) as conn:
         rows = conn.execute(
-            "SELECT status, COUNT(*) AS n FROM slot_combinations GROUP BY status"
+            "SELECT status, COUNT(*) AS n FROM slot_combinations "
+            "WHERE inspiration_anchor = '' GROUP BY status"
         ).fetchall()
     counts = {"unused": 0, "claimed": 0, "consumed": 0}
     counts.update({str(row["status"]): int(row["n"]) for row in rows})

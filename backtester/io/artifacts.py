@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import asdict
 from datetime import datetime
+import os
 from pathlib import Path
 from typing import Any, Optional, Union
 
@@ -23,6 +24,10 @@ class ArtifactWriter:
     def __init__(self, root: PathLike, run_name: str, now: Optional[str] = None):
         self.root = Path(root)
         self.now = now or _stamp()
+        save_history = os.environ.get("BACKTESTER_SAVE_HISTORY", "1")
+        if save_history not in {"0", "1"}:
+            raise ValueError("BACKTESTER_SAVE_HISTORY must be 0 or 1")
+        self.save_history = save_history == "1"
         self.run_dir = self.root / f"{self.now}_{run_name}"
         self.run_dir.mkdir(parents=True, exist_ok=True)
 
@@ -54,9 +59,14 @@ class ArtifactWriter:
 
     def write_result(self, result: BacktestResult) -> None:
         write_json(self.run_dir / "summary.json", result.summary)
-        result.trades.to_csv(self.run_dir / "trades.csv", index=False)
-        result.positions.to_csv(self.run_dir / "positions.csv", index_label="timestamp")
-        result.equity_curve.to_csv(self.run_dir / "equity_curve.csv", index_label="timestamp")
+        self.write_csv("trades.csv", result.trades, index=False)
+        self.write_csv("positions.csv", result.positions, history=True, index_label="timestamp")
+        self.write_csv("equity_curve.csv", result.equity_curve, history=True, index_label="timestamp")
+
+    def write_csv(self, name: str, frame, *, history: bool = False, **kwargs) -> None:
+        """Keep trade logs; optionally omit bulky per-bar histories."""
+        if self.save_history or not history:
+            frame.to_csv(self.run_dir / name, **kwargs)
 
     def write_window_results(self, payload: Any) -> Path:
         path = self.run_dir / "window_results.json"

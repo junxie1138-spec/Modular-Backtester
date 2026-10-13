@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from tempfile import NamedTemporaryFile
 import pandas as pd
 
 from backtester.core.exceptions import DataError
@@ -66,7 +67,16 @@ def load_yfinance_cached(
     else:
         raw = _yfinance_download(symbol, auto_adjust=auto_adjust, period="max", progress=False)
         df = _normalize_yfinance_frame(raw, require_volume=require_volume)
-        df.to_csv(csv_path)
+        # Publish only a complete cache file for concurrent backtest processes.
+        with NamedTemporaryFile(mode="w", encoding="utf-8", dir=root_p, delete=False) as cache:
+            cache_path = Path(cache.name)
+            try:
+                df.to_csv(cache)
+                cache.close()
+                cache_path.replace(csv_path)
+            finally:
+                cache.close()
+                cache_path.unlink(missing_ok=True)
         df = df.loc[start:end]
 
     if not require_volume:

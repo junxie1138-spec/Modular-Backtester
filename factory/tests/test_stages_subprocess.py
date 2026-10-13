@@ -68,7 +68,8 @@ def test_build_stage_config_rewrites_run_name(tmp_path: Path) -> None:
     assert bt["strategy"] == opt["strategy"] == wfo["strategy"] == "gen_42"
 
 
-def test_run_backtest_stage_invokes_subprocess_and_parses(tmp_path: Path) -> None:
+def test_run_backtest_stage_invokes_subprocess_and_parses(tmp_path: Path, monkeypatch) -> None:
+    monkeypatch.delenv("BACKTESTER_SAVE_HISTORY", raising=False)
     canonical = tmp_path / "cfg.yaml"
     canonical.write_text(_canonical_config("gen_42"), encoding="utf-8")
     output_runs = tmp_path / "output" / "runs"
@@ -94,6 +95,7 @@ def test_run_backtest_stage_invokes_subprocess_and_parses(tmp_path: Path) -> Non
     # the stage-specific YAML, not the canonical one.
     assert "backtester.runners.run_backtest" in cmd
     assert "--config" in cmd
+    assert run_mock.call_args.kwargs["env"]["BACKTESTER_SAVE_HISTORY"] == "0"
     assert isinstance(result, StageResult)
     assert result.parsed["sharpe"] == pytest.approx(1.2)
     assert result.parsed["run_bundle_path"].endswith("20260101_0900_gen_42")
@@ -181,3 +183,37 @@ def test_stage_missing_summary_raises(tmp_path: Path) -> None:
                 timeout_sec=30,
             )
     assert "summary" in str(exc.value).lower()
+
+
+@pytest.mark.parametrize("stage", ["backtest", "optimize", "wfo"])
+@pytest.mark.parametrize("save_history", ["0", "1"])
+def test_real_stage_keeps_trades_and_respects_history_setting(tmp_path: Path, monkeypatch, stage, save_history):
+    from tests.fixtures.synthetic import make_ohlcv
+
+    if save_history == "0":
+        monkeypatch.delenv("BACKTESTER_SAVE_HISTORY", raising=False)
+    else:
+        monkeypatch.setenv("BACKTESTER_SAVE_HISTORY", save_history)
+    raw = tmp_path / "data"
+    raw.mkdir()
+    make_ohlcv(n=300, seed=42).to_csv(raw / "SPY.csv", index_label="date")
+    cfg = yaml.safe_load(_canonical_config("sma_cross"))
+    cfg["strategy_params"] = {"fast": 5, "slow": 20}
+    cfg["data"].update(root=str(raw), start="2020-01-01", end="2030-12-31")
+    cfg["optimization"]["param_space"] = {"fast": [5, 10], "slow": [20]}
+    cfg["wfo"].update(train_bars=100, test_bars=50, step_bars=50)
+    canonical = tmp_path / "cfg.yaml"
+    canonical.write_text(yaml.safe_dump(cfg), encoding="utf-8")
+    runner = {"backtest": run_backtest_stage, "optimize": run_optimize_stage, "wfo": run_wfo_stage}[stage]
+    result = runner(
+        canonical_config=canonical, strategy_id="sma_cross",
+        output_runs_dir=tmp_path / "runs", tmp_dir=tmp_path / "_tmp", timeout_sec=30,
+    )
+    prefix = "oos_" if stage == "wfo" else ""
+    assert (result.bundle_path / "summary.json").is_file()
+    assert (result.bundle_path / f"{prefix}trades.csv").is_file()
+    for name in ("positions", "equity_curve"):
+        assert (result.bundle_path / f"{prefix}{name}.csv").exists() == (save_history == "1")
+    if stage != "backtest":
+        name = "grid_results.json" if stage == "optimize" else "window_results.json"
+        assert (result.bundle_path / name).is_file()

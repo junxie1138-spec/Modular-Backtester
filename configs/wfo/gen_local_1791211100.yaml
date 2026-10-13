@@ -1,0 +1,42 @@
+run_name: gen_local_1791211100
+strategy: gen_local_1791211100
+strategy_params:
+  fractional_order: 0.45
+  fractional_window: 32
+  normalization_window: 42
+  seasonal_window: 252
+  min_phase_observations: 12
+  seasonal_threshold: 0.10
+  shock_threshold: 0.75
+  atr_window: 14
+  atr_multiple: 2.5
+  holding_bars: 8
+  minimum_size: 0.15
+  maximum_size: 0.95
+data:
+  symbols: ["SPY"]
+  timeframe: "1d"
+  start: "2015-01-02"
+  end: "2024-12-31"
+  source: "csv"
+  root: "data/raw"
+execution:
+  initial_cash: 100000
+  commission_bps: 2
+  slippage_bps: 5
+  allow_fractional: false
+  allow_short: true
+portfolio:
+  sizing_mode: "percent_equity"
+  size: 0.95
+optimization:
+  objective: sortino
+  param_space:
+    fractional_order: [0.30, 0.45, 0.60]
+    seasonal_threshold: [0.06, 0.10, 0.14]
+    shock_threshold: [0.50, 0.75, 1.00]
+wfo:
+  enabled: true
+  train_bars: 756
+  test_bars: 252
+  step_bars: 252

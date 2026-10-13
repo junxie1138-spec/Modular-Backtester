@@ -1,0 +1,27 @@
+run_name: gen_local_1790894830
+strategy: gen_local_1790894830
+strategy_params: {energy_window: 16, corr_window: 24, atr_window: 14, energy_gate: 0.48, corr_gate: 0.10, breakeven_pct: 0.004, trail_atr: 0.8, initial_stop_atr: 1.5, max_hold_bars: 2}
+data:
+  symbols: ["SPY"]
+  timeframe: "1d"
+  start: "2015-01-02"
+  end: "2024-12-31"
+  source: "csv"
+  root: "data/raw"
+execution:
+  initial_cash: 100000
+  commission_bps: 2
+  slippage_bps: 5
+  allow_fractional: false
+  allow_short: true
+portfolio:
+  sizing_mode: "percent_equity"
+  size: 0.95
+optimization:
+  objective: sortino
+  param_space: {energy_gate: [0.40, 0.48, 0.56], corr_gate: [0.05, 0.10, 0.15], trail_atr: [0.6, 0.8, 1.0]}
+wfo:
+  enabled: true
+  train_bars: 756
+  test_bars: 252
+  step_bars: 252
